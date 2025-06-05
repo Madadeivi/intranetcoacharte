@@ -106,28 +106,28 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID-STAGING].supabase.c
 
 # Aplicación
 NEXT_PUBLIC_APP_ENV=staging
-CLIENT_URL_FROM_ENV=https://staging.intranetcoacharte.com
+CLIENT_URL_FROM_ENV=https://pre-intranetcoacharte.com
 
 # Zoho CRM & Desk
-NEXT_PUBLIC_ZOHO_CLIENT_ID=1000.KHU9JZOXYHNG0PHE14KU9RVIKFTRBN
-ZOHO_CLIENT_SECRET=7f5530a132232c7e48aca239a0e54cf2a7b77684cb
-ZOHO_REFRESH_TOKEN=1000.9153358db3eca17fba8e430e65a7aff1.7ad7211aa8fa0027a6017a9799184776
-NEXT_PUBLIC_ZOHO_REDIRECT_URI=https://staging.intranetcoacharte.com/auth/callback
+NEXT_PUBLIC_ZOHO_CLIENT_ID=::youwouldnoguess::
+ZOHO_CLIENT_SECRET=::youwouldnoguess::
+ZOHO_REFRESH_TOKEN=::youwouldnoguess::
+NEXT_PUBLIC_ZOHO_REDIRECT_URI=https://pre-intranetcoacharte.com/auth/callback
 ZOHO_API_URL=https://www.zohoapis.com/crm/v2
 ZOHO_DESK_API_URL=https://desk.zoho.com/api/v1
-ZOHO_CRM_ORG_ID=691250724
-ZOHO_DESK_ORG_ID=705863663
-ZOHO_DESK_COACHARTE_DEPARTMENT_ID=468528000000006907
+ZOHO_CRM_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_COACHARTE_DEPARTMENT_ID=::youwouldnoguess::
 
 # Email SMTP
 EMAIL_PORT=465
 EMAIL_SECURE=true
-EMAIL_USER=support@coacharte.mx
-EMAIL_PASS=iubcwtlnowljqpbt
-EMAIL_FROM=support@coacharte.mx
+EMAIL_USER=david.dorantes@coacharte.mx
+EMAIL_PASS=::youwouldnoguess::
+EMAIL_FROM=soporte@coacharte.mx
 
 # Seguridad
-JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce8513a59a5ee0b20d53880336751f7dace5461bc0eb33da170e823653cbc
+JWT_SECRET=::youwouldnoguess::
 ```
 
 ### Variables para Proyecto Production
@@ -148,22 +148,22 @@ NEXT_PUBLIC_APP_ENV=production
 CLIENT_URL_FROM_ENV=https://intranetcoacharte.com
 
 # Zoho CRM & Desk (mismas credenciales)
-NEXT_PUBLIC_ZOHO_CLIENT_ID=1000.KHU9JZOXYHNG0PHE14KU9RVIKFTRBN
-ZOHO_CLIENT_SECRET=7f5530a132232c7e48aca239a0e54cf2a7b77684cb
-ZOHO_REFRESH_TOKEN=1000.9153358db3eca17fba8e430e65a7aff1.7ad7211aa8fa0027a6017a9799184776
+NEXT_PUBLIC_ZOHO_CLIENT_ID=::youwouldnoguess::
+ZOHO_CLIENT_SECRET=::youwouldnoguess::
+ZOHO_REFRESH_TOKEN=::youwouldnoguess::
 NEXT_PUBLIC_ZOHO_REDIRECT_URI=https://intranetcoacharte.com/auth/callback
 ZOHO_API_URL=https://www.zohoapis.com/crm/v2
 ZOHO_DESK_API_URL=https://desk.zoho.com/api/v1
-ZOHO_CRM_ORG_ID=691250724
-ZOHO_DESK_ORG_ID=705863663
-ZOHO_DESK_COACHARTE_DEPARTMENT_ID=468528000000006907
+ZOHO_CRM_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_COACHARTE_DEPARTMENT_ID=::youwouldnoguess::
 
 # Email SMTP (misma configuración)
 EMAIL_PORT=465
 EMAIL_SECURE=true
-EMAIL_USER=support@coacharte.mx
-EMAIL_PASS=iubcwtlnowljqpbt
-EMAIL_FROM=support@coacharte.mx
+EMAIL_USER=david.dorantes@coacharte.mx
+EMAIL_PASS=::youwouldnoguess::
+EMAIL_FROM=soporte@coacharte.mx
 
 # Seguridad (mismo JWT)
 JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce8513a59a5ee0b20d53880336751f7dace5461bc0eb33da170e823653cbc
@@ -174,7 +174,7 @@ JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce
 ### Staging
 
 - URL automática: `coacharte-intranet-staging.vercel.app`
-- Subdominio personalizado: `staging.intranetcoacharte.com`
+- Subdominio personalizado: `pre-intranetcoacharte.com`
 
 ### Producción
 
@@ -228,7 +228,7 @@ vercel --prod
 ### ⏳ DNS y Dominios
 
 - [ ] Configurar DNS para `intranetcoacharte.com`
-- [ ] Configurar subdominio `staging.intranetcoacharte.com`
+- [ ] Configurar subdominio `pre-intranetcoacharte.com`
 - [ ] Verificar SSL certificates
 
 ## Próximos Pasos

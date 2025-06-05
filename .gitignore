@@ -217,7 +217,7 @@ lighthouse-report.html
 .chrome/
 
 # VS Code specific (optional)
-# .vscode/
+.vscode/
 
 # ==========================================
 # Custom Project Exclusions

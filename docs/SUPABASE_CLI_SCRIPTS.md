@@ -15,7 +15,7 @@ supabase unlink 2>/dev/null || true
 supabase link --project-ref [PROJECT-ID-STAGING]
 
 # Copy staging environment variables
-cp .env.staging.example .env.local
+cp .env.staging .env.local
 
 echo "✅ Switched to STAGING environment"
 echo "📍 Project: coacharte-intranet-staging"
@@ -36,7 +36,7 @@ supabase unlink 2>/dev/null || true
 supabase link --project-ref [PROJECT-ID-PROD]
 
 # Copy production environment variables
-cp .env.production.example .env.local
+cp .env.production .env.local
 
 echo "✅ Switched to PRODUCTION environment"
 echo "📍 Project: coacharte-intranet-prod"
