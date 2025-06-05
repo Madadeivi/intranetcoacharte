@@ -67,10 +67,10 @@ El error de rutas duplicadas `/apps/frontend/apps/frontend/` fue resuelto median
 
    - **Project Name:** `coacharte-intranet-staging`
    - **Framework Preset:** Next.js
-   - **Root Directory:** `./` (raíz del monorepo)
-   - **Build Command:** `cd apps/frontend && npm run build`
-   - **Output Directory:** `apps/frontend/.next`
-   - **Install Command:** `npm install --prefix apps/frontend`
+   - **Root Directory:** `apps/frontend` (no usar './' ni '../')
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `.next`
+   - **Install Command:** `npm install`
 
 4. **Git Branch:** Configurar para que solo despliegue desde la rama `develop`
 
@@ -81,10 +81,10 @@ El error de rutas duplicadas `/apps/frontend/apps/frontend/` fue resuelto median
 
    - **Project Name:** `coacharte-intranet-prod`
    - **Framework Preset:** Next.js
-   - **Root Directory:** `./` (raíz del monorepo)
-   - **Build Command:** `cd apps/frontend && npm run build`
-   - **Output Directory:** `apps/frontend/.next`
-   - **Install Command:** `npm install --prefix apps/frontend`
+   - **Root Directory:** `apps/frontend` (no usar './' ni '../')
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `.next`
+   - **Install Command:** `npm install`
 
 3. **Git Branch:** Configurar para que solo despliegue desde la rama `main`
 4. **Dominio personalizado:** Configurar `intranetcoacharte.com`
