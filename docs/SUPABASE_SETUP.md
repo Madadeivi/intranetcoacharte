@@ -132,28 +132,28 @@ En el dashboard de Supabase del proyecto staging:
 
 ```bash
 # Variables específicas de Zoho (para Edge Functions)
-ZOHO_CLIENT_ID=1000.KHU9JZOXYHNG0PHE14KU9RVIKFTRBN
-ZOHO_CLIENT_SECRET=7f5530a132232c7e48aca239a0e54cf2a7b77684cb
-ZOHO_REFRESH_TOKEN=1000.9153358db3eca17fba8e430e65a7aff1.7ad7211aa8fa0027a6017a9799184776
+ZOHO_CLIENT_ID=::youwouldnoguess::
+ZOHO_CLIENT_SECRET=::youwouldnoguess::
+ZOHO_REFRESH_TOKEN=::youwouldnoguess::
 ZOHO_API_URL=https://www.zohoapis.com/crm/v2
 ZOHO_DESK_API_URL=https://desk.zoho.com/api/v1
-ZOHO_CRM_ORG_ID=691250724
-ZOHO_DESK_ORG_ID=705863663
-ZOHO_DESK_COACHARTE_DEPARTMENT_ID=468528000000006907
+ZOHO_CRM_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_COACHARTE_DEPARTMENT_ID=::youwouldnoguess::
 
 # Variables de Email (para notification-manager)
 EMAIL_PORT=465
 EMAIL_SECURE=true
-EMAIL_USER=support@coacharte.mx
-EMAIL_PASS=iubcwtlnowljqpbt
-EMAIL_FROM=support@coacharte.mx
+EMAIL_USER=david.dorantes@coacharte.mx
+EMAIL_PASS=::youwouldnoguess::
+EMAIL_FROM=soporte@coacharte.mx
 
 # Variables de aplicación
 APP_ENV=staging
-CLIENT_URL=https://staging.intranetcoacharte.com
+CLIENT_URL=https://pre-intranetcoacharte.com
 
 # JWT para validación en Edge Functions
-JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce8513a59a5ee0b20d53880336751f7dace5461bc0eb33da170e823653cbc
+JWT_SECRET=::youwouldnoguess::
 ```
 
 ### Variables para Proyecto Production
@@ -164,28 +164,28 @@ En el dashboard de Supabase del proyecto production:
 
 ```bash
 # Variables específicas de Zoho (mismas credenciales)
-ZOHO_CLIENT_ID=1000.KHU9JZOXYHNG0PHE14KU9RVIKFTRBN
-ZOHO_CLIENT_SECRET=7f5530a132232c7e48aca239a0e54cf2a7b77684cb
-ZOHO_REFRESH_TOKEN=1000.9153358db3eca17fba8e430e65a7aff1.7ad7211aa8fa0027a6017a9799184776
+ZOHO_CLIENT_ID=::youwouldnoguess::
+ZOHO_CLIENT_SECRET=::youwouldnoguess::
+ZOHO_REFRESH_TOKEN=::youwouldnoguess::
 ZOHO_API_URL=https://www.zohoapis.com/crm/v2
 ZOHO_DESK_API_URL=https://desk.zoho.com/api/v1
-ZOHO_CRM_ORG_ID=691250724
-ZOHO_DESK_ORG_ID=705863663
-ZOHO_DESK_COACHARTE_DEPARTMENT_ID=468528000000006907
+ZOHO_CRM_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_COACHARTE_DEPARTMENT_ID=::youwouldnoguess::
 
 # Variables de Email (misma configuración)
 EMAIL_PORT=465
 EMAIL_SECURE=true
-EMAIL_USER=support@coacharte.mx
-EMAIL_PASS=iubcwtlnowljqpbt
-EMAIL_FROM=support@coacharte.mx
+EMAIL_USER=david.dorantes@coacharte.mx
+EMAIL_PASS=::youwouldnoguess::
+EMAIL_FROM=soporte@coacharte.mx
 
 # Variables de aplicación
 APP_ENV=production
 CLIENT_URL=https://intranetcoacharte.com
 
 # JWT para validación en Edge Functions
-JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce8513a59a5ee0b20d53880336751f7dace5461bc0eb33da170e823653cbc
+JWT_SECRET=::youwouldnoguess::
 ```
 
 ### Configuración en CLI Local
@@ -195,12 +195,12 @@ Para desarrollo local, configura las variables en `supabase/.env`:
 ```bash
 # Crear archivo de variables locales
 cd supabase
-echo "ZOHO_CLIENT_ID=1000.KHU9JZOXYHNG0PHE14KU9RVIKFTRBN" > .env
-echo "ZOHO_CLIENT_SECRET=7f5530a132232c7e48aca239a0e54cf2a7b77684cb" >> .env
-echo "ZOHO_REFRESH_TOKEN=1000.9153358db3eca17fba8e430e65a7aff1.7ad7211aa8fa0027a6017a9799184776" >> .env
-echo "EMAIL_USER=support@coacharte.mx" >> .env
-echo "EMAIL_PASS=iubcwtlnowljqpbt" >> .env
-echo "JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce8513a59a5ee0b20d53880336751f7dace5461bc0eb33da170e823653cbc" >> .env
+echo "ZOHO_CLIENT_ID=::youwouldnoguess::" > .env
+echo "ZOHO_CLIENT_SECRET=::youwouldnoguess::" >> .env
+echo "ZOHO_REFRESH_TOKEN=::youwouldnoguess::" >> .env
+echo "EMAIL_USER=david.dorantes@coacharte.mx" >> .env
+echo "EMAIL_PASS=::youwouldnoguess::" >> .env
+echo "JWT_SECRET=::youwouldnoguess::" >> .env
 ```
 
 ## Configuración de Storage
@@ -239,11 +239,7 @@ SUPABASE_SERVICE_ROLE_KEY=[SERVICE-ROLE-KEY-STAGING]
 # Zoho Integration
 ZOHO_CLIENT_ID=[STAGING-CLIENT-ID]
 ZOHO_CLIENT_SECRET=[STAGING-CLIENT-SECRET]
-ZOHO_REDIRECT_URI=https://coacharte-intranet-staging.vercel.app/auth/callback
-
-# Email Service
-GMAIL_USER=[GMAIL-ADDRESS]
-GMAIL_PASS=[GMAIL-APP-PASSWORD]
+ZOHO_REDIRECT_URI=https://pre-intranetcoacharte.com/auth/callback
 ```
 
 ### Producción (.env.production)
@@ -257,10 +253,6 @@ SUPABASE_SERVICE_ROLE_KEY=[SERVICE-ROLE-KEY-PROD]
 ZOHO_CLIENT_ID=[PROD-CLIENT-ID]
 ZOHO_CLIENT_SECRET=[PROD-CLIENT-SECRET]
 ZOHO_REDIRECT_URI=https://intranetcoacharte.com/auth/callback
-
-# Email Service
-GMAIL_USER=[GMAIL-ADDRESS]
-GMAIL_PASS=[GMAIL-APP-PASSWORD]
 ```
 
 ## Configuración de Políticas RLS (Row Level Security)

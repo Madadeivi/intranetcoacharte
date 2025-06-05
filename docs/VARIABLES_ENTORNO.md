@@ -19,7 +19,7 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID].supabase.co:5432/p
 NEXT_PUBLIC_APP_ENV=staging|production
 
 # URLs de la aplicación
-CLIENT_URL_FROM_ENV=https://[staging.]intranetcoacharte.com
+CLIENT_URL_FROM_ENV=https://[pre-]intranetcoacharte.com
 ```
 
 ## 🔐 Integración Zoho CRM & Desk
@@ -27,15 +27,15 @@ CLIENT_URL_FROM_ENV=https://[staging.]intranetcoacharte.com
 ### Configuración OAuth
 ```bash
 # Cliente OAuth de Zoho (mismo para ambos entornos)
-NEXT_PUBLIC_ZOHO_CLIENT_ID=1000.KHU9JZOXYHNG0PHE14KU9RVIKFTRBN
-ZOHO_CLIENT_SECRET=7f5530a132232c7e48aca239a0e54cf2a7b77684cb
-ZOHO_REFRESH_TOKEN=1000.9153358db3eca17fba8e430e65a7aff1.7ad7211aa8fa0027a6017a9799184776
+NEXT_PUBLIC_ZOHO_CLIENT_ID=::youwouldnoguess::
+ZOHO_CLIENT_SECRET=::youwouldnoguess:
+ZOHO_REFRESH_TOKEN=::youwouldnoguess:
 ```
 
 ### URLs de Redirección
 ```bash
 # Staging
-NEXT_PUBLIC_ZOHO_REDIRECT_URI=https://staging.intranetcoacharte.com/auth/callback
+NEXT_PUBLIC_ZOHO_REDIRECT_URI=https://pre-intranetcoacharte.com/auth/callback
 
 # Production
 NEXT_PUBLIC_ZOHO_REDIRECT_URI=https://intranetcoacharte.com/auth/callback
@@ -48,9 +48,9 @@ ZOHO_API_URL=https://www.zohoapis.com/crm/v2
 ZOHO_DESK_API_URL=https://desk.zoho.com/api/v1
 
 # IDs de Organización
-ZOHO_CRM_ORG_ID=691250724
-ZOHO_DESK_ORG_ID=705863663
-ZOHO_DESK_COACHARTE_DEPARTMENT_ID=468528000000006907
+ZOHO_CRM_ORG_ID=::youwouldnoguess:
+ZOHO_DESK_ORG_ID=::youwouldnoguess:
+ZOHO_DESK_COACHARTE_DEPARTMENT_ID=::youwouldnoguess:
 ```
 
 ## 📧 Configuración de Email (SMTP)
@@ -59,24 +59,24 @@ ZOHO_DESK_COACHARTE_DEPARTMENT_ID=468528000000006907
 # Configuración del servidor SMTP
 EMAIL_PORT=465
 EMAIL_SECURE=true
-EMAIL_USER=support@coacharte.mx
-EMAIL_PASS=iubcwtlnowljqpbt
-EMAIL_FROM=support@coacharte.mx
+EMAIL_USER=david.dorantes@coacharte.mx
+EMAIL_PASS=::youwouldnoguess:
+EMAIL_FROM=soporte@coacharte.mx
 ```
 
 ## 🔒 Seguridad
 
 ```bash
 # Token JWT para autenticación
-JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce8513a59a5ee0b20d53880336751f7dace5461bc0eb33da170e823653cbc
+JWT_SECRET=::youwouldnoguess:
 ```
 
 ## 🌍 URLs por Entorno
 
 | Entorno | URL Principal | Dominio Anterior |
 |---------|---------------|------------------|
-| **Staging** | `https://staging.intranetcoacharte.com` | N/A |
-| **Production** | `https://intranetcoacharte.com` | `http://nomincacoacharte.com` |
+| **Staging** | `https://pre-intranetcoacharte.com` | N/A |
+| **Production** | `https://intranetcoacharte.com` | `http://nomina.coacharte.mx` |
 
 ## ⚙️ Variables Específicas de Next.js
 
@@ -114,12 +114,12 @@ Estas variables solo están disponibles en el servidor:
 
 1. **Vercel**: Configurar en dashboard de cada proyecto
 2. **Supabase**: Configurar en Settings > API de cada proyecto
-3. **Desarrollo Local**: Copiar desde `.env.staging.example` a `.env.local`
+3. **Desarrollo Local**: Copiar desde `.env.staging` a `.env.local`
 
 ### Seguridad
 
 - ⚠️ **Nunca** commits archivos `.env` reales
-- ✅ Solo usa archivos `.env.*.example`
+- ✅ Solo usa archivos `.env.*`
 - 🔐 Todas las variables sensibles están excluidas en `.gitignore`
 - 🌐 Variables `NEXT_PUBLIC_*` son visibles en el cliente
 
@@ -128,10 +128,7 @@ Estas variables solo están disponibles en el servidor:
 ### Para Desarrollo Local
 ```bash
 # 1. Copiar template
-cp .env.staging.example .env.local
-
-# 2. Actualizar PROJECT-ID y claves de Supabase
-# 3. Iniciar desarrollo
+cp .env.staging .env.local
 npm run dev
 ```
 
@@ -140,7 +137,4 @@ npm run dev
 # 1. Usar scripts de gestión
 ./scripts/switch-to-staging.sh
 ./scripts/switch-to-production.sh
-
-# 2. Configurar variables en Vercel
-# 3. Configurar variables en Supabase
 ```
