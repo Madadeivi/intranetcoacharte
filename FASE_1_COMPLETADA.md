@@ -182,16 +182,16 @@ git push origin main
 - ⏳ **Probar auto-deploy** desde GitHub
 
 ### Supabase
-- ⏳ **Crear proyecto staging** en supabase.com
-- ⏳ **Crear proyecto producción** en supabase.com
-- ⏳ **Aplicar migraciones** en ambos proyectos
-- ⏳ **Deploy Edge Functions** en ambos proyectos
-- ⏳ **Configurar Storage buckets** en ambos proyectos
+- ✅ **Crear proyecto staging** en supabase.com
+- ✅ **Crear proyecto producción** en supabase.com
+- ✅ **Aplicar migraciones** en ambos proyectos
+- ✅ **Deploy Edge Functions** en ambos proyectos
+- ✅ **Configurar Storage buckets** en ambos proyectos
 
 ### GitHub
 - ✅ **Repositorio configurado** con estructura de monorepo
 - ✅ **Ramas develop/main** creadas
-- ⏳ **Configurar branch protection** en main
+- ✅ **Configurar branch protection** en main
 - ⏳ **Configurar GitHub Actions** (opcional)
 
 ## 🎯 Próximos Pasos (Fase 2)

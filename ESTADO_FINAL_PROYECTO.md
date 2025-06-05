@@ -29,27 +29,27 @@
 ### **🌐 Dominios Configurados**
 - **Production**: `https://intranetcoacharte.com`
 - **Staging**: `https://staging.intranetcoacharte.com`
-- **URL anterior** (referencia): `http://nomincacoacharte.com`
+- **URL anterior** (referencia): `http://nomina.coacharte.mx`
 
 ### **🔧 Variables de Entorno Configuradas**
 
 #### **Zoho CRM & Desk**
 ```bash
-NEXT_PUBLIC_ZOHO_CLIENT_ID=1000.KHU9JZOXYHNG0PHE14KU9RVIKFTRBN
-ZOHO_CLIENT_SECRET=7f5530a132232c7e48aca239a0e54cf2a7b77684cb
-ZOHO_REFRESH_TOKEN=1000.9153358db3eca17fba8e430e65a7aff1.7ad7211aa8fa0027a6017a9799184776
-ZOHO_CRM_ORG_ID=691250724
-ZOHO_DESK_ORG_ID=705863663
-ZOHO_DESK_COACHARTE_DEPARTMENT_ID=468528000000006907
+NEXT_PUBLIC_ZOHO_CLIENT_ID=::youwouldnoguess::
+ZOHO_CLIENT_SECRET=::youwouldnoguess::
+ZOHO_REFRESH_TOKEN=::youwouldnoguess::
+ZOHO_CRM_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_ORG_ID=::youwouldnoguess::
+ZOHO_DESK_COACHARTE_DEPARTMENT_ID=::youwouldnoguess::
 ```
 
 #### **Email SMTP**
 ```bash
-EMAIL_USER=support@coacharte.mx
-EMAIL_PASS=iubcwtlnowljqpbt
+EMAIL_USER=david.dorantes@coacharte.mx
+EMAIL_PASS=::youwouldnoguess::
 EMAIL_PORT=465
 EMAIL_SECURE=true
-EMAIL_FROM=support@coacharte.mx
+EMAIL_FROM=soporte@coacharte.mx
 ```
 
 #### **URLs por Entorno**
@@ -116,7 +116,7 @@ CLIENT_URL_FROM_ENV=https://intranetcoacharte.com
 ### **Integraciones**
 - **CRM**: Zoho CRM v2 API
 - **Helpdesk**: Zoho Desk v1 API
-- **Email**: SMTP (support@coacharte.mx)
+- **Email**: SMTP (soporte@coacharte.mx)
 - **Domain**: intranetcoacharte.com
 
 ## 📋 Checklist de Implementación
@@ -134,13 +134,13 @@ CLIENT_URL_FROM_ENV=https://intranetcoacharte.com
 - [x] .gitignore optimizado
 
 ### ⏳ **Pendiente (Configuración en plataformas)**
-- [ ] Crear proyecto staging en Vercel
-- [ ] Crear proyecto production en Vercel
-- [ ] Crear proyecto staging en Supabase
-- [ ] Crear proyecto production en Supabase
-- [ ] Configurar DNS para intranetcoacharte.com
+- [x] Crear proyecto staging en Vercel
+- [x] Crear proyecto production en Vercel
+- [x] Crear proyecto staging en Supabase
+- [x] Crear proyecto production en Supabase
+- [x] Configurar DNS para intranetcoacharte.com
 - [ ] Actualizar Zoho OAuth con nuevas URLs
-- [ ] Probar deployments automáticos
+- [x] Probar deployments automáticos
 
 ## 🎯 Siguientes Pasos
 

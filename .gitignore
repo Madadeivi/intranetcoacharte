@@ -218,6 +218,10 @@ lighthouse-report.html
 
 # VS Code specific (optional)
 .vscode/
+.vscode/**
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/extensions.json
 
 # ==========================================
 # Custom Project Exclusions
