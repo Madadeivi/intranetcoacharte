@@ -7,8 +7,8 @@ Este documento describe todas las variables de entorno utilizadas en el proyecto
 ### Variables Base (Supabase)
 ```bash
 # URLs y claves de Supabase (diferentes por entorno)
-NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT-ID].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[ANON-KEY]
+SUPABASE_URL=https://[PROJECT-ID].supabase.co
+SUPABASE_ANON_KEY=[ANON-KEY]
 SUPABASE_SERVICE_ROLE_KEY=[SERVICE-ROLE-KEY]
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID].supabase.co:5432/postgres
 ```
@@ -83,8 +83,8 @@ JWT_SECRET=::youwouldnoguess:
 ### Variables Públicas (NEXT_PUBLIC_)
 Estas variables están disponibles en el cliente (browser):
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_APP_ENV`
 - `NEXT_PUBLIC_ZOHO_CLIENT_ID`
 - `NEXT_PUBLIC_ZOHO_REDIRECT_URI`

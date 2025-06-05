@@ -29,8 +29,8 @@ El error de rutas duplicadas `/apps/frontend/apps/frontend/` fue resuelto median
   "installCommand": "npm install --prefix apps/frontend",
   "framework": "nextjs",
   "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "SUPABASE_URL": "@supabase-url",
+    "SUPABASE_ANON_KEY": "@supabase-anon-key",
     "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
     "NEXT_PUBLIC_APP_ENV": "@app-env",
     "NEXT_PUBLIC_ZOHO_CLIENT_ID": "@zoho-client-id",
@@ -99,8 +99,8 @@ En el dashboard de Vercel del proyecto `coacharte-intranet-staging`:
 
 ```bash
 # Supabase (Staging)
-NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT-ID-STAGING].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[ANON-KEY-STAGING]
+SUPABASE_URL=https://[PROJECT-ID-STAGING].supabase.co
+SUPABASE_ANON_KEY=[ANON-KEY-STAGING]
 SUPABASE_SERVICE_ROLE_KEY=[SERVICE-ROLE-KEY-STAGING]
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID-STAGING].supabase.co:5432/postgres
 
@@ -138,8 +138,8 @@ En el dashboard de Vercel del proyecto `coacharte-intranet-prod`:
 
 ```bash
 # Supabase (Production)
-NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT-ID-PROD].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[ANON-KEY-PROD]
+SUPABASE_URL=https://[PROJECT-ID-PROD].supabase.co
+SUPABASE_ANON_KEY=[ANON-KEY-PROD]
 SUPABASE_SERVICE_ROLE_KEY=[SERVICE-ROLE-KEY-PROD]
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID-PROD].supabase.co:5432/postgres
 

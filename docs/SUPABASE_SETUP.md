@@ -28,8 +28,8 @@
 3. Una vez creado, anota las credenciales:
 ```bash
 # Staging Environment Variables
-NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT-ID-STAGING].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[ANON-KEY-STAGING]
+SUPABASE_URL=https://[PROJECT-ID-STAGING].supabase.co
+SUPABASE_ANON_KEY=[ANON-KEY-STAGING]
 SUPABASE_SERVICE_ROLE_KEY=[SERVICE-ROLE-KEY-STAGING]
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID-STAGING].supabase.co:5432/postgres
 ```
@@ -47,8 +47,8 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID-STAGING].supabase.c
 3. Anotar las credenciales de producción:
 ```bash
 # Production Environment Variables
-NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT-ID-PROD].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[ANON-KEY-PROD]
+SUPABASE_URL=https://[PROJECT-ID-PROD].supabase.co
+SUPABASE_ANON_KEY=[ANON-KEY-PROD]
 SUPABASE_SERVICE_ROLE_KEY=[SERVICE-ROLE-KEY-PROD]
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID-PROD].supabase.co:5432/postgres
 ```
