@@ -1,0 +1,60 @@
+body {
+  background-color: #f9fafb;
+  color: #1f2937;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geometria', sans-serif;
+}
+
+h1 {
+  font-size: 2.25rem;
+  font-weight: bold;
+  line-height: 2.5rem;
+  font-family: 'Geometria', sans-serif;
+}
+
+a {
+  font-weight: 500;
+  color: #4f46e5;
+  transition: color 0.2s;
+  font-family: 'Geometria', sans-serif;
+}
+
+a:hover {
+  color: #6366f1;
+}
+
+button {
+  -webkit-border-radius: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  background-color: #1f2937;
+  color: #fff;
+  -webkit-transition: border-color 0.2s;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  outline: none;
+}
+
+button:hover {
+  border-color: #6366f1;
+}
+
+button:focus {
+  box-shadow: 0 0 0 2px #6366f1;
+}
+
+.home-header {
+  max-height: 80px;
+  height: 80px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 0.25rem 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}

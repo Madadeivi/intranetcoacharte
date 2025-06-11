@@ -1,10 +1,167 @@
 @import "tailwindcss";
 
+/* Contenido de legacy_index.css */
+/* @import '/assets/fonts/geometria-webfont/style.css'; */ /* Movido a layout.tsx */
+@import '../styles/variables.css';
+@import '../styles/base.css';
+@import '../styles/typography.css';
+
+/* Paleta de colores principales */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Azul #3472E5 */
+  --color-primary-100: #3472E5;
+  --color-primary-70: rgba(52, 114, 229, 0.7);
+  --color-primary-50: rgba(52, 114, 229, 0.5);
+  --color-primary-30: rgba(52, 114, 229, 0.3);
+  --color-primary-10: rgba(52, 114, 229, 0.1);
+
+  /* Gris oscuro #353535 */
+  --color-dark-100: #353535;
+  --color-dark-70: rgba(53, 53, 53, 0.7);
+  --color-dark-50: rgba(53, 53, 53, 0.5);
+  --color-dark-30: rgba(53, 53, 53, 0.3);
+  --color-dark-10: rgba(53, 53, 53, 0.1);
+
+  /* Secundario #1B3AED */
+  --color-secondary-100: #1B3AED;
+  --color-secondary-70: rgba(27, 58, 237, 0.7);
+  --color-secondary-50: rgba(27, 58, 237, 0.5);
+  --color-secondary-30: rgba(27, 58, 237, 0.3);
+  --color-secondary-10: rgba(27, 58, 237, 0.1);
+
+  /* Secundario oscuro #0202AD */
+  --color-secondary-dark-100: #0202AD;
+  --color-secondary-dark-70: rgba(2, 2, 173, 0.7);
+  --color-secondary-dark-50: rgba(2, 2, 173, 0.5);
+  --color-secondary-dark-30: rgba(2, 2, 173, 0.3);
+  --color-secondary-dark-10: rgba(2, 2, 173, 0.1);
 }
 
+/* Estilos globales adicionales */
+body {
+  background-color: #f9fafb; /* bg-gray-50 */
+  color: #1f2937; /* text-gray-800 */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geometria', sans-serif;
+  margin: 0;
+}
+
+h1 {
+  font-size: 2.25rem; /* text-4xl */
+  font-weight: bold;
+  line-height: 2.5rem; /* leading-tight */
+  font-family: 'Geometria', sans-serif;
+}
+
+a {
+  font-weight: 500;
+  color: #4f46e5; /* text-indigo-600 */
+  transition: color 0.2s;
+  font-family: 'Geometria', sans-serif;
+}
+
+a:hover {
+  color: #6366f1; /* text-indigo-500 */
+}
+
+button {
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  background-color: #1f2937; /* bg-gray-800 */
+  color: #fff;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  outline: none;
+}
+
+button:hover {
+  border-color: #6366f1; /* border-indigo-500 */
+}
+
+button:focus {
+  box-shadow: 0 0 0 2px #6366f1; /* focus:ring-2 focus:ring-indigo-500 */
+}
+
+/* Clases personalizadas para Geometria */
+.font-geometria-bold {
+  font-family: 'Geometria-Bold', 'Geometria', sans-serif;
+  font-weight: bold;
+}
+.font-geometria-semibold {
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 600;
+}
+.font-geometria-medium {
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 500;
+}
+.font-geometria-regular {
+  font-family: 'Geometria', sans-serif;
+  font-weight: 400;
+}
+.font-geometria-light {
+  font-family: 'Geometria-Light', 'Geometria', sans-serif;
+  font-weight: 300;
+}
+
+/* Tamaños de fuente sugeridos */
+.text-h1 {
+  font-size: 2rem; /* 32px */
+}
+.text-h2 {
+  font-size: 1.625rem; /* 26px */
+}
+.text-h3 {
+  font-size: 1.125rem; /* 18px */
+}
+.text-h3-lg {
+  font-size: 1.25rem; /* 20px */
+}
+.text-base {
+  font-size: 1rem; /* 16px */
+}
+.text-secondary {
+  font-size: 0.875rem; /* 14px */
+}
+
+/* Clases adicionales según tu tabla */
+.menu-text {
+  font-size: 1rem; /* 16px */
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 500;
+}
+.btn-principal {
+  font-size: 1.125rem; /* 18px */
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 500;
+}
+.btn-principal-semibold {
+  font-size: 1.125rem; /* 18px */
+  font-family: 'Geometria-Bold', 'Geometria', sans-serif;
+  font-weight: 600;
+}
+.btn-secundario {
+  font-size: 1rem; /* 16px */
+  font-family: 'Geometria', sans-serif;
+  font-weight: 400;
+}
+.footer-text {
+  font-size: 1rem; /* 16px */
+  font-family: 'Geometria', sans-serif;
+  font-weight: 400;
+}
+.footer-text-light {
+  font-size: 1rem; /* 16px */
+  font-family: 'Geometria-Light', 'Geometria', sans-serif;
+  font-weight: 300;
+}
+
+/* Puedes eliminar o comentar las siguientes líneas si no usas Geist Sans/Mono directamente aquí */
+/*
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,15 +169,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif; // Reemplazado por Geometria en la sección de arriba
 }
+*/

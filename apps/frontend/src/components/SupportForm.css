@@ -1,0 +1,518 @@
+/* SupportForm.css - Estilos refinados para el formulario de soporte */
+
+.support-form-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 3rem 2.5rem 2.5rem;
+  background: #fff;
+  font-family: 'Geometria', Arial, sans-serif;
+  position: relative;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* Ajuste para cuando está dentro del modal */
+.support-form-modal .support-form-container {
+  padding: 2rem 2.5rem;
+  width: 100%;
+  margin: 0;
+}
+
+/* Header del formulario */
+.support-form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.support-form-title {
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  font-size: 2rem;
+  color: var(--color-text-title);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.support-form-subtitle {
+  font-family: 'Geometria', Arial, sans-serif;
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Alertas de estado */
+.support-form-alert {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border: 1.5px solid #a5d6a7;
+  color: #2e7d32;
+}
+
+.alert-error {
+  background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+  border: 1.5px solid #ef9a9a;
+  color: #c62828;
+}
+
+.alert-content strong {
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  font-size: 1.15rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.ticket-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 0.5rem;
+}
+
+.ticket-label {
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  font-size: 0.9rem;
+  color: inherit;
+  margin-right: 0.5rem;
+}
+
+.ticket-id {
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  font-size: 1.1rem;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.ticket-note {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  opacity: 0.9;
+}
+
+/* Formulario */
+.support-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  align-items: start;
+}
+
+.form-label {
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  font-size: 1.05rem;
+  color: var(--color-text-title);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.required {
+  color: #e53935;
+  font-weight: 700;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  font-family: 'Geometria', Arial, sans-serif;
+  font-size: 1.05rem;
+  padding: 0.875rem 1.125rem;
+  border: 1.5px solid var(--color-primary-30);
+  border-radius: 0.625rem;
+  background: #fff;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.form-input:hover,
+.form-select:hover,
+.form-textarea:hover {
+  border-color: var(--color-primary-50);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-100);
+  box-shadow: 0 0 0 4px var(--color-primary-10);
+  color: var(--color-text-title);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-hint {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Estilos específicos para prioridad */
+.priority-low {
+  border-color: #4caf50 !important;
+}
+
+.priority-medium {
+  border-color: #ffc107 !important;
+}
+
+.priority-high {
+  border-color: #ff9800 !important;
+}
+
+.priority-urgent {
+  border-color: #f44336 !important;
+  background: #fff5f5 !important;
+}
+
+/* Tarjeta de información del usuario */
+.user-info-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f5f6f8 100%);
+  border: 1.5px solid var(--color-primary-30);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 8px rgba(30,136,229,0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.user-info-card:hover {
+  box-shadow: 0 4px 16px rgba(30,136,229,0.1);
+}
+
+.user-info-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.user-info-icon {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--color-primary-100);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(30,136,229,0.15);
+}
+
+.user-info-header h3 {
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  font-size: 1.2rem;
+  color: var(--color-text-title);
+  margin: 0;
+}
+
+.user-info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.info-label {
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  min-width: 80px;
+}
+
+.info-value {
+  font-family: 'Geometria', Arial, sans-serif;
+  font-size: 1.05rem;
+  color: var(--color-text-title);
+  font-weight: 500;
+}
+
+/* Botón de envío */
+.submit-button {
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  background: var(--color-primary-100);
+  color: #fff;
+  padding: 0.875rem 1.75rem;
+  border: none;
+  border-radius: 0.625rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 300px;
+  margin: 1rem auto 0;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.submit-button:hover::before {
+  transform: translateX(100%);
+}
+
+.submit-button:hover:not(:disabled) {
+  background: var(--color-primary-70);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(30,136,229,0.25);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(30,136,229,0.2);
+}
+
+.submit-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.button-icon {
+  font-size: 1.3rem;
+}
+
+/* Spinner de carga */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.button-loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .support-form-container {
+    padding: 2rem 1.5rem 1.5rem;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .support-form-modal .support-form-container {
+    padding: 1.5rem;
+    width: 100%;
+    margin: 0;
+  }
+
+  .support-form-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+
+  .support-form-subtitle {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    width: 100%;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .submit-button {
+    font-size: 1.05rem;
+    padding: 0.875rem 1.5rem;
+    width: 100%;
+    max-width: 280px;
+    margin: 1rem auto 0;
+  }
+
+  .user-info-card {
+    padding: 1.25rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    width: 100%;
+  }
+}
+
+/* Animaciones adicionales */
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  animation: focusPulse 0.3s ease-out;
+}
+
+@keyframes focusPulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-primary-30);
+  }
+  100% {
+    box-shadow: 0 0 0 4px var(--color-primary-10);
+  }
+}
+
+/* Mejoras de accesibilidad */
+.form-label:hover {
+  color: var(--color-primary-100);
+  cursor: pointer;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+/* Transiciones suaves para estados */
+.support-form-alert,
+.form-input,
+.form-select,
+.form-textarea,
+.submit-button {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mejoras visuales adicionales */
+.form-select option {
+  padding: 0.5rem;
+  font-family: 'Geometria', Arial, sans-serif;
+}
+
+/* Scroll suave para el contenedor cuando está en modal */
+.support-form-modal .support-form-container {
+  scroll-behavior: smooth;
+}
+
+/* Sombra sutil para el formulario */
+.support-form {
+  background: #fff;
+  border-radius: 0.5rem;
+}
+
+/* Estado de foco mejorado para accesibilidad */
+*:focus-visible {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
+}
+
+/* Animación de entrada para el formulario */
+.support-form-container {
+  animation: fadeInUp 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Centrado mejorado para el contenido del formulario */
+.support-form {
+  width: 100%;
+  max-width: var(--max-width-form);
+  margin: 0 auto;
+}
+
+.support-form-header {
+  width: 100%;
+  max-width: var(--max-width-form);
+  margin: 0 auto 2rem;
+}
+
+.support-form-alert {
+  width: 100%;
+  max-width: var(--max-width-form);
+  margin: 0 auto 2rem auto;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

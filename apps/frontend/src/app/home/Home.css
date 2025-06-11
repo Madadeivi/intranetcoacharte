@@ -1,0 +1,1198 @@
+/* ==============================================
+   DESIGN SYSTEM VARIABLES
+   ============================================== */
+:root {
+  /* Breakpoints */
+  --bp-sm: 576px;
+  --bp-md: 768px;
+  --bp-lg: 992px;
+  --bp-xl: 1200px;
+  
+  /* Spacing Scale */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  
+  /* Font Sizes (Mobile First) */
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.875rem;  /* 14px */
+  --text-base: 1rem;    /* 16px */
+  --text-lg: 1.125rem;  /* 18px */
+  --text-xl: 1.25rem;   /* 20px */
+  --text-2xl: 1.5rem;   /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(30, 136, 229, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(30, 136, 229, 0.1), 0 2px 4px -1px rgba(30, 136, 229, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(30, 136, 229, 0.1), 0 4px 6px -2px rgba(30, 136, 229, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(30, 136, 229, 0.1), 0 10px 10px -5px rgba(30, 136, 229, 0.04);
+}
+
+/* Estilo para el menú de hamburguesa */
+.hamburger-menu {
+  display: none; /* Oculto por defecto */
+  cursor: pointer;
+  padding: var(--space-2);
+  margin-left: var(--space-2); /* Espacio entre nombre/avatar y hamburguesa */
+}
+
+.hamburger-menu svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--color-text-secondary);
+}
+
+.mobile-nav-menu {
+  position: absolute;
+  top: 4rem; /* Asumiendo que la altura del header es consistentemente 4rem. */
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: var(--shadow-lg);
+  z-index: 90; /* Debajo del dropdown de usuario pero encima de otro contenido */
+  padding: var(--space-4) 0;
+}
+
+.mobile-nav-menu a {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-title);
+  text-decoration: none;
+  font-size: var(--text-base);
+}
+
+.mobile-nav-menu a:hover {
+  background: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
+.mobile-logout-button {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: none;
+  color: var(--color-text-title);
+  text-decoration: none;
+  font-size: var(--text-base);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  border-top: 1px solid var(--color-border, #e5e5e5);
+  margin-top: var(--space-2);
+}
+
+.mobile-logout-button:hover {
+  background: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
+/* ==============================================
+   GLOBAL STYLES & RESETS (from index.css context)
+   ============================================== */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-background-main);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* ==============================================
+   HOME PAGE SPECIFIC STYLES
+   ============================================== */
+
+.home-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Asegura que el footer esté al menos al final de la pantalla */
+  background-color: var(--color-background-main);
+}
+
+/* Header y Navegación */
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-8);
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100; /* Asegura que el header esté por encima de otros elementos */
+}
+
+.home-logo-img {
+  height: 2.5rem; /* 40px */
+  width: auto;
+}
+
+.home-nav {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.home-nav a {
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  padding: var(--space-2) 0;
+  position: relative;
+  transition: color 0.2s ease-in-out;
+}
+
+.home-nav a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--color-primary-100);
+  transition: width 0.3s ease-in-out;
+}
+
+.home-nav a:hover {
+  color: var(--color-primary-100);
+}
+
+.home-nav a:hover::after {
+  width: 100%;
+}
+
+.home-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  position: relative; /* Para el menú desplegable */
+}
+
+.notification-bell {
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--space-1);
+  transition: color 0.2s ease-in-out;
+}
+
+.notification-bell:hover {
+  color: var(--color-primary-100);
+}
+
+.user-avatar {
+  width: 2.25rem; /* 36px */
+  height: 2.25rem;
+  border-radius: 50%;
+  background-color: var(--color-primary-100);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: var(--text-sm);
+  cursor: default;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--color-text-title);
+  font-size: var(--text-sm);
+}
+
+.user-dropdown-arrow {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex; /* Para centrar el SVG si es necesario */
+  align-items: center;
+}
+
+.user-dropdown-arrow svg {
+  transition: transform 0.2s ease-in-out;
+}
+
+.user-dropdown-arrow:hover svg {
+  color: var(--color-primary-100);
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + var(--space-2)); /* Debajo del avatar/nombre + un pequeño espacio */
+  right: 0;
+  background-color: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2) 0;
+  z-index: 110; /* Por encima del header */
+  width: 160px; /* Ancho del menú */
+  border: 1px solid var(--color-border-light);
+}
+
+.user-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown-item:hover {
+  background-color: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
+/* Sección de Bienvenida */
+.home-welcome {
+  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
+  color: white;
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+}
+
+.home-welcome-content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.home-welcome-month {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+  font-weight: 500;
+}
+
+.home-welcome h1 {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-3);
+  font-weight: 700;
+}
+
+.home-welcome p {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-8);
+  opacity: 0.9;
+}
+
+.home-search-wrapper {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.home-search {
+  width: 100%;
+  padding: var(--space-4) var(--space-10) var(--space-4) var(--space-5); /* Espacio para el icono */
+  border-radius: var(--radius-lg);
+  border: none;
+  font-size: var(--text-base);
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.home-search:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-40), var(--shadow-lg);
+}
+
+.home-search-icon {
+  position: absolute;
+  top: 50%;
+  right: var(--space-4);
+  transform: translateY(-50%);
+  color: var(--color-text-placeholder);
+  pointer-events: none; /* Para que no interfiera con el input */
+}
+
+/* Tarjetas Principales */
+.home-main-cards {
+  padding: var(--space-10) var(--space-8);
+  background-color: var(--color-background-light);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-card {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid var(--color-border-light);
+}
+
+.main-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.main-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-background-disabled);
+}
+
+.main-card.disabled:hover {
+  transform: none;
+  box-shadow: var(--shadow-md);
+}
+
+.main-card-icon {
+  font-size: 2.5rem; /* 40px */
+  color: var(--color-primary-100);
+  margin-bottom: var(--space-4);
+  display: inline-block;
+  background-color: var(--color-primary-10);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  line-height: 60px; /* Centra el icono verticalmente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-card h3 {
+  font-size: var(--text-xl);
+  color: var(--color-text-title);
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+
+.main-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* Avisos Importantes */
+.home-notices {
+  padding: var(--space-10) var(--space-8);
+  background-color: var(--color-background-main);
+}
+
+.home-notices-span {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-notices h2 {
+  font-size: var(--text-2xl);
+  color: var(--color-text-title);
+  margin-bottom: var(--space-6);
+  text-align: center;
+  font-weight: 600;
+}
+
+.notice-carousel-wrapper {
+  position: relative;
+  margin-bottom: var(--space-6);
+}
+
+.notice-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* Para iOS */
+  scrollbar-width: none; /* Firefox */
+}
+
+.notice-carousel::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.notice-grid {
+  display: flex; /* Cambiado de grid a flex para el carrusel */
+  gap: var(--space-6);
+  padding-bottom: var(--space-4); /* Espacio para que la sombra no se corte */
+}
+
+.notice-card {
+  flex: 0 0 auto; /* No crecer, no encoger, base automática */
+  width: 300px; /* Ancho fijo para las tarjetas del carrusel */
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.notice-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.notice-card-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.notice-card-content {
+  padding: var(--space-4);
+  flex-grow: 1; /* Para que el contenido ocupe el espacio restante */
+  display: flex;
+  flex-direction: column;
+}
+
+.notice-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-1);
+  display: block;
+}
+
+.notice-card h4 {
+  font-size: var(--text-lg);
+  color: var(--color-text-title);
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.notice-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  flex-grow: 1; /* Empuja el enlace "Ver más" hacia abajo */
+  line-height: 1.5;
+}
+
+.notice-card a {
+  font-size: var(--text-sm);
+  color: var(--color-primary-100);
+  text-decoration: none;
+  font-weight: 600;
+  align-self: flex-start; /* Alinea el enlace a la izquierda */
+  transition: color 0.2s ease;
+}
+
+.notice-card a:hover {
+  color: var(--color-primary-80);
+  text-decoration: underline;
+}
+
+.notice-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--color-border-light);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notice-carousel-arrow:hover {
+  background-color: white;
+  color: var(--color-primary-100);
+  box-shadow: var(--shadow-md);
+}
+
+.notice-carousel-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--color-background-disabled);
+}
+
+.notice-carousel-arrow.left {
+  left: -20px; /* Ajustar para que esté parcialmente fuera */
+}
+
+.notice-carousel-arrow.right {
+  right: -20px; /* Ajustar para que esté parcialmente fuera */
+}
+
+/* Modal de Detalle de Aviso */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.modal {
+  background-color: white;
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative; /* Para el botón de cierre */
+}
+
+.modal h2 {
+  font-size: var(--text-2xl);
+  color: var(--color-text-title);
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+  font-weight: 600;
+}
+
+.notice-detail-text {
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  margin-bottom: var(--space-6);
+  white-space: pre-wrap; /* Para conservar saltos de línea y espacios */
+}
+
+.notice-detail-text strong, .notice-detail-text b {
+  font-weight: 600;
+  color: var(--color-text-title);
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.button-group button {
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: var(--text-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button-group button:first-child { /* Asumiendo que el botón de cerrar es el principal o único */
+  background-color: var(--color-primary-100);
+  color: white;
+}
+
+.button-group button:first-child:hover {
+  background-color: var(--color-primary-80);
+  box-shadow: var(--shadow-sm);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: var(--space-1);
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.modal-close-button:hover {
+  color: var(--color-text-primary);
+}
+
+/* Enlaces Rápidos */
+.home-quicklinks {
+  padding: var(--space-10) var(--space-8);
+  background-color: var(--color-background-light);
+}
+
+.home-quicklinks-span {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-quicklinks h2 {
+  font-size: var(--text-2xl);
+  color: var(--color-text-title);
+  margin-bottom: var(--space-6);
+  text-align: center;
+  font-weight: 600;
+}
+
+.quicklinks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-5);
+}
+
+.quicklink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: white;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  border: 1px solid var(--color-border-light);
+}
+
+.quicklink:hover {
+  background-color: var(--color-primary-5);
+  box-shadow: var(--shadow-md);
+  color: var(--color-primary-100);
+}
+
+.quicklink.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-background-disabled);
+  color: var(--color-text-tertiary);
+}
+
+.quicklink.disabled:hover {
+  background-color: var(--color-background-disabled);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-tertiary);
+}
+
+.quicklink-icon {
+  font-size: 1.5rem; /* 24px */
+  color: var(--color-primary-100);
+  background-color: var(--color-primary-10);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  display: flex; /* Para centrar el icono */
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.quicklink:hover .quicklink-icon {
+  color: white;
+  background-color: var(--color-primary-100);
+}
+
+.quicklink.disabled .quicklink-icon {
+  color: var(--color-text-tertiary);
+  background-color: var(--color-border-light);
+}
+
+/* Calendario y Eventos */
+.home-calendar-events {
+  padding: var(--space-10) var(--space-8);
+  background-color: var(--color-background-main);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.calendar-box, .events-box {
+  background-color: white;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.calendar-box h3, .events-box h3 {
+  font-size: var(--text-xl);
+  color: var(--color-text-title);
+  margin-top: 0;
+  margin-bottom: var(--space-5);
+  font-weight: 600;
+}
+
+/* Estilos para react-calendar */
+.coacharte-calendar {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+}
+
+.coacharte-calendar .react-calendar__navigation button {
+  color: var(--color-primary-100);
+  font-weight: bold;
+  font-size: var(--text-base);
+}
+
+.coacharte-calendar .react-calendar__navigation button:hover,
+.coacharte-calendar .react-calendar__navigation button:focus {
+  background-color: var(--color-primary-5);
+}
+
+.coacharte-calendar .react-calendar__month-view__weekdays__weekday {
+  text-align: center;
+  font-weight: bold;
+  color: var(--color-text-secondary);
+  text-decoration: none; /* Quita subrayado de abbr */
+  font-size: var(--text-sm);
+}
+
+.coacharte-calendar .react-calendar__tile {
+  padding: var(--space-3) var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: var(--text-sm);
+}
+
+.coacharte-calendar .react-calendar__tile:enabled:hover,
+.coacharte-calendar .react-calendar__tile:enabled:focus {
+  background-color: var(--color-primary-10);
+}
+
+.coacharte-calendar .react-calendar__tile--now {
+  background-color: var(--color-secondary-10);
+  color: var(--color-secondary-100);
+  font-weight: bold;
+}
+
+.coacharte-calendar .react-calendar__tile--active {
+  background-color: var(--color-primary-100);
+  color: white;
+  font-weight: bold;
+}
+
+.coacharte-calendar .react-calendar__tile--active:enabled:hover,
+.coacharte-calendar .react-calendar__tile--active:enabled:focus {
+  background-color: var(--color-primary-80);
+}
+
+.coacharte-calendar .event-day {
+  /* Estilo para días con eventos */
+  position: relative;
+}
+
+.coacharte-calendar .event-day::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-accent-100);
+}
+
+/* Próximos Eventos */
+.events-carousel-vertical {
+  max-height: 400px; /* Ajusta según sea necesario */
+  overflow-y: auto;
+  padding-right: var(--space-2); /* Espacio para la barra de scroll si aparece */
+}
+
+/* Custom scrollbar for events list (optional) */
+.events-carousel-vertical::-webkit-scrollbar {
+  width: 8px;
+}
+.events-carousel-vertical::-webkit-scrollbar-track {
+  background: var(--color-background-light);
+  border-radius: var(--radius-sm);
+}
+.events-carousel-vertical::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.events-carousel-vertical::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+.events-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.events-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-light);
+  gap: var(--space-4);
+}
+
+.events-list li:last-child {
+  border-bottom: none;
+}
+
+.events-list li div {
+  flex-grow: 1;
+}
+
+.event-date {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-1);
+}
+
+.event-title {
+  display: block;
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.event-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-left: var(--space-3);
+}
+
+/* Footer */
+.home-footer {
+  background-color: var(--color-neutral-900);
+  color: var(--color-neutral-300);
+  padding: var(--space-10) var(--space-8) var(--space-6);
+  margin-top: auto; /* Empuja el footer al final si el contenido es corto */
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto var(--space-8);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.footer-col h4 {
+  font-size: var(--text-lg);
+  color: white;
+  margin-bottom: var(--space-4);
+  font-weight: 600;
+}
+
+.footer-col-logo .home-logo-img {
+  height: 3rem; /* 48px */
+  margin-bottom: var(--space-4);
+  filter: brightness(0) invert(1); /* Para hacerlo blanco si es oscuro */
+}
+
+.footer-slogan {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.footer-links-list {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.footer-links-list div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.footer-links-list a {
+  color: var(--color-neutral-300);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: color 0.2s ease;
+}
+
+.footer-links-list a:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-social-icons {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.footer-social-icon {
+  color: var(--color-neutral-300);
+  font-size: 1.5rem; /* 24px */
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-social-icon:hover {
+  color: white;
+  transform: scale(1.1);
+}
+
+.footer-copy {
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-neutral-400);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-neutral-700);
+}
+
+/* Modal de Soporte (específico si es necesario, si no, usa .modal general) */
+.support-form-modal .modal-close-button {
+  /* Hereda de .modal-close-button, pero se puede sobreescribir si es necesario */
+}
+
+.support-form-modal h2 {
+  /* Hereda de .modal h2, pero se puede sobreescribir */
+  /* Por ejemplo, si el título del modal de soporte es diferente */
+  /* margin-bottom: var(--space-3); */
+}
+
+/* ==============================================
+   MEDIA QUERIES
+   ============================================== */
+
+/* Tablet y superior */
+@media (min-width: var(--bp-md)) {
+  :root {
+    --text-lg: 1.25rem;  /* 20px */
+    --text-xl: 1.5rem;   /* 24px */
+    --text-2xl: 1.875rem;/* 30px */
+    --text-3xl: 2.5rem;  /* 40px */
+  }
+
+  .home-header {
+    padding: var(--space-5) var(--space-10);
+  }
+
+  .home-nav {
+    gap: var(--space-8);
+  }
+
+  .home-welcome {
+    padding: var(--space-12) var(--space-10);
+  }
+
+  .home-main-cards,
+  .home-notices,
+  .home-quicklinks,
+  .home-calendar-events {
+    padding: var(--space-12) var(--space-10);
+  }
+
+  .notice-card {
+    width: 320px; /* Un poco más anchas en pantallas grandes */
+  }
+
+  .home-calendar-events {
+    grid-template-columns: 1.2fr 1fr; /* Dar más espacio al calendario */
+  }
+
+  .hamburger-menu {
+    display: none; /* Asegurarse que esté oculto en desktop */
+  }
+  .desktop-only {
+    display: flex; /* O inline-flex, block, etc., según sea necesario */
+    align-items: center; /* Ejemplo para alinear items si es un flex container */
+  }
+}
+
+/* Desktop y superior */
+@media (min-width: var(--bp-lg)) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 columnas en desktop */
+  }
+
+  .quicklinks-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .notice-carousel-arrow.left {
+    left: -25px;
+  }
+  
+  .notice-carousel-arrow.right {
+    right: -25px;
+  }
+}
+
+/* Ocultar menú de hamburguesa en desktop y mostrar elementos solo para desktop */
+@media (max-width: calc(var(--bp-md) - 1px)) {
+  .home-nav {
+    display: none; /* Ocultar navegación principal en móvil */
+  }
+  .user-name,
+  .user-dropdown-arrow.desktop-only { /* Ocultar nombre y flecha de dropdown en móvil */
+    display: none;
+  }
+  .hamburger-menu {
+    display: flex; /* Mostrar menú de hamburguesa en móvil */
+    align-items: center;
+  }
+  .desktop-only {
+    display: none !important; /* Ocultar elementos solo para desktop */
+  }
+
+  .home-header {
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .home-welcome h1 {
+    font-size: var(--text-2xl);
+  }
+  .home-welcome p {
+    font-size: var(--text-base);
+  }
+
+  .home-main-cards,
+  .home-notices,
+  .home-quicklinks,
+  .home-calendar-events {
+    padding: var(--space-8) var(--space-5);
+  }
+
+  .notice-carousel-arrow {
+    /* Hacer flechas más pequeñas o reposicionarlas en móvil si es necesario */
+    width: 32px;
+    height: 32px;
+  }
+  .notice-carousel-arrow.left {
+    left: var(--space-2);
+  }
+  .notice-carousel-arrow.right {
+    right: var(--space-2);
+  }
+  .notice-carousel {
+    /* Podría ser útil añadir un poco de padding al carrusel 
+       para que las flechas no tapen el contenido si están superpuestas */
+    padding-left: var(--space-8); 
+    padding-right: var(--space-8);
+    margin-left: calc(-1 * var(--space-8)); /* Compensar el padding para alineación */
+    margin-right: calc(-1 * var(--space-8));
+    /* clip-path: inset(0 var(--space-8) 0 var(--space-8)); /* Alternativa si no se quiere overflow visible */
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr; /* Apilar columnas en móvil */
+    text-align: center;
+  }
+  .footer-col-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer-links-list {
+    justify-content: center;
+    gap: var(--space-6);
+  }
+  .footer-social-icons {
+    justify-content: center;
+  }
+}
+
+/* Ajustes finos para pantallas muy pequeñas */
+@media (max-width: calc(var(--bp-sm) - 1px)) {
+  .home-welcome {
+    padding: var(--space-8) var(--space-4);
+  }
+  .home-welcome h1 {
+    font-size: var(--text-xl);
+  }
+  .home-search {
+    padding: var(--space-3) var(--space-8) var(--space-3) var(--space-4);
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr; /* Una columna en pantallas muy pequeñas */
+  }
+  .quicklinks-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .notice-card {
+    width: calc(100vw - var(--space-5) * 2 - var(--space-4) * 2); /* Ajustar al ancho de la pantalla menos paddings */
+    /* El cálculo anterior es un ejemplo, puede necesitar ajuste fino */
+  }
+
+  .modal {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .events-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  .event-img {
+    align-self: flex-start; /* O center, si se prefiere */
+    margin-left: 0;
+    margin-top: var(--space-2);
+  }
+}
+
+/* Specific styles for SupportForm within the modal, if needed */
+.support-form-modal {
+  /* Example: Make the SupportForm modal wider if its content needs more space */
+  /* max-width: 700px; */ 
+}
+
+.support-form-modal .modal-content {
+  /* Styles for the content area of the support form modal */
+}
+
+/* Ensure the react-calendar styles are correctly scoped or applied globally */
+/* If react-calendar/dist/Calendar.css is imported in globals.css or _app.tsx, these might not be needed here */
+/* However, for component-specific styling or overrides, this is the place */
+
+.coacharte-calendar .event-day.react-calendar__tile--active::after {
+  background-color: white; /* Make dot visible on active (selected) day */
+}
+
+.coacharte-calendar .event-day.react-calendar__tile--now::after {
+  /* If you want a different color dot for today's events */
+  /* background-color: var(--color-primary-100); */ 
+}
+
+/* Estilos para el contenedor de carga */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #333;
+}
