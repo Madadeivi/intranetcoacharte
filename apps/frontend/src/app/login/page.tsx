@@ -43,7 +43,6 @@ export default function LoginPage() {
     }
     // No es necesario incluir setEmail y setPassword en las dependencias
     // ya que solo se llaman condicionalmente y no queremos re-ejecutar el efecto si cambian.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isLoading, error, requiresPasswordChange, router, clearError]);
 
 

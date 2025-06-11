@@ -83,8 +83,9 @@ export class AuthService {
       } else {
         return { success: false, message: 'No se pudo iniciar sesión.' };
       }
-    } catch (error: any) {
-      return { success: false, message: error.message || 'Error de conexión o respuesta no válida.' };
+    } catch (error: unknown) {
+      const typedError = error as { message?: string };
+      return { success: false, message: typedError.message || 'Error de conexión o respuesta no válida.' };
     }
   }
 
@@ -151,8 +152,9 @@ export class AuthService {
       } else {
         return { success: false, message: 'No se pudo actualizar la contraseña (sin datos de usuario después del intento).' };
       }
-    } catch (error: any) {
-      return { success: false, message: error.message || 'Error al actualizar la contraseña.' };
+    } catch (error: unknown) {
+      const typedError = error as { message?: string };
+      return { success: false, message: typedError.message || 'Error al actualizar la contraseña.' };
     }
   }
 
@@ -212,6 +214,9 @@ export class AuthService {
     } else {
       return { success: false, message: 'No se pudo actualizar la contraseña (sin datos de usuario después del intento).' };
     }
+  } catch (error: unknown) {
+    const typedError = error as { message?: string };
+    return { success: false, message: typedError.message || 'Error al actualizar la contraseña.' };
   }
 }
 

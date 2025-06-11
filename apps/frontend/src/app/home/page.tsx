@@ -26,7 +26,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useAuthStore } from '../../store/authStore'; 
 import SupportForm from '../../components/SupportForm'; 
 import { toast } from 'sonner';
-import { User as AppUser } from '../../types/auth'; // Importar el tipo User de la aplicación
 
 // Definiciones de constantes que faltaban
 const DISABLED_CARDS: string[] = ['Recursos Humanos', 'Procesos y Documentación', 'Soporte y Comunicación', 'Calendario y Eventos', 'Conoce Coacharte']; 
@@ -637,7 +636,7 @@ const HomePage: React.FC = () => {
                       <span className="event-title">{event.title}</span>
                     </div>
                     {/* Usar Image de Next.js para imágenes externas requiere configuración en next.config.js */}
-                    <img className="event-img" src={event.img} alt={event.alt} loading="lazy" />
+                    <Image className="event-img" src={event.img} alt={event.alt} width={100} height={100} style={{ objectFit: 'cover' }} loading="lazy" />
                   </li>
                 ))}
             </ul>

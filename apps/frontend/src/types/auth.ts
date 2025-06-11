@@ -6,11 +6,11 @@ export interface User {
   role?: string;
   user_metadata?: {
     requires_password_change?: boolean;
-    [key: string]: any;
+    [key: string]: unknown; // Cambiado de any a unknown
   };
   app_metadata?: {
     role?: string;
-    [key: string]: any;
+    [key: string]: unknown; // Cambiado de any a unknown
   };
 }
 

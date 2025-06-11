@@ -4,6 +4,7 @@ import { AuthResult, LoginCredentials } from '../types/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import './LoginForm.css';
+import Image from 'next/image'; // Importar Image de next/image
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -103,7 +104,7 @@ const LoginForm: React.FC = () => {
   
   return (
     <div className="login-container">
-      <img src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="login-logo" />
+      <Image src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="login-logo" width={150} height={50} priority />
       <h2>Coacharte Intranet</h2>
       {(firstName && lastName && initials) && (
         <div className="login-user-preview">

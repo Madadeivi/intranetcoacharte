@@ -59,7 +59,8 @@ async function customFetch<T = DefaultResultType>(endpoint: string, options: Fet
     error.status = response.status;
     try {
       error.errorData = await response.json();
-    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_) { 
       // If response is not JSON, use statusText
       error.errorData = { message: response.statusText };
     }
@@ -70,7 +71,6 @@ async function customFetch<T = DefaultResultType>(endpoint: string, options: Fet
   // Handle 204 No Content or non-JSON responses
   const contentType = response.headers.get('content-type');
   if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return {} as T; // Or return null / undefined as per application's needs
   }
 

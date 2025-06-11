@@ -61,7 +61,9 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
           message: response.message,
         });
       }
-    } catch (error) {
+    } catch (err: unknown) { 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _err = err; // Asignar a una variable con prefijo si no se usa directamente
       setSubmitStatus({
         type: 'error',
         message: 'Error inesperado al enviar el ticket',

@@ -41,8 +41,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: false, error: result.message || 'Error de inicio de sesión desconocido', user: null, session: null });
       }
       return result;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al intentar iniciar sesión.';
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al intentar iniciar sesión.';
       set({ isLoading: false, error: errorMessage, user: null, session: null });
       return { success: false, message: errorMessage };
     }
@@ -53,8 +53,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await authService.logout();
       set({ user: null, session: null, isLoading: false, error: null, requiresPasswordChange: false });
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al cerrar sesión.';
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al cerrar sesión.';
       set({ isLoading: false, error: errorMessage });
     }
   },
@@ -69,6 +69,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       requiresPasswordChange: initialUser?.user_metadata?.requires_password_change || false
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
         let userToSet: LocalUser | null = null;
@@ -111,8 +112,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: false, error: result.message || 'Error al establecer la nueva contraseña.' });
       }
       return result;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al intentar establecer la nueva contraseña.';
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al intentar establecer la nueva contraseña.';
       set({ isLoading: false, error: errorMessage });
       return { success: false, message: errorMessage };
     }
@@ -128,8 +129,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: false, error: result.message || 'Error al solicitar el reseteo de contraseña.' });
       }
       return result;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al intentar solicitar el reseteo de contraseña.';
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al intentar solicitar el reseteo de contraseña.';
       set({ isLoading: false, error: errorMessage });
       return { success: false, message: errorMessage };
     }
@@ -150,8 +151,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: false, error: result.message || 'Error al actualizar la contraseña.' });
       }
       return result;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al intentar actualizar la contraseña.';
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al intentar actualizar la contraseña.';
       set({ isLoading: false, error: errorMessage });
       return { success: false, message: errorMessage };
     }
