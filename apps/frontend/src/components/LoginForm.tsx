@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import authService, { AuthResult, LoginCredentials } from '../services/authService';
-import { useNavigate, Link } from 'react-router-dom'; // Importar Link
+import authService from '../services/authService';
+import { AuthResult, LoginCredentials } from '../types/auth';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import './LoginForm.css';
 
 const LoginForm: React.FC = () => {
@@ -13,8 +15,8 @@ const LoginForm: React.FC = () => {
   });
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [initials, setInitials] = useState(''); // Se usa para el avatar si se requiere en el futuro
-  const navigate = useNavigate();
+  const [initials, setInitials] = useState('');
+  const router = useRouter();
 
   // Agregar clase al body para estilos específicos del login
   useEffect(() => {
@@ -25,7 +27,6 @@ const LoginForm: React.FC = () => {
   }, []);
 
   const validateEmail = (email: string) => {
-    // Permite dominios coacharte.mx y caretra
     const regex = /^[a-zA-Z]+\.[a-zA-Z]+@(coacharte|caretra)\.mx$/;
     return regex.test(email);
   };
@@ -39,7 +40,6 @@ const LoginForm: React.FC = () => {
       setIsLoading(false);
       return;
     }
-    // Extraer nombre y apellido
     const [nombre, apellidoDominio] = email.split('@')[0].split('.');
     const firstNameValue = nombre.charAt(0).toUpperCase() + nombre.slice(1);
     const lastNameValue = apellidoDominio.charAt(0).toUpperCase() + apellidoDominio.slice(1);
@@ -47,39 +47,32 @@ const LoginForm: React.FC = () => {
     setFirstName(firstNameValue);
     setLastName(lastNameValue);
     setInitials(initialsValue);
-    setEmail(email);
-    // Guardar en localStorage para Home
     localStorage.setItem('coacharteUserInfo', JSON.stringify({ firstName: firstNameValue, lastName: lastNameValue, initials: initialsValue, email }));
     try {
-      const credentials: LoginCredentials = { username: email, password };
+      const credentials: LoginCredentials = { email: email, password };
       const result: AuthResult = await authService.login(credentials);
 
       if (result.success) {
-        if (result.requiresPasswordChange && result.tempToken && result.user?.email) {
-          // Guardar el token temporal y el email para el cambio de contraseña
-          localStorage.setItem('tempToken', result.tempToken);
+        if (result.requiresPasswordChange && result.user?.email) {
           localStorage.setItem('emailForPasswordChange', result.user.email);
           setMessage({ 
-            text: 'Se requiere cambio de contraseña. Redirigiendo...', 
+            text: 'Se requiere cambio de contraseña. Redirigiendo...',
             type: 'success' 
           });
           setTimeout(() => {
-            navigate('/set-new-password');
+            router.push('/set-new-password');
           }, 800);
-        } else if (result.token && result.user) {
-          // Inicio de sesión normal, el token ya se guarda en authService si no hay cambio de contraseña
-          // coacharteUserInfo ya se guardó antes
+        } else if (result.user) {
           setMessage({ 
             text: `Bienvenido, ${firstNameValue} ${lastNameValue}!`, 
             type: 'success' 
           });
           setTimeout(() => {
-            navigate('/home');
+            router.push('/home');
           }, 800);
           setEmail('');
           setPassword('');
         } else {
-          // Caso inesperado si success es true pero no hay token ni tempToken
           setMessage({ 
             text: result.message || 'Respuesta inesperada del servidor.', 
             type: 'error' 
@@ -112,7 +105,6 @@ const LoginForm: React.FC = () => {
     <div className="login-container">
       <img src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="login-logo" />
       <h2>Coacharte Intranet</h2>
-      {/* Avatar e info de usuario extraídos del correo */}
       {(firstName && lastName && initials) && (
         <div className="login-user-preview">
           <span className="user-avatar user-avatar-login">{initials}</span>
@@ -153,7 +145,7 @@ const LoginForm: React.FC = () => {
           {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
         </button>
         <div className="forgot-password-link">
-          <Link to="/request-password-reset">¿Olvidaste tu contraseña?</Link> {/* Cambiado a Link */}
+          <Link href="/request-password-reset">¿Olvidaste tu contraseña?</Link>
         </div>
       </form>
       

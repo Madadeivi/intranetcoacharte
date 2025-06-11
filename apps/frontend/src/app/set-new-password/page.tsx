@@ -1,119 +1,118 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuthStore } from '../../store/authStore';
 import { NewPasswordData } from '../../types/auth';
-import './SetPasswordForm.css';
 import { toast } from 'sonner';
+import SetPasswordForm from '../../components/SetPasswordForm';
 
 export default function SetNewPasswordPage() {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const router = useRouter();
   const {
     user,
-    isLoading,
-    error,
-    setNewPassword: setNewPasswordAction,
-    updateUserPassword: updateUserPasswordAction,
+    isLoading: authIsLoading, // Renombrado para evitar colisión con isLoading de la página si se necesitara
+    error: authError,
     clearError,
-    requiresPasswordChange
-  } = useAuthStore();
+    requiresPasswordChange,
+    updateUserPassword: updateUserPasswordAction,
+  } = useAuthStore(state => ({
+    user: state.user,
+    isLoading: state.isLoading,
+    error: state.error,
+    clearError: state.clearError,
+    requiresPasswordChange: state.requiresPasswordChange,
+    updateUserPassword: state.updateUserPassword,
+  }));
 
   useEffect(() => {
     clearError();
   }, [clearError]);
 
   useEffect(() => {
-    if (error) {
-      toast.error(error);
+    if (authError) {
+      toast.error(authError);
       clearError();
     }
-  }, [error, clearError]);
+  }, [authError, clearError]);
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      toast.error('Acceso no autorizado. Por favor, inicia sesión.');
-      router.push('/login');
-    } 
-    // No redirigir inmediatamente si !requiresPasswordChange,
-    // ya que el usuario podría estar aquí para actualizar voluntariamente su contraseña.
-    // El título del formulario y el texto se ajustan según requiresPasswordChange.
-  }, [user, isLoading, router]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      useAuthStore.setState({ error: 'Las contraseñas no coinciden' });
-      return;
+    // Este efecto se encarga de la lógica de redirección si el usuario no está autenticado
+    // o si el token de recuperación no es válido (lo que resultaría en que `user` no se establezca).
+    if (!authIsLoading && !user) {
+      // Si el hash está presente, Supabase está intentando verificarlo.
+      // No redirigir inmediatamente si hay un hash, dar tiempo a Supabase.
+      const hash = typeof window !== 'undefined' ? window.location.hash : '';
+      if (!hash.includes('access_token')) {
+        toast.info('Sesión no válida o expirada. Redirigiendo a inicio de sesión...');
+        router.push('/login');
+      }
     }
+  }, [user, authIsLoading, router]);
 
+  const handlePasswordSubmit = async (newPasswordValue: string) => {
     if (!user || !user.id) {
-      useAuthStore.setState({ error: 'Error de autenticación: Usuario no encontrado.' });
+      toast.error('Error de autenticación: Usuario no encontrado. No se puede actualizar la contraseña.');
+      // No redirigir inmediatamente aquí, permitir que el useEffect maneje la falta de usuario.
       return;
     }
 
-    const passwordData: NewPasswordData = { userId: user.id, newPassword: password };
-
-    let result;
-    if (requiresPasswordChange) {
-      console.log('Estableciendo nueva contraseña para el usuario:', user.email);
-      result = await setNewPasswordAction(passwordData); 
-    } else {
-      console.log('Actualizando contraseña voluntariamente para el usuario:', user.email);
-      result = await updateUserPasswordAction(passwordData);
-    }
+    const passwordData: NewPasswordData = { userId: user.id, newPassword: newPasswordValue };
+    const result = await updateUserPasswordAction(passwordData);
 
     if (result.success) {
       toast.success('Contraseña actualizada exitosamente.');
       router.push('/home');
     }
-    // Los errores durante la actualización de la contraseña se establecen en authStore 
-    // y son manejados por el hook useEffect que escucha store.error.
+    // Si !result.success, el error ya se maneja a través del useEffect que escucha authError
   };
 
-  return (
-    <div className="set-password-container">
-      <div className="set-password-logo-container">
-        <Image src="/assets/coacharte-logo.png" alt="Coacharte Logo" width={200} height={50} priority />
+  // Estado de carga mientras Supabase procesa el token del hash o authStore está ocupado.
+  // Se muestra si isLoading es true Y (no hay usuario O hay un token en el hash que se está procesando)
+  const isProcessingToken = typeof window !== 'undefined' && window.location.hash.includes('access_token');
+  if (authIsLoading && (!user || isProcessingToken)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+        <div className="mb-8">
+          <Image src="/assets/coacharte-logo.png" alt="Coacharte Logo" width={240} height={60} priority />
+        </div>
+        <p className="text-xl text-gray-700">Verificando información y procesando token...</p>
       </div>
-      <form onSubmit={handleSubmit} className="set-password-form">
-        <h2>{requiresPasswordChange ? 'Establecer Nueva Contraseña' : 'Actualizar Contraseña'}</h2>
-        <p>
-          {requiresPasswordChange 
-            ? 'Debes establecer una nueva contraseña para continuar.'
-            : 'Ingresa tu nueva contraseña si deseas actualizarla.'
-          }
-        </p>
-        <div className="input-group">
-          <label htmlFor="new-password">Nueva Contraseña</label>
-          <input
-            id="new-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="new-password"
-          />
+    );
+  }
+
+  // Si después de la carga no hay usuario y no se está procesando un token, el useEffect ya debería haber redirigido.
+  // Este es un fallback visual.
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+        <div className="mb-8">
+          <Image src="/assets/coacharte-logo.png" alt="Coacharte Logo" width={240} height={60} priority />
         </div>
-        <div className="input-group">
-          <label htmlFor="confirm-password">Confirmar Nueva Contraseña</label>
-          <input
-            id="confirm-password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            autoComplete="new-password"
-          />
-        </div>
-        <button type="submit" disabled={isLoading} className="set-password-button">
-          {isLoading ? 'Actualizando...' : (requiresPasswordChange ? 'Establecer Contraseña' : 'Actualizar Contraseña')}
-        </button>
-      </form>
+        <p className="text-xl text-gray-700">No se pudo verificar la sesión. Redirigiendo...</p>
+      </div>
+    );
+  }
+
+  const formTitle = requiresPasswordChange ? "Establecer Nueva Contraseña" : "Actualizar Contraseña";
+  const infoText = requiresPasswordChange 
+    ? "Debes establecer una nueva contraseña para continuar."
+    : "Por favor, introduce y confirma tu nueva contraseña.";
+  const submitButtonText = requiresPasswordChange ? "Establecer Contraseña" : "Actualizar Contraseña";
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+      <div className="mb-8">
+        <Image src="/assets/coacharte-logo.png" alt="Coacharte Logo" width={240} height={60} priority />
+      </div>
+      <SetPasswordForm
+        onSubmit={handlePasswordSubmit}
+        isLoading={authIsLoading} 
+        formTitle={formTitle}
+        infoText={infoText}
+        submitButtonText={submitButtonText}
+      />
     </div>
   );
 }

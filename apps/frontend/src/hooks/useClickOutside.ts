@@ -1,4 +1,4 @@
-import { useEffect, RefObject } from 'react';
+import { useEffect, RefObject, useCallback } from 'react';
 
 /**
  * Hook personalizado para detectar clics fuera de un elemento
@@ -11,7 +11,7 @@ export function useClickOutside(
   handler: () => void,
   isActive: boolean = true
 ): void {
-  const memoizedHandler = useCallback(handler, []);
+  const memoizedHandler = useCallback(handler, [handler]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -26,5 +26,5 @@ export function useClickOutside(
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [ref, handler, isActive]);
+  }, [ref, memoizedHandler, isActive]);
 }

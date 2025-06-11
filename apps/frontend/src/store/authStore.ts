@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import authService, { supabase } from '../services/authService';
-import { User, LoginCredentials, AuthResult, NewPasswordData } from '../types/auth';
+import { User as LocalUser, LoginCredentials, AuthResult, NewPasswordData } from '../types/auth';
 import { Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 interface AuthState {
-  user: User | null;
+  user: LocalUser | null;
   session: Session | null;
   isLoading: boolean;
   error: string | null;
@@ -49,43 +49,51 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    set({ isLoading: true, error: null }); // Limpiar error al iniciar logout
+    set({ isLoading: true, error: null });
     try {
       await authService.logout();
       set({ user: null, session: null, isLoading: false, error: null, requiresPasswordChange: false });
-      // No se devuelve success explícitamente aquí, el cambio de estado es la señal.
     } catch (error: any) {
       const errorMessage = error.message || 'Error al cerrar sesión.';
       set({ isLoading: false, error: errorMessage });
-      // Podríamos devolver un objeto de error si fuera necesario para la UI, pero los toasts lo manejan.
     }
   },
 
   checkSession: () => {
-    const currentUser = authService.getCurrentUser();
-    const currentSession = authService.getSession();
+    const initialSession = authService.getSession();
+    const initialUser = authService.getCurrentUser();
     set({ 
-      user: currentUser, 
-      session: currentSession, 
-      isLoading: false, 
-      requiresPasswordChange: currentUser?.user_metadata?.requires_password_change || false
+      user: initialUser, 
+      session: initialSession, 
+      isLoading: !initialSession, 
+      requiresPasswordChange: initialUser?.user_metadata?.requires_password_change || false
     });
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
-        const appUser = authService.getCurrentUser(); 
+        let userToSet: LocalUser | null = null;
+        let reqPassChange = false;
+
+        if (session?.user) {
+          const supabaseUser = session.user;
+          userToSet = {
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            username: supabaseUser.email || '',
+            user_metadata: supabaseUser.user_metadata as LocalUser['user_metadata'],
+            app_metadata: supabaseUser.app_metadata as LocalUser['app_metadata'],
+          };
+          reqPassChange = !!supabaseUser.user_metadata?.requires_password_change;
+        }
+
         set({
           session,
-          user: appUser,
+          user: userToSet,
           isLoading: false,
-          requiresPasswordChange: appUser?.user_metadata?.requires_password_change || false,
+          requiresPasswordChange: reqPassChange,
         });
       }
     );
-    // Considerar la gestión de la desuscripción del listener si es necesario.
-    // return () => {
-    //   authListener?.unsubscribe(); 
-    // };
   },
 
   setNewPassword: async (data: NewPasswordData) => { 
@@ -154,5 +162,4 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 }));
 
-// Llamar a checkSession una vez cuando el store se inicializa para cargar el estado de autenticación.
 useAuthStore.getState().checkSession();

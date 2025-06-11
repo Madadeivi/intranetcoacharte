@@ -63,10 +63,10 @@ interface ResetPasswordResponse {
 
 export const requestPasswordReset = async (email: string): Promise<RequestPasswordResetResponse> => {
   const response = await api.post<RequestPasswordResetResponse>('/users/request-password-reset', { email });
-  return response.data;
+  return response;
 };
 
 export const resetPassword = async (token: string, newPassword: string): Promise<ResetPasswordResponse> => {
   const response = await api.post<ResetPasswordResponse>('/users/reset-password', { token, newPassword });
-  return response.data;
+  return response;
 };
