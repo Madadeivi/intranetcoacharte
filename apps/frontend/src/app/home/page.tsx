@@ -353,7 +353,7 @@ const HomePage: React.FC = () => {
               href={item.href}
               onClick={(e) => {
                 if (item.href === '#') e.preventDefault();
-                // Si hay una acción específica para el item.action original, se puede adaptar aquí.
+
               }}
             >
               {item.label}
