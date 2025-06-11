@@ -1,4 +1,5 @@
-body {
+/* Base styles for specific pages like login */
+body.login-page {
   background-color: #f9fafb;
   color: #1f2937;
   min-height: 100vh;
@@ -47,7 +48,8 @@ button:focus {
   box-shadow: 0 0 0 2px #6366f1;
 }
 
-.home-header {
+/* Header styles específicos para login u otras páginas que necesiten un header básico */
+.basic-header {
   max-height: 80px;
   height: 80px;
   min-height: 80px;

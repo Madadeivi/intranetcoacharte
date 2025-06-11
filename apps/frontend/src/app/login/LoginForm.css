@@ -1,7 +1,7 @@
 /* LoginForm.css - Estilos alineados con el design system de Coacharte */
-@import '../../styles/variables.css'; /* Ajustado para la nueva ubicación */
-@import '../../styles/typography.css'; /* Ajustado para la nueva ubicación */
-@import '../../styles/base.css'; /* Ajustado para la nueva ubicación */
+@import '../../styles/variables.css';
+@import '../../styles/typography.css';
+@import '../../styles/base.css';
 
 /* Contenedor principal del login */
 .login-container {
@@ -84,7 +84,7 @@
 
 .user-avatar-login {
   background: var(--color-primary-100);
-  color: #fff;
+  color: var(--color-text-on-primary); /* Cambiado de #fff */
   border-radius: 1rem;
   width: 4rem;
   height: 4rem;
@@ -183,7 +183,7 @@
   width: 100%;
   padding: 1rem;
   background: var(--color-primary-100);
-  color: #fff;
+  color: var(--color-text-on-primary); /* Cambiado de #fff */
   border: none;
   border-radius: 0.625rem;
   font-size: 1.15rem;
@@ -259,16 +259,16 @@
 }
 
 .success {
-  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-  color: #2e7d32;
-  border: 1.5px solid #a5d6a7;
+  background: var(--color-success-background);
+  color: var(--color-success-text);
+  border: 1.5px solid var(--color-success-border);
   font-weight: 500;
 }
 
 .error {
-  background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
-  color: #c62828;
-  border: 1.5px solid #ef9a9a;
+  background: var(--color-error-background);
+  color: var(--color-error-text);
+  border: 1.5px solid var(--color-error-border);
 }
 
 /* Estilos del body para la página de login */

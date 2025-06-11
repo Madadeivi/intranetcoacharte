@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import api from '../services/api';
+import Image from 'next/image';
+import Link from 'next/link';
+import api from '../../services/api';
+import { useAuthStore } from '../../store/authStore';
 import './RequestPasswordResetForm.css';
 
 export const RequestPasswordResetForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const isAuthenticated = useAuthStore((state) => !!state.user && !!state.session);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +26,16 @@ export const RequestPasswordResetForm: React.FC = () => {
 
   return (
     <div className="request-password-reset-form-container">
+      <div className="form-logo-container">
+        <Image
+          src="/assets/coacharte-logo.png"
+          alt="Coacharte Logo"
+          width={180}
+          height={45}
+          priority
+          style={{ maxWidth: '100%', height: 'auto' }}
+        />
+      </div>
       <h2>Restablecer Contraseña</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -38,6 +52,9 @@ export const RequestPasswordResetForm: React.FC = () => {
       </form>
       {message && <p className="success-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}
+      <Link href={isAuthenticated ? "/home" : "/login"} className="back-to-login-button">
+        {isAuthenticated ? 'Volver a Inicio' : 'Volver a Iniciar Sesión'}
+      </Link>
     </div>
   );
 };

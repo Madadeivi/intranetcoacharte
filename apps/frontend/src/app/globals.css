@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Contenido de legacy_index.css */
-/* @import '/assets/fonts/geometria-webfont/style.css'; */ /* Movido a layout.tsx */
+@import '../../public/assets/fonts/geometria-webfont/style.css'; /* Ruta relativa a la fuente Geometria */
 @import '../styles/variables.css';
 @import '../styles/base.css';
 @import '../styles/typography.css';
@@ -37,16 +37,51 @@
   --color-secondary-dark-10: rgba(2, 2, 173, 0.1);
 }
 
-/* Estilos globales adicionales */
-body {
-  background-color: #f9fafb; /* bg-gray-50 */
-  color: #1f2937; /* text-gray-800 */
+/* Estilos globales para páginas específicas (como login) */
+body.login-page {
+  background-color: var(--neutral-background);
+  color: #1f2937;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Geometria', sans-serif;
   margin: 0;
+}
+
+/* Estilos globales generales */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Geometria', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  max-width: 100vw;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Prevenir desbordamiento horizontal en todos los elementos */
+* {
+  max-width: 100%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Contenedores principales */
+.container, .main-container, div {
+  max-width: 100%;
 }
 
 h1 {
@@ -165,7 +200,8 @@ button:focus {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 100vw; /* Asegura que ocupe toda la pantalla */
+  width: 100%;
+  max-width: 100vw;
   background-color: #f9fafb; /* O el color de fondo que prefieras */
   color: #1f2937; /* O el color de texto que prefieras */
   font-family: 'Geometria', sans-serif;
