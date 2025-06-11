@@ -6,12 +6,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import 'react-calendar/dist/Calendar.css';
 import './Home.css';
-import logo from '@/public/assets/coacharte-logo.png'; // Ajustado para Next.js
-import logoFooter from '@/public/assets/coacharte-bco@4x.png'; // Ajustado para Next.js
-import importantArticle1 from '@/public/assets/banner_padre.png';
-import importantArticle2 from '@/public/assets/banner_bono.png';
-import importantArticle3 from '@/public/assets/banner_ajuste.png';
-import importantArticle4 from '@/public/assets/banner_modelo.png';
 import Calendar from 'react-calendar';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
@@ -350,7 +344,7 @@ const HomePage: React.FC = () => {
     <div className="home-root">
       <header className="home-header">
         <div className="logo">
-          <Image src={logo} alt="Logo Coacharte" className="home-logo-img" priority />
+          <Image src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="home-logo-img" width={200} height={50} priority />
         </div>
         <nav className="home-nav">
           {navItems.map(item => (
@@ -502,7 +496,7 @@ const HomePage: React.FC = () => {
               <div className="notice-grid notice-carousel-track">
                 <div className="notice-card">
                   <div className="notice-card-image">
-                    <Image src={importantArticle1} alt="Artículo Importante 1" layout="fill" objectFit="cover" />
+                    <Image src="/assets/banner_padre.png" alt="Artículo Importante 1" layout="fill" objectFit="cover" />
                   </div>
                   <div className="notice-card-content">
                     <h3>Celebremos el Día del Padre</h3>
@@ -512,7 +506,7 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="notice-card">
                   <div className="notice-card-image">
-                    <Image src={importantArticle2} alt="Artículo Importante 2" layout="fill" objectFit="cover" />
+                    <Image src="/assets/banner_bono.png" alt="Artículo Importante 2" layout="fill" objectFit="cover" />
                   </div>
                   <div className="notice-card-content">
                     <h3>Bono de Productividad Trimestral</h3>
@@ -522,7 +516,7 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="notice-card">
                   <div className="notice-card-image">
-                    <Image src={importantArticle3} alt="Artículo Importante 3" layout="fill" objectFit="cover" />
+                    <Image src="/assets/banner_ajuste.png" alt="Artículo Importante 3" layout="fill" objectFit="cover" />
                   </div>
                   <div className="notice-card-content">
                     <h3>Ajuste Salarial Anual</h3>
@@ -532,7 +526,7 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="notice-card">
                   <div className="notice-card-image">
-                    <Image src={importantArticle4} alt="Artículo Importante 4" layout="fill" objectFit="cover" />
+                    <Image src="/assets/banner_modelo.png" alt="Artículo Importante 4" layout="fill" objectFit="cover" />
                   </div>
                   <div className="notice-card-content">
                     <h3>Nuevo Modelo de Trabajo Híbrido</h3>
@@ -654,7 +648,7 @@ const HomePage: React.FC = () => {
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-col footer-col-logo">
-            <Image src={logoFooter} alt="Logo Coacharte" className="home-logo-img" />
+            <Image src="/assets/coacharte-bco@4x.png" alt="Logo Coacharte" className="home-logo-img" width={200} height={50} />
             <div className="footer-slogan">Inspirados para transformar cualquier reto en logro</div>
           </div>
           <div className="footer-col footer-col-links">

@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
-import logo from '/assets/coacharte-logo.png';
 import { useAuthStore } from '../../store/authStore';
 import './RequestPasswordResetForm.css';
 import { toast } from 'sonner';
@@ -52,7 +51,9 @@ export default function RequestPasswordResetPage() {
 
   return (
     <div className="request-password-reset-container">
-      <h2>Restablecer Contraseña</h2>
+      <div className="request-password-reset-logo-container">
+        <Image src="/assets/coacharte-logo.png" alt="Coacharte Logo" width={200} height={50} priority />
+      </div>
       <form onSubmit={handleSubmit} className="request-password-reset-form">
         <div className="form-group">
           <label htmlFor="email">Correo Electrónico:</label>

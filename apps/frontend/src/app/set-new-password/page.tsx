@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import logo from '/assets/coacharte-logo.png';
 import { useAuthStore } from '../../store/authStore';
 import { NewPasswordData } from '../../types/auth';
 import './SetPasswordForm.css';
@@ -79,7 +78,7 @@ export default function SetNewPasswordPage() {
   return (
     <div className="set-password-container">
       <div className="set-password-logo-container">
-        <Image src={logo} alt="Coacharte Logo" width={200} height={50} />
+        <Image src="/assets/coacharte-logo.png" alt="Coacharte Logo" width={200} height={50} priority />
       </div>
       <form onSubmit={handleSubmit} className="set-password-form">
         <h2>{requiresPasswordChange ? 'Establecer Nueva Contraseña' : 'Actualizar Contraseña'}</h2>

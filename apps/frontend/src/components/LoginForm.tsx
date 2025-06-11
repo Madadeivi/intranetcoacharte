@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import authService, { AuthResult, LoginCredentials } from '../services/authService';
 import { useNavigate, Link } from 'react-router-dom'; // Importar Link
-import logo from '../assets/coacharte-logo.png';
 import './LoginForm.css';
 
 const LoginForm: React.FC = () => {
@@ -111,7 +110,7 @@ const LoginForm: React.FC = () => {
   
   return (
     <div className="login-container">
-      <img src={logo} alt="Logo Coacharte" className="login-logo" />
+      <img src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="login-logo" />
       <h2>Coacharte Intranet</h2>
       {/* Avatar e info de usuario extraídos del correo */}
       {(firstName && lastName && initials) && (
