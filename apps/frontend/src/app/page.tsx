@@ -1,20 +1,42 @@
-import Image from "next/image";
+'use client';
 
-export default function HomePage() {
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '../store/authStore';
+
+export default function RootPage() {
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const session = useAuthStore((state) => state.session);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const checkSession = useAuthStore((state) => state.checkSession);
+
+  useEffect(() => {
+    if (isLoading) {
+        return;
+    }
+    // Asegura que la sesión se verifique si no está presente después de la carga inicial.
+    if (!session && !isLoading) { 
+        checkSession();
+    }
+  }, [isLoading, session, checkSession]);
+
+  useEffect(() => {
+    // Redirige según el estado de autenticación una vez que la carga finaliza.
+    if (isLoading) {
+      return;
+    }
+
+    if (user && session) {
+      router.replace('/home');
+    } else {
+      router.replace('/login');
+    }
+  }, [user, session, isLoading, router]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-4xl font-bold">Bienvenido a la Intranet de Coacharte (Next.js)</h1>
-        <p className="text-lg">Esta es la página de inicio en construcción.</p>
-        <button className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto">
-          Botón de Prueba
-        </button>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-
-
-        
-      </footer>
+    <div className="loading-container">
+      <p>Cargando...</p>
     </div>
   );
 }

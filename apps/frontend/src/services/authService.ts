@@ -157,8 +157,20 @@ export class AuthService {
   }
 
   async requestPasswordReset(email: string): Promise<AuthResult> {
+    let redirectToUrl = '';
+    if (typeof window !== 'undefined') {
+      redirectToUrl = `${window.location.origin}/set-new-password`;
+    } else {
+      // Fallback for non-browser environments if ever needed.
+      // For password reset link generation, this typically runs client-side.
+      // Consider using an environment variable for the base URL if this needs to be robust on server.
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'; 
+      redirectToUrl = `${baseUrl}/set-new-password`;
+      console.warn('AuthService: window object not found in requestPasswordReset, using fallback redirect URL:', redirectToUrl);
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/set-new-password`,
+      redirectTo: redirectToUrl,
     });
 
     if (error) {

@@ -160,6 +160,17 @@ button:focus {
   font-weight: 300;
 }
 
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw; /* Asegura que ocupe toda la pantalla */
+  background-color: #f9fafb; /* O el color de fondo que prefieras */
+  color: #1f2937; /* O el color de texto que prefieras */
+  font-family: 'Geometria', sans-serif;
+}
+
 /* Puedes eliminar o comentar las siguientes líneas si no usas Geist Sans/Mono directamente aquí */
 /*
 @theme inline {
