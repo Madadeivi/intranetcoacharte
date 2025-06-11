@@ -340,6 +340,7 @@ const HomePage: React.FC = () => {
     : 'U';
 
   return (
+    // Asegurar que este div de cierre exista y sea el correcto para .home-root
     <div className="home-root">
       <header className="home-header">
         <div className="logo">
@@ -347,13 +348,15 @@ const HomePage: React.FC = () => {
         </div>
         <nav className="home-nav">
           {navItems.map(item => (
-            <Link key={item.label} href={item.href} legacyBehavior>
-              <a onClick={(e) => {
+            <Link 
+              key={item.label} 
+              href={item.href}
+              onClick={(e) => {
                 if (item.href === '#') e.preventDefault();
                 // Si hay una acción específica para el item.action original, se puede adaptar aquí.
-              }}>
-                {item.label}
-              </a>
+              }}
+            >
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -380,17 +383,18 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </header>
-      
       {isMobileMenuOpen && (
         <div className="mobile-nav-menu" ref={mobileMenuRef}>
           {navItems.map(item => (
-            <Link key={item.label} href={item.href} legacyBehavior>
-              <a onClick={(e) => {
+            <Link 
+              key={item.label} 
+              href={item.href}
+              onClick={(e) => {
                 if (item.href === '#') e.preventDefault();
                 setIsMobileMenuOpen(false);
-              }}>
-                {item.label}
-              </a>
+              }}
+            >
+              {item.label}
             </Link>
           ))}
           <button 
@@ -404,7 +408,6 @@ const HomePage: React.FC = () => {
           </button>
         </div>
       )}
-
       <section className="home-welcome">
         <div className="home-welcome-content">
           <div className="home-welcome-month">
@@ -431,7 +434,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
-
       <section className="home-main-cards">
         <div className="card-grid">
           <div className={`main-card ${DISABLED_CARDS.includes("Mi Cuenta") ? "disabled" : ""}`}>
@@ -478,7 +480,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
-
       <section className="home-notices">
         <div className='home-notices-span'>
           <h2>Avisos Importantes</h2>
@@ -547,19 +548,16 @@ const HomePage: React.FC = () => {
         </div>
       </section>
       <NoticeDetailModal open={noticeModal.open} onClose={() => setNoticeModal({ ...noticeModal, open: false })} title={noticeModal.title} detail={noticeModal.detail} />
-
       <section className="home-quicklinks">
         <div className="home-quicklinks-span">
           <h2>Enlaces Rápidos</h2>
           <div className="quicklinks-grid">
             <a href="#" className="quicklink disabled"><span className="quicklink-icon" aria-label="Solicitud de Vacaciones"><DescriptionIcon fontSize="inherit" /></span>Solicitud de Vacaciones</a>
-            <Link href="/set-new-password" passHref legacyBehavior>
-              <a className="quicklink">
+            <Link href="/set-new-password" passHref className="quicklink">
                 <span className="quicklink-icon" aria-label="Cambio de Contraseña">
                   <GppGoodIcon fontSize="inherit" />
                 </span>
                 Cambio de Contraseña
-              </a>
             </Link>
             <a href="#" className="quicklink disabled"><span className="quicklink-icon" aria-label="Portal de Capacitación"><SchoolIcon fontSize="inherit" /></span>Portal de Capacitación</a>
             <a href="#" className="quicklink disabled"><span className="quicklink-icon" aria-label="Directorio Empresarial"><GroupsIcon fontSize="inherit" /></span>Directorio Empresarial</a>
@@ -577,7 +575,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
-
       <section className="home-calendar-events">
         <div className="calendar-box">
           <h3>Calendario</h3>
@@ -643,7 +640,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
-
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-col footer-col-logo">
@@ -680,7 +676,6 @@ const HomePage: React.FC = () => {
         </div>
         <div className="footer-copy">© 2025 Coacharte. Todos los derechos reservados.</div>
       </footer>
-
       {isSupportModalOpen && userInfoForModal && (
         <SupportModal 
           ref={supportModalRef} // Usar el ref correcto
@@ -688,7 +683,6 @@ const HomePage: React.FC = () => {
           onClose={() => setIsSupportModalOpen(false)} 
         />
       )}
-
       <NoticeDetailModal 
         open={noticeModal.open} 
         onClose={() => setNoticeModal({ ...noticeModal, open: false })} 
@@ -696,8 +690,7 @@ const HomePage: React.FC = () => {
         // detail ya es procesado por parseBoldAndBreaks dentro de NoticeDetailModal
         detail={noticeModal.detail} 
       />
-
-    </div> // Asegurar que este div de cierre exista y sea el correcto para .home-root
+    </div>
   );
 };
 
