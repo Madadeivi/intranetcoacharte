@@ -1,0 +1,74 @@
+/* Clases personalizadas para Geometria */
+.font-geometria-bold {
+  font-family: 'Geometria-Bold', 'Geometria', sans-serif;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+.font-geometria-semibold {
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 600;
+}
+.font-geometria-medium {
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 500;
+}
+.font-geometria-regular {
+  font-family: 'Geometria', sans-serif;
+  font-weight: 400;
+}
+.font-geometria-light {
+  font-family: 'Geometria-Light', 'Geometria', sans-serif;
+  font-weight: 300;
+}
+
+/* Tamaños de fuente sugeridos */
+.text-h1 {
+  font-size: 2rem;
+}
+.text-h2 {
+  font-size: 1.625rem;
+}
+.text-h3 {
+  font-size: 1.125rem;
+}
+.text-h3-lg {
+  font-size: 1.25rem;
+}
+.text-base {
+  font-size: 1rem;
+}
+.text-secondary {
+  font-size: 0.875rem;
+}
+
+/* Clases adicionales según tu tabla */
+.menu-text {
+  font-size: 1rem;
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 500;
+}
+.btn-principal {
+  font-size: 1.125rem;
+  font-family: 'Geometria-Medium', 'Geometria', sans-serif;
+  font-weight: 500;
+}
+.btn-principal-semibold {
+  font-size: 1.125rem;
+  font-family: 'Geometria-Bold', 'Geometria', sans-serif;
+  font-weight: 600;
+}
+.btn-secundario {
+  font-size: 1rem;
+  font-family: 'Geometria', sans-serif;
+  font-weight: 400;
+}
+.footer-text {
+  font-size: 1rem;
+  font-family: 'Geometria', sans-serif;
+  font-weight: 400;
+}
+.footer-text-light {
+  font-size: 1rem;
+  font-family: 'Geometria-Light', 'Geometria', sans-serif;
+  font-weight: 300;
+}

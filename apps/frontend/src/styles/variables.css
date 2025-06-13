@@ -1,0 +1,164 @@
+/* Variables globales de colores y fuentes */
+:root {
+  /* Azul #3472E5 */
+  --color-primary-100: #3472E5;
+  --color-primary-70: rgba(52, 114, 229, 0.7);
+  --color-primary-50: rgba(52, 114, 229, 0.5);
+  --color-primary-30: rgba(52, 114, 229, 0.3);
+  --color-primary-20: rgba(52, 114, 229, 0.2);
+  --color-primary-10: rgba(52, 114, 229, 0.1);
+  --color-primary-5: rgba(52, 114, 229, 0.05);
+
+  /* Gris oscuro #353535 */
+  --color-dark-100: #353535;
+  --color-dark-70: rgba(53, 53, 53, 0.7);
+  --color-dark-50: rgba(53, 53, 53, 0.5);
+  --color-dark-30: rgba(53, 53, 53, 0.3);
+  --color-dark-10: rgba(53, 53, 53, 0.1);
+
+  /* Secundario #1B3AED */
+  --color-secondary-100: #1B3AED;
+  --color-secondary-70: rgba(27, 58, 237, 0.7);
+  --color-secondary-50: rgba(27, 58, 237, 0.5);
+  --color-secondary-30: rgba(27, 58, 237, 0.3);
+  --color-secondary-10: rgba(27, 58, 237, 0.1);
+  --color-secondary-5: rgba(27, 58, 237, 0.05);
+
+  /* Secundario oscuro #0202AD */
+  --color-secondary-dark-100: #0202AD;
+  --color-secondary-dark-70: rgba(2, 2, 173, 0.7);
+  --color-secondary-dark-50: rgba(2, 2, 173, 0.5);
+  --color-secondary-dark-30: rgba(2, 2, 173, 0.3);
+  --color-secondary-dark-10: rgba(2, 2, 173, 0.1);
+
+  /* Colores de texto Coacharte */
+  --color-text-secondary: #64748B;
+  --color-text-title: #1E293B;
+  --color-text-on-primary: #fff;
+  --color-text-placeholder: #999; /* Added from Home.css review */
+  --color-text-tertiary: #4A5568; /* Assuming this was intended for notice-date or similar, common gray */
+  --color-text-on-primary-muted: #ccc; /* Added for footer text on dark background */
+
+  /* Colores de Estado */
+  --color-success-text: #2e7d32;
+  --color-success-border: #a5d6a7;
+  --color-success-background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  --color-error-text: #c62828;
+  --color-error-border: #ef9a9a;
+  --color-error-background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+
+  /* Nuevas variables de la conversación anterior */
+  --neutral-background: #f8f9fa;
+  --neutral-background-disabled: #e9ecef; /* Renamed from --color-background-disabled for consistency */
+  --neutral-background-alt: #fafafa; /* Added for home-notices section */
+  --neutral-color-lightest: #f0f0f0; /* Para hovers claros, similar al original de client_backup */
+  --neutral-color-lighter: #e0e0e0; 
+  --neutral-text-disabled: #adb5bd;
+
+  /* Variable para el ancho máximo de los formularios */
+  --max-width-form: 700px;
+
+  /* Variables para Inputs */
+  --input-padding-y: 0.875rem;
+  --input-padding-x: 1.125rem;
+  --input-border-color: var(--color-primary-30);
+  --input-background-color: var(--color-text-on-primary); /* Fondo blanco para inputs */
+  --input-text-color: var(--color-text-secondary);
+  --input-border-color-hover: var(--color-primary-50);
+  --input-border-color-focus: var(--color-primary-100);
+  --input-focus-ring-color: var(--color-primary-10); /* Used for box-shadow focus on inputs */
+  --input-text-color-focus: var(--color-text-title);
+  --textarea-min-height: 120px;
+
+  /* Variables de Estado para Prioridades (bordes en SupportForm) */
+  --status-success-border-color: var(--color-success-border); /* Reutiliza la variable existente */
+  --status-warning-border-color: #FFC107; /* Amarillo */
+  --status-danger-border-color: #FF9800;  /* Naranja */
+  --status-critical-border-color: #F44336; /* Rojo */
+
+  /* Variables para Botones (especialmente para SupportForm) */
+  --primary-action-color: var(--color-primary-100);
+  --button-text-color: var(--color-text-on-primary);
+  --color-primary-80: rgba(52, 114, 229, 0.8); /* Para hover de botón primario */
+  --button-background-disabled: #cccccc;
+  --button-text-disabled: #888888;
+
+  /* Variables de Espaciado (Consolidated from Home.css and existing) */
+  --spacing-xs: 0.25rem;   /* 4px */ /* Alias: --space-1 */
+  --spacing-small: 0.5rem;    /* 8px */ /* Alias: --space-2 */
+  --spacing-smedium: 0.75rem; /* 12px */ /* Alias: --space-3 */
+  --spacing-medium: 1rem;      /* 16px */ /* Alias: --space-4 */
+  --spacing-mlarge: 1.25rem;   /* 20px */ /* Alias: --space-5 */
+  --spacing-large: 1.5rem;    /* 24px */ /* Alias: --space-6 */
+  --spacing-xl: 2rem;      /* 32px */ /* Alias: --space-8 */
+  --spacing-xxl: 2.5rem;   /* 40px */ /* Alias: --space-10 */
+  --spacing-xxxl: 3rem;     /* 48px */ /* Alias: --space-12 */
+  
+  /* Renaming to --space-* for direct use from Home.css */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+
+  /* Variables de Radio de Borde (Consolidated from Home.css and existing) */
+  --border-radius-small: 0.25rem; /* Kept for general use */
+  --border-radius-medium: 0.5rem; /* Usado comúnmente para inputs, botones */
+  --border-radius-large: 0.75rem; /* Kept for general use */
+  --border-radius-input: 0.625rem; /* 10px, used for inputs and buttons */
+
+  /* Renaming to --radius-* for direct use from Home.css */
+  --radius-sm: 0.375rem; /* From Home.css */
+  --radius-md: 0.5rem;   /* From Home.css, same as --border-radius-medium */
+  --radius-lg: 0.75rem;  /* From Home.css, same as --border-radius-large */
+  --radius-xl: 1rem;     /* From Home.css */
+  
+  /* Sombras (Consolidated from Home.css and existing) */
+  /* Using Home.css shadows as they are more specific and themed */
+  --shadow-sm: 0 1px 2px 0 rgba(30, 136, 229, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(30, 136, 229, 0.1), 0 2px 4px -1px rgba(30, 136, 229, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(30, 136, 229, 0.1), 0 4px 6px -2px rgba(30, 136, 229, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(30, 136, 229, 0.1), 0 10px 10px -5px rgba(30, 136, 229, 0.04);
+  /* Keeping existing general shadows if they are different and used elsewhere, otherwise remove if redundant */
+  /* --shadow-small: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); */ /* Commented out if Home.css ones are preferred */
+  /* --shadow-medium: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23); */ /* Commented out */
+  /* --shadow-large: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23); */ /* Commented out */
+
+
+  /* Form & Button specific variables for consistency */
+  --font-size-form-title: 2rem; /* Standardized h2 font size for forms */
+  --form-shadow: 0 20px 60px rgba(30, 136, 229, 0.12); /* Consistent shadow for form containers */
+  --button-shadow: 0 4px 16px rgba(30, 136, 229, 0.2); /* Consistent shadow for buttons */
+  --button-shadow-hover: 0 8px 24px rgba(30, 136, 229, 0.3); /* Consistent shadow for buttons on hover */
+  --button-shadow-active: 0 4px 12px rgba(30, 136, 229, 0.2); /* Consistent shadow for buttons on active */
+
+  /* Standardized form container padding */
+  --form-container-padding-block: 3rem;   /* e.g., padding-top, padding-bottom */
+  --form-container-padding-inline: 2.5rem; /* e.g., padding-left, padding-right */
+
+  /* Breakpoints (from Home.css) */
+  --bp-sm: 576px;
+  --bp-md: 768px;
+  --bp-lg: 992px;
+  --bp-xl: 1200px;
+
+  /* Font Sizes (Mobile First - from Home.css) */
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.875rem;  /* 14px */
+  --text-base: 1rem;    /* 16px */
+  --text-lg: 1.125rem;  /* 18px */
+  --text-xl: 1.25rem;   /* 20px */
+  --text-2xl: 1.5rem;   /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+
+  /* Other general variables */
+  --color-border: #e2e8f0; /* General border color, e.g. for header */
+  --color-border-light: #f1f5f9; /* Lighter border for cards or subtle lines */
+  --color-background-light: #ffffff; /* Typically white, for card backgrounds etc. */
+  --color-primary-40: rgba(52, 114, 229, 0.4); /* For focus rings or highlights */
+
+}
