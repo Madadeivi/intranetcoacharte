@@ -11,7 +11,7 @@ export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, isLoading: globalLoading } = useAuthStore(state => ({ login: state.login, isLoading: state.isLoading }));
+  const { login } = useAuthStore(state => ({ login: state.login }));
 
   const validateEmail = (emailToValidate: string) => {
     const regex = /^[a-zA-Z0-9._%+-]+@(coacharte|caretra)\.mx$/;
@@ -52,7 +52,7 @@ export const LoginForm: React.FC = () => {
         setIsSubmitting(false);
       }
       // Si tiene éxito, la redirección se maneja en login/page.tsx
-    } catch (error) {
+    } catch {
       clearTimeout(timeoutId);
       setIsSubmitting(false);
     }
