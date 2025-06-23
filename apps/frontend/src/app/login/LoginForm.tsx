@@ -3,15 +3,21 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
+import { useCollaboratorAuthStore } from '../../store/collaboratorAuthStore';
 import { LoginCredentials } from '../../types/auth';
+import { toast } from 'sonner';
 // CSS es importado por page.tsx
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuthStore(state => ({ login: state.login }));
+  const router = useRouter();
+  
+  const { login: userLogin } = useAuthStore(state => ({ login: state.login }));
+  const { login: collaboratorLogin } = useCollaboratorAuthStore(state => ({ login: state.login }));
 
   const validateEmail = (emailToValidate: string) => {
     const regex = /^[a-zA-Z0-9._%+-]+@(coacharte|caretra)\.mx$/;
@@ -25,35 +31,57 @@ export const LoginForm: React.FC = () => {
     e.preventDefault();
     
     if (!isFormValid) {
-      useAuthStore.setState({ error: 'Por favor, completa todos los campos', isLoading: false });
+      toast.error('Por favor, completa todos los campos');
       return;
     }
     
     if (!validateEmail(email)) {
-      useAuthStore.setState({ error: 'Dominio no permitido. Utiliza tu correo @coacharte.mx o @caretra.mx', isLoading: false });
+      toast.error('Dominio no permitido. Utiliza tu correo @coacharte.mx o @caretra.mx');
       return;
     }
     
     setIsSubmitting(true);
     
-    // Timeout de seguridad para evitar que el botón se quede cargando indefinidamente
-    const timeoutId = setTimeout(() => {
-      setIsSubmitting(false);
-    }, 10000); // 10 segundos
-    
     try {
-      const credentials: LoginCredentials = { email, password };
-      const result = await login(credentials);
+      const credentials = { email, password };
       
-      clearTimeout(timeoutId);
+      // Primero intentamos con el login de colaboradores
+      const collaboratorResult = await collaboratorLogin(credentials);
       
-      // Si el login falla, el resultado será success: false
-      if (!result.success) {
-        setIsSubmitting(false);
+      if (collaboratorResult.success) {
+        toast.success('Login exitoso');
+        
+        // Si requiere cambio de contraseña, redirigir a la página correspondiente
+        if (collaboratorResult.requiresPasswordChange) {
+          toast.info('Debes cambiar tu contraseña antes de continuar');
+          router.push('/set-new-password');
+        } else {
+          router.push('/home');
+        }
+        return;
       }
-      // Si tiene éxito, la redirección se maneja en login/page.tsx
-    } catch {
-      clearTimeout(timeoutId);
+      
+      // Si el login de colaborador falla, intentar con el login regular
+      if (collaboratorResult.code === 'COLLABORATOR_NOT_FOUND' || 
+          collaboratorResult.code === 'INVALID_CREDENTIALS') {
+        
+        const userCredentials: LoginCredentials = credentials;
+        const userResult = await userLogin(userCredentials);
+        
+        if (userResult.success) {
+          toast.success('Login exitoso');
+          router.push('/home');
+        } else {
+          toast.error(userResult.message || 'Credenciales incorrectas');
+        }
+      } else {
+        toast.error(collaboratorResult.message || 'Error al iniciar sesión');
+      }
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Error de conexión. Intenta nuevamente.');
+    } finally {
       setIsSubmitting(false);
     }
   };

@@ -3,12 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
+import { useCollaboratorAuthStore } from '../../store/collaboratorAuthStore';
 import { toast } from 'sonner';
 import SetPasswordForm from './SetPasswordForm';
 
 export default function SetNewPasswordPage() {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Store de usuarios regulares
   const {
     user,
     isLoading: authIsLoading,
@@ -23,15 +26,34 @@ export default function SetNewPasswordPage() {
     updatePassword: state.updatePassword,
   }));
 
+  // Store de colaboradores
+  const {
+    collaborator,
+    isAuthenticated: collaboratorIsAuthenticated,
+    requiresPasswordChange,
+    changePassword,
+    clearError: clearCollaboratorError,
+  } = useCollaboratorAuthStore(state => ({
+    collaborator: state.collaborator,
+    isAuthenticated: state.isAuthenticated,
+    requiresPasswordChange: state.requiresPasswordChange,
+    changePassword: state.changePassword,
+    clearError: state.clearError,
+  }));
+
+  // Determinar qué tipo de usuario está autenticado
+  const isCollaborator = collaboratorIsAuthenticated && collaborator;
+  const isRegularUser = user && !isCollaborator;
+
   useEffect(() => {
     clearError();
-  }, [clearError]);
+    clearCollaboratorError();
+  }, [clearError, clearCollaboratorError]);
 
   useEffect(() => {
     // Intenta solucionar el problema de caché en la navegación del lado del cliente
-    // actualizando los datos del servidor para la ruta actual.
     router.refresh();
-  }, [router]); // Se ejecuta una vez cuando el componente se monta.
+  }, [router]);
 
   useEffect(() => {
     if (authError) {
@@ -41,40 +63,63 @@ export default function SetNewPasswordPage() {
   }, [authError, clearError]);
 
   useEffect(() => {
-    if (!authIsLoading && !user) {
+    // Verificar si el usuario necesita estar aquí
+    if (!authIsLoading && !isCollaborator && !isRegularUser) {
       const hash = typeof window !== 'undefined' ? window.location.hash : '';
       if (!hash.includes('access_token')) {
         toast.info('Sesión no válida o expirada. Redirigiendo a inicio de sesión...');
         router.push('/login');
       }
     }
-  }, [user, authIsLoading, router]);
+    
+    // Si es un colaborador pero no requiere cambio de contraseña, redirigir
+    if (isCollaborator && !requiresPasswordChange) {
+      toast.info('Ya has establecido tu contraseña personalizada.');
+      router.push('/home');
+    }
+  }, [user, authIsLoading, router, isCollaborator, isRegularUser, requiresPasswordChange]);
 
   const handlePasswordSubmit = async (newPasswordValue: string) => {
-    if (!user || !user.id) {
-      toast.error('Error de autenticación: Usuario no encontrado. No se puede actualizar la contraseña.');
-      return;
-    }
-
     setIsProcessing(true);
+    
     try {
-      const hash = typeof window !== 'undefined' ? window.location.hash : '';
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('access_token');
+      if (isCollaborator && collaborator) {
+        // Cambio de contraseña para colaborador
+        const result = await changePassword({
+          email: collaborator.email,
+          currentPassword: 'Coacharte2025', // Contraseña temporal por defecto
+          newPassword: newPasswordValue,
+        });
 
-      if (!accessToken) {
-        console.warn('No access_token found in URL hash:', hash);
-        toast.error('Token de acceso no encontrado en la URL. Por favor, vuelve a solicitar el reset de contraseña o revisa el enlace recibido.');
-        router.push('/request-password-reset');
-        return;
-      }
-      const result = await updatePassword(accessToken, newPasswordValue);
+        if (result.success) {
+          toast.success('Contraseña actualizada exitosamente.');
+          router.push('/home');
+        } else {
+          toast.error(result.message || 'Error al actualizar la contraseña');
+        }
+      } else if (isRegularUser && user) {
+        // Cambio de contraseña para usuario regular (flujo existente)
+        const hash = typeof window !== 'undefined' ? window.location.hash : '';
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
 
-      if (result.success) {
-        toast.success('Contraseña actualizada exitosamente.');
-        router.push('/home');
+        if (!accessToken) {
+          console.warn('No access_token found in URL hash:', hash);
+          toast.error('Token de acceso no encontrado en la URL. Por favor, vuelve a solicitar el reset de contraseña o revisa el enlace recibido.');
+          router.push('/request-password-reset');
+          return;
+        }
+        
+        const result = await updatePassword(accessToken, newPasswordValue);
+
+        if (result.success) {
+          toast.success('Contraseña actualizada exitosamente.');
+          router.push('/home');
+        } else {
+          toast.error(result.message || 'Error al actualizar la contraseña');
+        }
       } else {
-        toast.error(result.message || 'Error al actualizar la contraseña');
+        toast.error('Error de autenticación: Usuario no encontrado. No se puede actualizar la contraseña.');
       }
     } catch (error) {
       console.error('Error al actualizar la contraseña:', error);
@@ -93,7 +138,7 @@ export default function SetNewPasswordPage() {
     );
   }
 
-  if (!user) {
+  if (!isCollaborator && !isRegularUser) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <p className="text-xl text-gray-700">No se pudo verificar la sesión. Redirigiendo...</p>
@@ -101,14 +146,20 @@ export default function SetNewPasswordPage() {
     );
   }
 
-  const formTitle = "Establecer Nueva Contraseña";
-  const infoText = "Por favor, introduce y confirma tu nueva contraseña.";
+  // Textos específicos según el tipo de usuario
+  const formTitle = isCollaborator 
+    ? "Establece tu Contraseña Personalizada" 
+    : "Establecer Nueva Contraseña";
+    
+  const infoText = isCollaborator 
+    ? "Como es tu primer acceso, debes establecer una contraseña personalizada para futuras sesiones." 
+    : "Por favor, introduce y confirma tu nueva contraseña.";
 
   return (
     <SetPasswordForm
       formTitle={formTitle}
       infoText={infoText}
-      isLoading={authIsLoading || isProcessing} // Pasar el estado de carga al formulario
+      isLoading={authIsLoading || isProcessing}
       onSubmit={handlePasswordSubmit}
     />
   );

@@ -11,6 +11,11 @@ interface ApiConfig {
       resetPassword: string;
       updatePassword: string;
     };
+    collaboratorAuth: {
+      login: string;
+      changePassword: string;
+      getStats: string;
+    };
     email: {
       send: string;
     };
@@ -35,23 +40,33 @@ interface ApiConfig {
 
 // Configuración para diferentes entornos
 const getApiConfig = (): ApiConfig => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const isProduction = process.env.NODE_ENV === 'production';
+  const appEnv = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
   
   let baseUrl: string;
   
-  if (isDevelopment) {
+  if (appEnv === 'development') {
     // Desarrollo local - Supabase local
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || 'http://localhost:54321';
-  } else if (isProduction) {
-    // Producción
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || 'http://127.0.0.1:54321';
+  } else if (appEnv === 'production') {
+    // Producción - usar URLs de producción
+    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zljualvricugqvcvaeht.supabase.co';
   } else {
-    // Staging
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_STAGING_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    // Staging - usar URLs de staging 
+    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_STAGING_URL || 'https://ktjjiprulmqbvycbxxao.supabase.co';
   }
 
   const functionsBaseUrl = `${baseUrl}/functions/v1`;
+
+  // Obtener la clave anónima correcta según el entorno
+  let anonKey: string;
+  
+  if (appEnv === 'development') {
+    anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || '';
+  } else if (appEnv === 'production') {
+    anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  } else {
+    anonKey = process.env.NEXT_PUBLIC_SUPABASE_STAGING_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  }
 
   return {
     baseUrl: functionsBaseUrl,
@@ -62,6 +77,11 @@ const getApiConfig = (): ApiConfig => {
         validate: `${functionsBaseUrl}/user-auth/validate`,
         resetPassword: `${functionsBaseUrl}/user-auth/reset-password`,
         updatePassword: `${functionsBaseUrl}/user-auth/update-password`,
+      },
+      collaboratorAuth: {
+        login: `${functionsBaseUrl}/collaborator-auth/login`,
+        changePassword: `${functionsBaseUrl}/collaborator-auth/change-password`,
+        getStats: `${functionsBaseUrl}/collaborator-auth/get-stats`,
       },
       email: {
         send: `${functionsBaseUrl}/email-service`,
@@ -83,7 +103,8 @@ const getApiConfig = (): ApiConfig => {
     headers: {
       common: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`,
+        'Authorization': `Bearer ${anonKey}`,
+        'apikey': anonKey,
       },
     },
   };
@@ -121,6 +142,40 @@ export interface LoginResponse {
     refresh_token: string;
     expires_at: number;
   };
+}
+
+export interface CollaboratorLoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface CollaboratorLoginResponse {
+  success: boolean;
+  message: string;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    department: string;
+  };
+  password_change_required?: boolean;
+  first_login?: boolean;
+  using_default_password?: boolean;
+  session_id?: string;
+  error?: string;
+  error_code?: string;
+}
+
+export interface ChangePasswordRequest {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
 }
 
 export interface SupportTicketRequest {

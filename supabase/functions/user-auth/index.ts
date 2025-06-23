@@ -49,6 +49,147 @@ serve(async (req: Request) => {
               success: false,
               error: "Email y contraseña son requeridos",
             }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        try {
+          // Usar la nueva función de validación de colaboradores
+          const { data: loginResult, error: loginError } = await supabase
+            .rpc('validate_collaborator_login', {
+              user_email: email.toLowerCase().trim(),
+              plain_password: password
+            });
+
+          if (loginError) {
+            console.error('Error en validación de login:', loginError);
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Error interno del servidor",
+                details: loginError.message,
+              }),
+              { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          if (!loginResult.success) {
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: loginResult.error,
+                error_code: loginResult.error_code,
+              }),
+              { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          // Login exitoso - crear sesión de Supabase Auth para el usuario
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: `system+${loginResult.user.id}@coacharte.mx`, // Email ficticio para Supabase Auth
+            password: 'temp_session_' + loginResult.user.id, // Password temporal
+          });
+
+          // Si no existe en Supabase Auth, crear usuario
+          if (authError && authError.message.includes('Invalid login credentials')) {
+            const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
+              email: `system+${loginResult.user.id}@coacharte.mx`,
+              password: 'temp_session_' + loginResult.user.id,
+              email_confirm: true,
+              user_metadata: {
+                collaborator_id: loginResult.user.id,
+                full_name: loginResult.user.full_name,
+                work_area: loginResult.user.work_area,
+                original_email: email,
+              }
+            });
+
+            if (signUpError) {
+              console.error('Error creando usuario en Supabase Auth:', signUpError);
+              return new Response(
+                JSON.stringify({
+                  success: false,
+                  error: "Error configurando sesión de usuario",
+                }),
+                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+
+            // Intentar login nuevamente
+            const { data: retryAuthData, error: retryError } = await supabase.auth.signInWithPassword({
+              email: `system+${loginResult.user.id}@coacharte.mx`,
+              password: 'temp_session_' + loginResult.user.id,
+            });
+
+            if (retryError) {
+              console.error('Error en segundo intento de login:', retryError);
+              return new Response(
+                JSON.stringify({
+                  success: false,
+                  error: "Error configurando sesión",
+                }),
+                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+
+            return new Response(
+              JSON.stringify({
+                success: true,
+                message: "Login exitoso",
+                user: loginResult.user,
+                session: {
+                  access_token: retryAuthData.session?.access_token,
+                  refresh_token: retryAuthData.session?.refresh_token,
+                  expires_at: retryAuthData.session?.expires_at,
+                },
+                password_change_required: loginResult.password_change_required,
+                first_login: loginResult.first_login,
+                using_default_password: loginResult.using_default_password,
+              }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          if (authError) {
+            console.error('Error en autenticación Supabase:', authError);
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Error de autenticación",
+              }),
+              { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: "Login exitoso",
+              user: loginResult.user,
+              session: {
+                access_token: authData.session?.access_token,
+                refresh_token: authData.session?.refresh_token,
+                expires_at: authData.session?.expires_at,
+              },
+              password_change_required: loginResult.password_change_required,
+              first_login: loginResult.first_login,
+              using_default_password: loginResult.using_default_password,
+            }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        } catch (error) {
+          console.error('Error en proceso de login:', error);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: "Error interno del servidor",
+              details: error.message,
+            }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+            }),
             {
               status: 400,
               headers: { ...corsHeaders, "Content-Type": "application/json" },

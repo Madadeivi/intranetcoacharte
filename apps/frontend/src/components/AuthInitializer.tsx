@@ -24,7 +24,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, []); // Dependencias vacías - solo ejecutar una vez al montar
+  }, [initialize]); // Agregar initialize como dependencia
 
   return <>{children}</>;
 }
