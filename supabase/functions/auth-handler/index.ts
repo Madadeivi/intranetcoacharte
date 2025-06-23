@@ -23,8 +23,8 @@ interface AuthRequest {
 
 serve(async (req) => {
   // Validar que las variables de entorno esenciales estén configuradas
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const supabaseUrl = Deno.env.get(SUPABASE_URL_ENV);
+  const supabaseAnonKey = Deno.env.get(SUPABASE_ANON_KEY_ENV);
 
   const missingVariables = [];
   if (!supabaseUrl) missingVariables.push("SUPABASE_URL");
