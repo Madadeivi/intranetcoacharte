@@ -10,21 +10,52 @@ import { LoginCredentials } from '../../types/auth';
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading } = useAuthStore(state => ({ login: state.login, isLoading: state.isLoading }));
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuthStore(state => ({ login: state.login }));
 
   const validateEmail = (emailToValidate: string) => {
     const regex = /^[a-zA-Z0-9._%+-]+@(coacharte|caretra)\.mx$/;
     return regex.test(emailToValidate);
   };
 
+  // Validar que ambos campos estén completos
+  const isFormValid = email.trim() !== '' && password.trim() !== '';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isFormValid) {
+      useAuthStore.setState({ error: 'Por favor, completa todos los campos', isLoading: false });
+      return;
+    }
+    
     if (!validateEmail(email)) {
       useAuthStore.setState({ error: 'Dominio no permitido. Utiliza tu correo @coacharte.mx o @caretra.mx', isLoading: false });
       return;
     }
-    const credentials: LoginCredentials = { email, password };
-    await login(credentials);
+    
+    setIsSubmitting(true);
+    
+    // Timeout de seguridad para evitar que el botón se quede cargando indefinidamente
+    const timeoutId = setTimeout(() => {
+      setIsSubmitting(false);
+    }, 10000); // 10 segundos
+    
+    try {
+      const credentials: LoginCredentials = { email, password };
+      const result = await login(credentials);
+      
+      clearTimeout(timeoutId);
+      
+      // Si el login falla, el resultado será success: false
+      if (!result.success) {
+        setIsSubmitting(false);
+      }
+      // Si tiene éxito, la redirección se maneja en login/page.tsx
+    } catch {
+      clearTimeout(timeoutId);
+      setIsSubmitting(false);
+    }
   };
   
   return (
@@ -59,10 +90,10 @@ export const LoginForm: React.FC = () => {
         </div>
         <button 
           type="submit" 
-          className={`login-button ${isLoading ? 'loading' : ''}`}
-          disabled={isLoading}
+          className={`login-button ${isSubmitting ? 'loading' : ''}`}
+          disabled={isSubmitting || !isFormValid}
         >
-          {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+          {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
         </button>
         <div className="forgot-password-link">
           <Link href="/request-password-reset">¿Olvidaste tu contraseña?</Link>
