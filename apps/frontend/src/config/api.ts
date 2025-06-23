@@ -54,32 +54,26 @@ interface ApiConfig {
 
 // Configuración para diferentes entornos
 const getApiConfig = (): ApiConfig => {
-  const appEnv = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
-  
   let baseUrl: string;
   let anonKey: string;
   
-  if (appEnv === 'development') {
+  if (process.env.NODE_ENV === 'development') {
     // Desarrollo local - Supabase local
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || '';
-    anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || '';
-  } else if (appEnv === 'production') {
-    // Producción - usar URLs de producción
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    baseUrl = process.env.SUPABASE_LOCAL_URL || 'http://127.0.0.1:54321';
+    anonKey = process.env.SUPABASE_LOCAL_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
   } else {
-    // Staging - usar URLs de staging 
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_STAGING_URL || '';
-    anonKey = process.env.NEXT_PUBLIC_SUPABASE_STAGING_ANON_KEY || '';
+    // Producción y staging - usar variables sin NEXT_PUBLIC_
+    baseUrl = process.env.SUPABASE_URL || '';
+    anonKey = process.env.SUPABASE_ANON_KEY || '';
   }
 
   // Validar que las variables requeridas estén configuradas
   if (!baseUrl) {
-    throw new Error(`SUPABASE_URL no está configurado para el entorno: ${appEnv}. Verificar variables de entorno.`);
+    throw new Error(`SUPABASE_URL no está configurado. Verificar variables de entorno.`);
   }
   
   if (!anonKey) {
-    throw new Error(`SUPABASE_ANON_KEY no está configurado para el entorno: ${appEnv}. Verificar variables de entorno.`);
+    throw new Error(`SUPABASE_ANON_KEY no está configurado. Verificar variables de entorno.`);
   }
 
   const functionsBaseUrl = `${baseUrl}/functions/v1`;
