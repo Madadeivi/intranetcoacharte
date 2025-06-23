@@ -105,6 +105,32 @@ Ver `.env.example` para las variables requeridas.
 - [ ] Sistema de autenticación
 - [ ] Deploy Vercel
 
+## 🔐 Configuración y Seguridad
+
+**🚨 IMPORTANTE**: Antes de empezar, configura correctamente las variables de entorno.
+
+### Setup Rápido (5 minutos)
+```bash
+# 1. Copiar configuración de ejemplo
+cp .env.example .env.local
+
+# 2. Verificar seguridad
+./scripts/check-security.sh
+
+# 3. Iniciar desarrollo
+npm run dev
+```
+
+### Documentación de Seguridad
+- **[🚀 Configuración Rápida](./CONFIGURACION_RAPIDA.md)** - Setup en 5 minutos
+- **[🛡️ Guía de Seguridad](./docs/SEGURIDAD.md)** - Mejores prácticas
+- **[📋 Variables de Entorno](./docs/VARIABLES_ENTORNO.md)** - Referencia completa
+
+### ⚠️ Nunca hagas esto:
+- ❌ Commitear archivos `.env` con credenciales reales
+- ❌ Usar claves hardcodeadas en el código
+- ❌ Compartir claves SERVICE_ROLE_KEY
+
 ## 🤝 Contribución
 
 1. Fork del proyecto

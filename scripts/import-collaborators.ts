@@ -12,7 +12,13 @@ import { parse } from 'csv-parse/sync'
 
 // Configuración de Supabase
 const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseServiceKey) {
+  console.error('❌ Error: SUPABASE_SERVICE_ROLE_KEY no está configurada')
+  console.log('Configura la variable de entorno SUPABASE_SERVICE_ROLE_KEY antes de ejecutar este script')
+  process.exit(1)
+}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -302,24 +308,36 @@ async function importCollaboratorsFromCSV(csvFilePath: string) {
     const csvContent = fs.readFileSync(csvFilePath, 'utf-8');
     const records: CSVRow[] = [];
     
-    await new Promise((resolve, reject) => {
-      parse(csvContent, {
-        columns: true,
-        skip_empty_lines: true,
-        delimiter: ',',
-        quote: '"',
-        escape: '"'
-      })
-      .on('data', (row: CSVRow) => {
-        records.push(row);
-      })
-      .on('error', (err: Error) => {
-        reject(err);
-      })
-      .on('end', () => {
-        resolve(void 0);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        parse(csvContent, {
+          columns: true,
+          skip_empty_lines: true,
+          delimiter: ',',
+          quote: '"',
+          escape: '"'
+        })
+        .on('data', (row: CSVRow) => {
+          try {
+            records.push(row);
+          } catch (rowError) {
+            console.warn(`⚠️ Advertencia: Error procesando fila: ${rowError}`);
+            // Continuar con el procesamiento de otras filas
+          }
+        })
+        .on('error', (err: Error) => {
+          console.error('❌ Error parseando CSV:', err);
+          reject(err);
+        })
+        .on('end', () => {
+          console.log(`✅ CSV parseado exitosamente: ${records.length} registros`);
+          resolve();
+        });
       });
-    });
+    } catch (parseError) {
+      console.error('❌ Error crítico durante el parsing del CSV:', parseError);
+      throw new Error(`Error parseando el archivo CSV: ${parseError}`);
+    }
     
     console.log(`📊 Total de registros en CSV: ${records.length}`);
     

@@ -86,15 +86,24 @@ async function main() {
   const environments = [
     {
       name: 'staging',
-      url: 'https://ktjjiprulmqbvycbxxao.supabase.co',
-      key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0amppcHJ1bG1xYnZ5Y2J4eGFvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTA3ODI5OSwiZXhwIjoyMDY0NjU0Mjk5fQ.z7oX5nmnf0FBleHznws8YsrukR3SEWylakb3RE2qbDw'
+      url: process.env.SUPABASE_STAGING_URL || 'https://ktjjiprulmqbvycbxxao.supabase.co',
+      key: process.env.SUPABASE_STAGING_SERVICE_ROLE_KEY
     },
     {
       name: 'production',
-      url: 'https://zljualvricugqvcvaeht.supabase.co', 
-      key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsanVhbHZyaWN1Z3F2Y3ZhZWh0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTEwMzM2NCwiZXhwIjoyMDY0Njc5MzY0fQ.IIU4rsPgKKXWi8zerk9m6q2t3V7zHc6IG6FrO1sWK1I'
+      url: process.env.SUPABASE_PRODUCTION_URL || 'https://zljualvricugqvcvaeht.supabase.co', 
+      key: process.env.SUPABASE_PRODUCTION_SERVICE_ROLE_KEY
     }
   ];
+
+  // Verificar que las claves estén configuradas
+  for (const env of environments) {
+    if (!env.key) {
+      console.error(`❌ Error: ${env.name.toUpperCase()}_SERVICE_ROLE_KEY no está configurada`);
+      console.log(`Configura la variable SUPABASE_${env.name.toUpperCase()}_SERVICE_ROLE_KEY`);
+      process.exit(1);
+    }
+  }
   
   const results = {};
   
