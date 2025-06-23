@@ -1,4 +1,4 @@
-import { supabase } from './authService'; // Import supabase client
+import authService from './authService'; // Import auth service
 
 // TODO: Consider a more specific default result type if AuthResult is not always applicable.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,10 +24,9 @@ async function customFetch<T = DefaultResultType>(endpoint: string, options: Fet
     'Content-Type': 'application/json',
   };
 
-  // Get token only on client-side using Supabase session
+  // Get token only on client-side using auth service
   if (typeof window !== 'undefined') {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
+    const token = authService.getToken();
     if (token) {
       defaultHeaders['Authorization'] = `Bearer ${token}`;
     }

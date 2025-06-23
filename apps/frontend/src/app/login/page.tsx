@@ -9,17 +9,13 @@ import { LoginForm } from './LoginForm';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, isLoading, error, isAuthenticated, clearError } = useAuthStore(state => ({
-    user: state.user,
-    isLoading: state.isLoading,
-    error: state.error,
-    isAuthenticated: state.isAuthenticated,
-    clearError: state.clearError,
-  }));
+  
+  // Store unificado
+  const { user, isLoading, error, isAuthenticated, clearError } = useAuthStore();
 
   useEffect(() => {
     document.body.classList.add('login-page');
-    clearError(); 
+    clearError();
     return () => {
       document.body.classList.remove('login-page');
     };
@@ -30,11 +26,15 @@ export default function LoginPage() {
       toast.error(error);
       clearError();
     }
-    if (user && !isLoading && isAuthenticated) { 
-      toast.success('Inicio de sesión exitoso');
+  }, [error, clearError]);
+
+  useEffect(() => {
+    // Redirigir si ya está autenticado
+    if ((user && !isLoading && isAuthenticated)) {
+      toast.success('Ya tienes una sesión activa');
       router.push('/home');
     }
-  }, [user, isLoading, error, isAuthenticated, router, clearError]);
+  }, [user, isLoading, isAuthenticated, router]);
 
   return (
     <div className="login-container">

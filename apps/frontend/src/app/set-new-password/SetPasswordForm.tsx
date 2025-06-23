@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import './SetPasswordForm.css'; 
 import { toast } from 'sonner';
-import { useAuthStore } from '../../store/authStore'; // Importar useAuthStore
+import { useAuthStore } from '../../store/authStore';
 
 interface SetPasswordFormProps {
   formTitle?: string;
@@ -23,7 +23,7 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
 }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { user } = useAuthStore(state => ({ user: state.user })); // Obtener el usuario del store
+  const { user } = useAuthStore();
 
   const internalHandleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +40,9 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
     await onSubmit(newPassword);
   };
 
-  const backLinkHref = user ? '/home' : '/login'; // Determinar el href dinámicamente
+  // Determinar el href del enlace de regreso
+  const currentUser = user;
+  const backLinkHref = currentUser ? '/home' : '/login';
 
   return (
     <div className="set-password-page-container">
@@ -90,7 +92,7 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
           </button>
         </form>
         <Link href={backLinkHref} className="back-to-login-button">
-          {user ? 'Volver a Inicio' : 'Volver a Iniciar Sesión'}
+          {currentUser ? 'Volver a Inicio' : 'Volver a Iniciar Sesión'}
         </Link>
       </div>
     </div>

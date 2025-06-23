@@ -1,224 +1,486 @@
-import { createClient, Session, User as SupabaseUser } from '@supabase/supabase-js';
-import { User, LoginCredentials, AuthResult, NewPasswordData } from '../types/auth'; // Asegurar que NewPasswordData esté aquí
+/**
+ * SERVICIO DE AUTENTICACIÓN UNIFICADO
+ * ===================================
+ * 
+ * Este servicio reemplaza y unifica:
+ * - auth.ts
+ * - authService.ts  
+ * - collaboratorAuthService.ts
+ * - unifiedAuthService.ts
+ * 
+ * Proporciona una interfaz única para toda la autenticación del sistema.
+ */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+import { 
+  getApiConfig, 
+  makeApiRequest, 
+  UnifiedAuthRequest, 
+  UnifiedAuthResponse
+} from '../config/api';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Supabase URL and Anon Key must be defined in environment variables.");
+// ===== INTERFACES UNIFICADAS =====
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  department?: string;
+  avatar?: string;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export interface AuthSession {
+  access_token: string;
+  refresh_token: string;
+  expires_at?: number;
+}
 
-export class AuthService {
-  private static instance: AuthService;
-  private currentSession: Session | null = null;
-  private currentUserApp: User | null = null;
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface ChangePasswordData {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface AuthResult {
+  success: boolean;
+  message?: string;
+  user?: User;
+  session?: AuthSession;
+  requiresPasswordChange?: boolean;
+  usingDefaultPassword?: boolean;
+  passwordMigrated?: boolean;
+  code?: string;
+}
+
+// ===== SERVICIO PRINCIPAL =====
+
+class UnifiedAuthService {
+  private static instance: UnifiedAuthService;
+  private readonly STORAGE_PREFIX = 'coacharte_auth_';
+  
+  // Claves de almacenamiento
+  private readonly TOKEN_KEY = `${this.STORAGE_PREFIX}token`;
+  private readonly REFRESH_TOKEN_KEY = `${this.STORAGE_PREFIX}refresh`;
+  private readonly USER_KEY = `${this.STORAGE_PREFIX}user`;
+  private readonly SESSION_KEY = `${this.STORAGE_PREFIX}session`;
+
+  // Estado interno
+  private currentUser: User | null = null;
+  private currentSession: AuthSession | null = null;
 
   private constructor() {
-    this.loadSession();
-    supabase.auth.onAuthStateChange((event, session) => {
-      this.currentSession = session;
-      if (session?.user) {
-        this.currentUserApp = this.mapSupabaseUserToAppUser(session.user);
-      } else {
-        this.currentUserApp = null;
-      }
-    });
+    this.initializeFromStorage();
   }
 
-  public static getInstance(): AuthService {
-    if (!AuthService.instance) {
-      AuthService.instance = new AuthService();
+  public static getInstance(): UnifiedAuthService {
+    if (!UnifiedAuthService.instance) {
+      UnifiedAuthService.instance = new UnifiedAuthService();
     }
-    return AuthService.instance;
+    return UnifiedAuthService.instance;
   }
 
-  private async loadSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    this.currentSession = session;
-    if (session?.user) {
-      this.currentUserApp = this.mapSupabaseUserToAppUser(session.user);
-    }
-  }
+  // ===== MÉTODOS PÚBLICOS =====
 
-  private mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): User {
-    return {
-      id: supabaseUser.id,
-      username: supabaseUser.email || '',
-      email: supabaseUser.email,
-      fullName: supabaseUser.user_metadata?.full_name || 'Usuario',
-      role: supabaseUser.app_metadata?.role || 'user',
-      user_metadata: supabaseUser.user_metadata,
-      app_metadata: supabaseUser.app_metadata
-    };
-  }
-
-  public async login(credentials: LoginCredentials): Promise<AuthResult> {
+  /**
+   * Login principal (colaboradores)
+   */
+  async login(credentials: LoginCredentials): Promise<AuthResult> {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const request: UnifiedAuthRequest = {
+        action: 'login',
         email: credentials.email,
-        password: credentials.password,
-      });
+        password: credentials.password
+      };
 
-      if (error) {
-        return { success: false, message: error.message, code: error.name };
-      }
+      const response = await makeApiRequest<UnifiedAuthResponse>(
+        getApiConfig().endpoints.unifiedAuth.login,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
 
-      if (data.user && data.session) {
-        this.currentSession = data.session;
-        this.currentUserApp = this.mapSupabaseUserToAppUser(data.user);
-        const requiresPasswordChange = data.user.user_metadata?.requires_password_change || false;
+      if (response.success && response.data) {
+        const result = response.data;
         
-        if (requiresPasswordChange) {
-          return { 
-            success: true, 
-            user: this.currentUserApp, 
-            requiresPasswordChange: true, 
-            message: 'Se requiere cambio de contraseña.'
+        if (result.success && result.user) {
+          // Guardar sesión
+          this.setSession(result.user, result.session);
+          
+          return {
+            success: true,
+            message: result.message,
+            user: result.user,
+            session: result.session,
+            requiresPasswordChange: result.password_change_required,
+            usingDefaultPassword: result.using_default_password,
+            passwordMigrated: result.password_migrated
           };
         }
-
-        return { success: true, user: this.currentUserApp };
-      } else {
-        return { success: false, message: 'No se pudo iniciar sesión.' };
       }
-    } catch (error: unknown) {
-      const typedError = error as { message?: string };
-      return { success: false, message: typedError.message || 'Error de conexión o respuesta no válida.' };
+
+      return {
+        success: false,
+        message: response.error || 'Error de inicio de sesión',
+        code: 'LOGIN_FAILED'
+      };
+    } catch (error) {
+      console.error('Error en login:', error);
+      return {
+        success: false,
+        message: 'Error de conexión',
+        code: 'CONNECTION_ERROR'
+      };
     }
   }
 
-  public async logout(): Promise<void> {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Logout failed:', error);
-      throw error;
+  /**
+   * Login para usuarios externos (fallback)
+   */
+  async regularLogin(credentials: LoginCredentials): Promise<AuthResult> {
+    try {
+      const request: UnifiedAuthRequest = {
+        action: 'regular-login',
+        email: credentials.email,
+        password: credentials.password
+      };
+
+      const response = await makeApiRequest<UnifiedAuthResponse>(
+        getApiConfig().endpoints.unifiedAuth.regularLogin,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+
+      if (response.success && response.data?.success && response.data.user) {
+        this.setSession(response.data.user, response.data.session);
+        
+        return {
+          success: true,
+          message: response.data.message,
+          user: response.data.user,
+          session: response.data.session
+        };
+      }
+
+      return {
+        success: false,
+        message: response.error || 'Credenciales incorrectas',
+        code: 'INVALID_CREDENTIALS'
+      };
+    } catch (error) {
+      console.error('Error en login regular:', error);
+      return {
+        success: false,
+        message: 'Error de conexión',
+        code: 'CONNECTION_ERROR'
+      };
     }
-    this.currentSession = null;
-    this.currentUserApp = null;
   }
 
-  public isLoggedIn(): boolean {
-    return !!this.currentSession && !!this.currentUserApp;
+  /**
+   * Cambiar contraseña
+   */
+  async changePassword(data: ChangePasswordData): Promise<AuthResult> {
+    try {
+      const request: UnifiedAuthRequest = {
+        action: 'change-password',
+        email: data.email,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword
+      };
+
+      const token = this.getToken();
+      const response = await makeApiRequest<UnifiedAuthResponse>(
+        getApiConfig().endpoints.unifiedAuth.changePassword,
+        {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          body: JSON.stringify(request),
+        }
+      );
+
+      if (response.success && response.data?.success) {
+        // Si hay usuario actualizado, guardar
+        if (response.data.user) {
+          this.updateUser(response.data.user);
+        }
+        
+        return {
+          success: true,
+          message: response.data.message || 'Contraseña actualizada correctamente',
+          user: response.data.user
+        };
+      }
+
+      return {
+        success: false,
+        message: response.error || 'Error al cambiar contraseña',
+        code: response.data?.error_code
+      };
+    } catch (error) {
+      console.error('Error en cambio de contraseña:', error);
+      return {
+        success: false,
+        message: 'Error de conexión',
+        code: 'CONNECTION_ERROR'
+      };
+    }
   }
 
-  public getCurrentUser(): User | null {
-    return this.currentUserApp;
+  /**
+   * Reset de contraseña
+   */
+  async resetPassword(email: string): Promise<AuthResult> {
+    try {
+      const request: UnifiedAuthRequest = {
+        action: 'reset-password',
+        email: email
+      };
+
+      const response = await makeApiRequest<UnifiedAuthResponse>(
+        getApiConfig().endpoints.unifiedAuth.resetPassword,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+
+      if (response.success && response.data?.success) {
+        return {
+          success: true,
+          message: response.data.message || 'Enlace de recuperación enviado'
+        };
+      }
+
+      return {
+        success: false,
+        message: response.error || 'Error al enviar enlace de recuperación'
+      };
+    } catch (error) {
+      console.error('Error en reset de contraseña:', error);
+      return {
+        success: false,
+        message: 'Error de conexión'
+      };
+    }
   }
 
-  public getToken(): string | null {
-    return this.currentSession?.access_token || null;
+  /**
+   * Validar token actual
+   */
+  async validateToken(): Promise<AuthResult> {
+    const token = this.getToken();
+    if (!token) {
+      return { success: false, message: 'No hay token' };
+    }
+
+    try {
+      const request: UnifiedAuthRequest = {
+        action: 'validate-token'
+      };
+
+      const response = await makeApiRequest<UnifiedAuthResponse>(
+        getApiConfig().endpoints.unifiedAuth.validate,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(request),
+        }
+      );
+
+      if (response.success && response.data?.success && response.data.user) {
+        this.updateUser(response.data.user);
+        
+        return {
+          success: true,
+          user: response.data.user,
+          session: this.currentSession || undefined
+        };
+      }
+
+      // Token inválido, limpiar sesión
+      this.clearSession();
+      return {
+        success: false,
+        message: 'Token inválido'
+      };
+    } catch (error) {
+      console.error('Error validando token:', error);
+      this.clearSession();
+      return {
+        success: false,
+        message: 'Error de conexión'
+      };
+    }
   }
-  
-  public getSession(): Session | null {
+
+  /**
+   * Cerrar sesión
+   */
+  async logout(): Promise<void> {
+    const token = this.getToken();
+    
+    try {
+      if (token) {
+        const request: UnifiedAuthRequest = {
+          action: 'logout'
+        };
+
+        await makeApiRequest<UnifiedAuthResponse>(
+          getApiConfig().endpoints.unifiedAuth.logout,
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(request),
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error en logout remoto:', error);
+      // Continuar con logout local aunque falle el remoto
+    } finally {
+      this.clearSession();
+    }
+  }
+
+  // ===== MÉTODOS DE ESTADO =====
+
+  /**
+   * Verificar si hay sesión activa
+   */
+  isLoggedIn(): boolean {
+    return !!(this.currentUser && this.getToken());
+  }
+
+  /**
+   * Obtener usuario actual
+   */
+  getCurrentUser(): User | null {
+    return this.currentUser;
+  }
+
+  /**
+   * Obtener token actual
+   */
+  getToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  /**
+   * Obtener sesión actual
+   */
+  getSession(): AuthSession | null {
     return this.currentSession;
   }
 
-  async setNewPassword(data: NewPasswordData): Promise<AuthResult> { // Cambiado a data: NewPasswordData
-    if (!this.currentSession?.user) {
-      return { success: false, message: 'Usuario no autenticado para cambiar contraseña.' };
-    }
-    // El userId de data podría usarse para una verificación adicional si fuera necesario,
-    // pero supabase.auth.updateUser() actualiza al usuario autenticado en la sesión actual.
+  // ===== MÉTODOS PRIVADOS =====
+
+  /**
+   * Inicializar desde localStorage
+   */
+  private initializeFromStorage(): void {
+    if (typeof window === 'undefined') return;
+
     try {
-      // 1. Actualizar la contraseña
-      const { data: passwordUpdateData, error: passwordUpdateError } = await supabase.auth.updateUser({ password: data.newPassword });
+      const userStr = localStorage.getItem(this.USER_KEY);
+      const sessionStr = localStorage.getItem(this.SESSION_KEY);
 
-      if (passwordUpdateError) {
-        return { success: false, message: passwordUpdateError.message, code: passwordUpdateError.name };
+      if (userStr) {
+        this.currentUser = JSON.parse(userStr);
       }
 
-      if (passwordUpdateData.user) {
-        let finalUser = passwordUpdateData.user;
-        // 2. Actualizar metadatos para quitar requires_password_change
-        const { data: metadataUpdateData, error: metadataUpdateError } = await supabase.auth.updateUser({
-          data: { requires_password_change: false }
-        });
-
-        if (metadataUpdateError) {
-          console.error('Error updating user metadata (requires_password_change: false) after setNewPassword:', metadataUpdateError);
-          // La contraseña se cambió, pero los metadatos no. Se usará el usuario de passwordUpdateData.
-        } else if (metadataUpdateData?.user) {
-          finalUser = metadataUpdateData.user; // Usar el usuario con metadatos actualizados
-        }
-
-        this.currentUserApp = this.mapSupabaseUserToAppUser(finalUser);
-        return { 
-          success: true, 
-          user: this.currentUserApp, 
-          message: 'Contraseña actualizada exitosamente.' 
-        };
-      } else {
-        return { success: false, message: 'No se pudo actualizar la contraseña (sin datos de usuario después del intento).' };
+      if (sessionStr) {
+        this.currentSession = JSON.parse(sessionStr);
       }
-    } catch (error: unknown) {
-      const typedError = error as { message?: string };
-      return { success: false, message: typedError.message || 'Error al actualizar la contraseña.' };
+    } catch (error) {
+      console.error('Error inicializando desde storage:', error);
+      this.clearSession();
     }
   }
 
-  async requestPasswordReset(email: string): Promise<AuthResult> {
-    let redirectToUrl = '';
-    if (typeof window !== 'undefined') {
-      redirectToUrl = `${window.location.origin}/set-new-password`;
-    } else {
-      // Fallback for non-browser environments if ever needed.
-      // For password reset link generation, this typically runs client-side.
-      // Consider using an environment variable for the base URL if this needs to be robust on server.
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'; 
-      redirectToUrl = `${baseUrl}/set-new-password`;
-      console.warn('AuthService: window object not found in requestPasswordReset, using fallback redirect URL:', redirectToUrl);
-    }
+  /**
+   * Guardar sesión
+   */
+  private setSession(user: User, session?: AuthSession): void {
+    this.currentUser = user;
+    this.currentSession = session || null;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectToUrl,
-    });
+    if (typeof window === 'undefined') return;
 
-    if (error) {
-      return { success: false, message: error.message, code: error.name };
-    }
-    return { success: true, message: 'Si existe una cuenta, se ha enviado un correo para restablecer la contraseña.' };
-  }
-
-  async updateUserPassword(data: NewPasswordData): Promise<AuthResult> { // Cambiado a data: NewPasswordData
-    // El userId de data podría usarse para una verificación adicional si fuera necesario,
-    // pero supabase.auth.updateUser() actualiza al usuario autenticado en la sesión actual.
-    // 1. Actualizar la contraseña
-    const { data: passwordUpdateData, error: passwordUpdateError } = await supabase.auth.updateUser({ password: data.newPassword });
-
-    if (passwordUpdateError) {
-      return { success: false, message: passwordUpdateError.message, code: passwordUpdateError.name };
-    }
-
-    if (passwordUpdateData.user) {
-      let finalUser = passwordUpdateData.user;
-      // 2. Actualizar metadatos para quitar requires_password_change (o asegurar que esté en false)
-      const { data: metadataUpdateData, error: metadataUpdateError } = await supabase.auth.updateUser({
-        data: { requires_password_change: false }
-      });
-
-      if (metadataUpdateError) {
-        console.error('Error updating user metadata (requires_password_change: false) after updateUserPassword:', metadataUpdateError);
-        // La contraseña se cambió, pero los metadatos no. Se usará el usuario de passwordUpdateData.
-      } else if (metadataUpdateData?.user) {
-        finalUser = metadataUpdateData.user; // Usar el usuario con metadatos actualizados
-      }
+    try {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
       
-      this.currentUserApp = this.mapSupabaseUserToAppUser(finalUser);
-      return { 
-        success: true, 
-        user: this.currentUserApp, 
-        message: 'Contraseña actualizada exitosamente.' 
-      };
-    } else {
-      return { success: false, message: 'No se pudo actualizar la contraseña (sin datos de usuario después del intento).' };
+      if (session) {
+        localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+        localStorage.setItem(this.TOKEN_KEY, session.access_token);
+        
+        if (session.refresh_token) {
+          localStorage.setItem(this.REFRESH_TOKEN_KEY, session.refresh_token);
+        }
+      }
+    } catch (error) {
+      console.error('Error guardando sesión:', error);
     }
-  } catch (error: unknown) {
-    const typedError = error as { message?: string };
-    return { success: false, message: typedError.message || 'Error al actualizar la contraseña.' };
+  }
+
+  /**
+   * Actualizar usuario sin cambiar sesión
+   */
+  private updateUser(user: User): void {
+    this.currentUser = user;
+    
+    if (typeof window === 'undefined') return;
+    
+    try {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    } catch (error) {
+      console.error('Error actualizando usuario:', error);
+    }
+  }
+
+  /**
+   * Limpiar sesión
+   */
+  private clearSession(): void {
+    this.currentUser = null;
+    this.currentSession = null;
+
+    if (typeof window === 'undefined') return;
+
+    try {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+      localStorage.removeItem(this.SESSION_KEY);
+      
+      // Limpiar también las claves legacy
+      localStorage.removeItem('collaborator');
+      localStorage.removeItem('collaboratorToken');
+      localStorage.removeItem('intranet_access_token');
+      localStorage.removeItem('intranet_refresh_token');
+      localStorage.removeItem('intranet_user');
+    } catch (error) {
+      console.error('Error limpiando sesión:', error);
+    }
   }
 }
 
-export default AuthService.getInstance();
+// ===== EXPORTACIÓN =====
 
+// Singleton instance
+const authService = UnifiedAuthService.getInstance();
+
+export default authService;
+export { UnifiedAuthService };
+
+// Backwards compatibility aliases
+export const collaboratorAuthService = authService;
+export const userAuthService = authService;

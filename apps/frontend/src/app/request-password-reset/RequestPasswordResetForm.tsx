@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import './RequestPasswordResetForm.css';
 
@@ -9,15 +8,19 @@ export const RequestPasswordResetForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isAuthenticated, resetPassword } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
     try {
-      await api.post('/users/request-password-reset', { email });
-      setMessage('Si tu correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña.');
+      const result = await resetPassword(email);
+      if (result.success) {
+        setMessage('Si tu correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña.');
+      } else {
+        setError(result.message || 'Error al solicitar el restablecimiento de contraseña. Inténtalo de nuevo.');
+      }
     } catch (err) {
       setError('Error al solicitar el restablecimiento de contraseña. Inténtalo de nuevo.');
       console.error('Error requesting password reset:', err);
