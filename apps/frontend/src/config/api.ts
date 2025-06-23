@@ -53,7 +53,7 @@ interface ApiConfig {
 }
 
 // Configuración para diferentes entornos
-const getApiConfig = (): ApiConfig => {
+const createApiConfig = (): ApiConfig => {
   let baseUrl: string;
   let anonKey: string;
   
@@ -143,7 +143,25 @@ const getApiConfig = (): ApiConfig => {
   };
 };
 
-export const apiConfig = getApiConfig();
+// Variable para cachear la configuración
+let cachedApiConfig: ApiConfig | null = null;
+
+// Función lazy para obtener la configuración
+export const getApiConfig = (): ApiConfig => {
+  if (!cachedApiConfig) {
+    cachedApiConfig = createApiConfig();
+  }
+  return cachedApiConfig;
+};
+
+// Export adicional para compatibilidad (deprecated)
+// @deprecated Use getApiConfig() instead
+export const apiConfig = new Proxy({} as ApiConfig, {
+  get(target, prop) {
+    const config = getApiConfig();
+    return (config as unknown as Record<string, unknown>)[prop as string];
+  }
+});
 
 // Tipos para las respuestas de la API
 export interface ApiResponse<T = unknown> {
@@ -300,10 +318,11 @@ export const makeApiRequest = async <T = unknown>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
+    const config = getApiConfig();
     const response = await fetch(url, {
       ...options,
       headers: {
-        ...apiConfig.headers.common,
+        ...config.headers.common,
         ...options.headers,
       },
     });
@@ -321,4 +340,4 @@ export const makeApiRequest = async <T = unknown>(
   }
 };
 
-export default apiConfig;
+export default getApiConfig;

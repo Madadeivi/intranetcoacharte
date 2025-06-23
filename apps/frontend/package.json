@@ -25,6 +25,7 @@
     "react-dom": "^19.0.0",
     "sonner": "^2.0.5",
     "tailwindcss": "^4",
+    "typescript": "^5",
     "zustand": "^4.5.7"
   },
   "devDependencies": {
@@ -34,7 +35,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.3.3",
-    "typescript": "^5"
+    "eslint-config-next": "15.3.3"
   }
 }

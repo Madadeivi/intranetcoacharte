@@ -12,7 +12,7 @@
  */
 
 import { 
-  apiConfig, 
+  getApiConfig, 
   makeApiRequest, 
   UnifiedAuthRequest, 
   UnifiedAuthResponse
@@ -98,7 +98,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.login,
+        getApiConfig().endpoints.unifiedAuth.login,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -151,7 +151,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.regularLogin,
+        getApiConfig().endpoints.unifiedAuth.regularLogin,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -198,7 +198,7 @@ class UnifiedAuthService {
 
       const token = this.getToken();
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.changePassword,
+        getApiConfig().endpoints.unifiedAuth.changePassword,
         {
           method: 'POST',
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
@@ -245,7 +245,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.resetPassword,
+        getApiConfig().endpoints.unifiedAuth.resetPassword,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -287,7 +287,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.validate,
+        getApiConfig().endpoints.unifiedAuth.validate,
         {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
@@ -334,7 +334,7 @@ class UnifiedAuthService {
         };
 
         await makeApiRequest<UnifiedAuthResponse>(
-          apiConfig.endpoints.unifiedAuth.logout,
+          getApiConfig().endpoints.unifiedAuth.logout,
           {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },

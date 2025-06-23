@@ -1,7 +1,7 @@
 // Servicio para manejo de tickets de soporte
 
 import { 
-  apiConfig, 
+  getApiConfig, 
   makeApiRequest, 
   SupportTicketRequest, 
   SupportTicketResponse 
@@ -14,7 +14,7 @@ class SupportService {
   async createTicket(ticketData: SupportTicketRequest): Promise<SupportTicketResponse> {
     try {
       const response = await makeApiRequest<SupportTicketResponse>(
-        apiConfig.endpoints.support.createTicket,
+        getApiConfig().endpoints.support.createTicket,
         {
           method: 'POST',
           body: JSON.stringify(ticketData),
