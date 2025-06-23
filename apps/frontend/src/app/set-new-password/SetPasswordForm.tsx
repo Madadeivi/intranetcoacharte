@@ -5,7 +5,6 @@ import Link from 'next/link';
 import './SetPasswordForm.css'; 
 import { toast } from 'sonner';
 import { useAuthStore } from '../../store/authStore';
-import { useCollaboratorAuthStore } from '../../store/collaboratorAuthStore';
 
 interface SetPasswordFormProps {
   formTitle?: string;
@@ -24,8 +23,7 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
 }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { user } = useAuthStore(state => ({ user: state.user }));
-  const { collaborator } = useCollaboratorAuthStore(state => ({ collaborator: state.collaborator }));
+  const { user } = useAuthStore();
 
   const internalHandleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +41,7 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
   };
 
   // Determinar el href del enlace de regreso
-  const currentUser = collaborator || user;
+  const currentUser = user;
   const backLinkHref = currentUser ? '/home' : '/login';
 
   return (

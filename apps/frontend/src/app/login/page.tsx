@@ -4,41 +4,22 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import './LoginForm.css';
 import { useAuthStore } from '../../store/authStore';
-import { useCollaboratorAuthStore } from '../../store/collaboratorAuthStore';
 import { toast } from 'sonner';
 import { LoginForm } from './LoginForm';
 
 export default function LoginPage() {
   const router = useRouter();
   
-  // Store de usuarios regulares
-  const { user, isLoading, error, isAuthenticated, clearError } = useAuthStore(state => ({
-    user: state.user,
-    isLoading: state.isLoading,
-    error: state.error,
-    isAuthenticated: state.isAuthenticated,
-    clearError: state.clearError,
-  }));
-
-  // Store de colaboradores
-  const { 
-    collaborator, 
-    isAuthenticated: collaboratorIsAuthenticated,
-    clearError: clearCollaboratorError
-  } = useCollaboratorAuthStore(state => ({
-    collaborator: state.collaborator,
-    isAuthenticated: state.isAuthenticated,
-    clearError: state.clearError,
-  }));
+  // Store unificado
+  const { user, isLoading, error, isAuthenticated, clearError } = useAuthStore();
 
   useEffect(() => {
     document.body.classList.add('login-page');
     clearError();
-    clearCollaboratorError();
     return () => {
       document.body.classList.remove('login-page');
     };
-  }, [clearError, clearCollaboratorError]);
+  }, [clearError]);
 
   useEffect(() => {
     if (error) {
@@ -48,13 +29,12 @@ export default function LoginPage() {
   }, [error, clearError]);
 
   useEffect(() => {
-    // Redirigir si ya está autenticado (cualquier tipo de usuario)
-    if ((user && !isLoading && isAuthenticated) || 
-        (collaborator && collaboratorIsAuthenticated)) {
+    // Redirigir si ya está autenticado
+    if ((user && !isLoading && isAuthenticated)) {
       toast.success('Ya tienes una sesión activa');
       router.push('/home');
     }
-  }, [user, isLoading, isAuthenticated, collaborator, collaboratorIsAuthenticated, router]);
+  }, [user, isLoading, isAuthenticated, router]);
 
   return (
     <div className="login-container">

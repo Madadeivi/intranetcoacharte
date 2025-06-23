@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
-import { useCollaboratorAuthStore } from '../../store/collaboratorAuthStore';
 import { toast } from 'sonner';
 import SetPasswordForm from './SetPasswordForm';
 
@@ -11,44 +10,23 @@ export default function SetNewPasswordPage() {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Store de usuarios regulares
+  // Store unificado
   const {
     user,
     isLoading: authIsLoading,
     error: authError,
     clearError,
-    updatePassword,
-  } = useAuthStore(state => ({
-    user: state.user,
-    isLoading: state.isLoading,
-    error: state.error,
-    clearError: state.clearError,
-    updatePassword: state.updatePassword,
-  }));
-
-  // Store de colaboradores
-  const {
-    collaborator,
-    isAuthenticated: collaboratorIsAuthenticated,
+    isAuthenticated,
     requiresPasswordChange,
     changePassword,
-    clearError: clearCollaboratorError,
-  } = useCollaboratorAuthStore(state => ({
-    collaborator: state.collaborator,
-    isAuthenticated: state.isAuthenticated,
-    requiresPasswordChange: state.requiresPasswordChange,
-    changePassword: state.changePassword,
-    clearError: state.clearError,
-  }));
+  } = useAuthStore();
 
-  // Determinar qué tipo de usuario está autenticado
-  const isCollaborator = collaboratorIsAuthenticated && collaborator;
-  const isRegularUser = user && !isCollaborator;
+  // Determinar si el usuario está autenticado
+  const isUserAuthenticated = isAuthenticated && user;
 
   useEffect(() => {
     clearError();
-    clearCollaboratorError();
-  }, [clearError, clearCollaboratorError]);
+  }, [clearError]);
 
   useEffect(() => {
     // Intenta solucionar el problema de caché en la navegación del lado del cliente
@@ -64,7 +42,7 @@ export default function SetNewPasswordPage() {
 
   useEffect(() => {
     // Verificar si el usuario necesita estar aquí
-    if (!authIsLoading && !isCollaborator && !isRegularUser) {
+    if (!authIsLoading && !isUserAuthenticated) {
       const hash = typeof window !== 'undefined' ? window.location.hash : '';
       if (!hash.includes('access_token')) {
         toast.info('Sesión no válida o expirada. Redirigiendo a inicio de sesión...');
@@ -72,48 +50,27 @@ export default function SetNewPasswordPage() {
       }
     }
     
-    // Si es un colaborador pero no requiere cambio de contraseña, redirigir
-    if (isCollaborator && !requiresPasswordChange) {
+    // Si es un usuario autenticado pero no requiere cambio de contraseña, redirigir
+    if (isUserAuthenticated && !requiresPasswordChange) {
       toast.info('Ya has establecido tu contraseña personalizada.');
       router.push('/home');
     }
-  }, [user, authIsLoading, router, isCollaborator, isRegularUser, requiresPasswordChange]);
+  }, [user, authIsLoading, router, isUserAuthenticated, requiresPasswordChange]);
 
   const handlePasswordSubmit = async (newPasswordValue: string) => {
     setIsProcessing(true);
     
     try {
-      if (isCollaborator && collaborator) {
-        // Cambio de contraseña para colaborador
+      if (isUserAuthenticated && user) {
+        // Cambio de contraseña usando servicio unificado
         const result = await changePassword({
-          email: collaborator.email,
+          email: user.email,
           currentPassword: 'Coacharte2025', // Contraseña temporal por defecto
           newPassword: newPasswordValue,
         });
 
         if (result.success) {
-          toast.success('Contraseña actualizada exitosamente.');
-          router.push('/home');
-        } else {
-          toast.error(result.message || 'Error al actualizar la contraseña');
-        }
-      } else if (isRegularUser && user) {
-        // Cambio de contraseña para usuario regular (flujo existente)
-        const hash = typeof window !== 'undefined' ? window.location.hash : '';
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get('access_token');
-
-        if (!accessToken) {
-          console.warn('No access_token found in URL hash:', hash);
-          toast.error('Token de acceso no encontrado en la URL. Por favor, vuelve a solicitar el reset de contraseña o revisa el enlace recibido.');
-          router.push('/request-password-reset');
-          return;
-        }
-        
-        const result = await updatePassword(accessToken, newPasswordValue);
-
-        if (result.success) {
-          toast.success('Contraseña actualizada exitosamente.');
+          toast.success('Contraseña actualizada exitosamente con bcrypt para mayor seguridad.');
           router.push('/home');
         } else {
           toast.error(result.message || 'Error al actualizar la contraseña');
@@ -138,7 +95,7 @@ export default function SetNewPasswordPage() {
     );
   }
 
-  if (!isCollaborator && !isRegularUser) {
+  if (!isUserAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <p className="text-xl text-gray-700">No se pudo verificar la sesión. Redirigiendo...</p>
@@ -147,11 +104,11 @@ export default function SetNewPasswordPage() {
   }
 
   // Textos específicos según el tipo de usuario
-  const formTitle = isCollaborator 
+  const formTitle = requiresPasswordChange
     ? "Establece tu Contraseña Personalizada" 
     : "Establecer Nueva Contraseña";
     
-  const infoText = isCollaborator 
+  const infoText = requiresPasswordChange
     ? "Como es tu primer acceso, debes establecer una contraseña personalizada para futuras sesiones." 
     : "Por favor, introduce y confirma tu nueva contraseña.";
 

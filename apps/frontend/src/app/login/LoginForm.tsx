@@ -5,8 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
-import { useCollaboratorAuthStore } from '../../store/collaboratorAuthStore';
-import { LoginCredentials } from '../../types/auth';
 import { toast } from 'sonner';
 // CSS es importado por page.tsx
 
@@ -16,8 +14,8 @@ export const LoginForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   
-  const { login: userLogin } = useAuthStore(state => ({ login: state.login }));
-  const { login: collaboratorLogin } = useCollaboratorAuthStore(state => ({ login: state.login }));
+  // Usar el store unificado
+  const { login, regularLogin } = useAuthStore();
 
   const validateEmail = (emailToValidate: string) => {
     const regex = /^[a-zA-Z0-9._%+-]+@(coacharte|caretra)\.mx$/;
@@ -45,37 +43,38 @@ export const LoginForm: React.FC = () => {
     try {
       const credentials = { email, password };
       
-      // Primero intentamos con el login de colaboradores
-      const collaboratorResult = await collaboratorLogin(credentials);
+      // Usar el store unificado (login principal para colaboradores)
+      const result = await login(credentials);
       
-      if (collaboratorResult.success) {
-        toast.success('Login exitoso');
+      if (result.success) {
+        // Mostrar información de migración si es aplicable
+        if (result.passwordMigrated) {
+          toast.success('Login exitoso. Tu contraseña ha sido migrada a un sistema más seguro.');
+        } else {
+          toast.success('Login exitoso');
+        }
         
         // Si requiere cambio de contraseña, redirigir a la página correspondiente
-        if (collaboratorResult.requiresPasswordChange) {
+        if (result.requiresPasswordChange || result.usingDefaultPassword) {
           toast.info('Debes cambiar tu contraseña antes de continuar');
           router.push('/set-new-password');
         } else {
           router.push('/home');
         }
-        return;
-      }
-      
-      // Si el login de colaborador falla, intentar con el login regular
-      if (collaboratorResult.code === 'COLLABORATOR_NOT_FOUND' || 
-          collaboratorResult.code === 'INVALID_CREDENTIALS') {
-        
-        const userCredentials: LoginCredentials = credentials;
-        const userResult = await userLogin(userCredentials);
-        
-        if (userResult.success) {
-          toast.success('Login exitoso');
-          router.push('/home');
-        } else {
-          toast.error(userResult.message || 'Credenciales incorrectas');
-        }
       } else {
-        toast.error(collaboratorResult.message || 'Error al iniciar sesión');
+        // Si el login principal falla, intentar con login regular como fallback
+        if (result.code === 'LOGIN_FAILED' || result.code === 'INVALID_CREDENTIALS') {
+          const fallbackResult = await regularLogin(credentials);
+          
+          if (fallbackResult.success) {
+            toast.success('Login exitoso (usuario externo)');
+            router.push('/home');
+          } else {
+            toast.error(result.message || 'Credenciales incorrectas');
+          }
+        } else {
+          toast.error(result.message || 'Error al iniciar sesión');
+        }
       }
       
     } catch (error) {

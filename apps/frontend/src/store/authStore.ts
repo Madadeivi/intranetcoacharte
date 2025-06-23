@@ -1,140 +1,367 @@
+/**
+ * STORE DE AUTENTICACIÓN UNIFICADO
+ * ================================
+ * 
+ * Este store reemplaza y unifica:
+ * - authStore.ts
+ * - collaboratorAuthStore.ts
+ * - authStore_new.ts
+ * 
+ * Proporciona una interfaz única para el estado de autenticación.
+ */
+
 import { create } from 'zustand';
-import { authService } from '../services/auth';
+import authService, { User, LoginCredentials, ChangePasswordData, AuthResult } from '../services/authService';
 
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  role?: string;
-  avatar?: string;
-}
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface AuthResult {
-  success: boolean;
-  message?: string;
-  user?: User;
-  requiresPasswordChange?: boolean;
-}
+// ===== INTERFACES =====
 
 interface AuthState {
+  // Estado
   user: User | null;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<AuthResult>; 
-  logout: () => Promise<void>; 
-  checkSession: () => Promise<void>;
-  requestPasswordReset: (email: string) => Promise<AuthResult>;
-  updatePassword: (accessToken: string, newPassword: string) => Promise<AuthResult>; 
+  requiresPasswordChange: boolean;
+  
+  // Acciones de autenticación
+  login: (credentials: LoginCredentials) => Promise<AuthResult>;
+  regularLogin: (credentials: LoginCredentials) => Promise<AuthResult>;
+  logout: () => Promise<void>;
+  
+  // Acciones de contraseña
+  changePassword: (data: ChangePasswordData) => Promise<AuthResult>;
+  resetPassword: (email: string) => Promise<AuthResult>;
+  
+  // Acciones de sesión
+  validateSession: () => Promise<void>;
   clearError: () => void;
   initialize: () => Promise<void>;
 }
 
+// ===== STORE PRINCIPAL =====
+
 export const useAuthStore = create<AuthState>((set, get) => ({
+  // ===== ESTADO INICIAL =====
   user: null,
   isLoading: true,
   error: null,
   isAuthenticated: false,
+  requiresPasswordChange: false,
 
-  login: async (credentials) => {
+  // ===== ACCIONES DE AUTENTICACIÓN =====
+
+  /**
+   * Login principal (colaboradores)
+   */
+  login: async (credentials: LoginCredentials): Promise<AuthResult> => {
     set({ isLoading: true, error: null });
+    
     try {
       const result = await authService.login(credentials);
       
       if (result.success && result.user) {
-        set({ 
-          user: result.user, 
-          isLoading: false, 
+        set({
+          user: result.user,
+          isLoading: false,
           error: null,
-          isAuthenticated: true
+          isAuthenticated: true,
+          requiresPasswordChange: result.requiresPasswordChange || false
         });
-        return { 
-          success: true, 
+        
+        return {
+          success: true,
+          message: result.message,
+          user: result.user,
+          requiresPasswordChange: result.requiresPasswordChange,
+          usingDefaultPassword: result.usingDefaultPassword,
+          passwordMigrated: result.passwordMigrated
+        };
+      } else {
+        set({
+          isLoading: false,
+          error: result.message || 'Error de inicio de sesión',
+          user: null,
+          isAuthenticated: false,
+          requiresPasswordChange: false
+        });
+        
+        return {
+          success: false,
+          message: result.message || 'Error de inicio de sesión',
+          code: result.code
+        };
+      }
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al intentar iniciar sesión.';
+      
+      set({
+        isLoading: false,
+        error: errorMessage,
+        user: null,
+        isAuthenticated: false,
+        requiresPasswordChange: false
+      });
+      
+      return {
+        success: false,
+        message: errorMessage,
+        code: 'CONNECTION_ERROR'
+      };
+    }
+  },
+
+  /**
+   * Login para usuarios externos (fallback)
+   */
+  regularLogin: async (credentials: LoginCredentials): Promise<AuthResult> => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const result = await authService.regularLogin(credentials);
+      
+      if (result.success && result.user) {
+        set({
+          user: result.user,
+          isLoading: false,
+          error: null,
+          isAuthenticated: true,
+          requiresPasswordChange: false
+        });
+        
+        return {
+          success: true,
           message: result.message,
           user: result.user
         };
       } else {
-        set({ isLoading: false, error: result.message || 'Error de inicio de sesión', user: null, isAuthenticated: false });
-        return { success: false, message: result.message || 'Error de inicio de sesión' };
+        set({
+          isLoading: false,
+          error: result.message || 'Credenciales incorrectas',
+          user: null,
+          isAuthenticated: false,
+          requiresPasswordChange: false
+        });
+        
+        return {
+          success: false,
+          message: result.message || 'Credenciales incorrectas',
+          code: result.code
+        };
       }
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al intentar iniciar sesión.';
-      set({ isLoading: false, error: errorMessage, user: null, isAuthenticated: false });
-      return { success: false, message: errorMessage };
+      
+      set({
+        isLoading: false,
+        error: errorMessage,
+        user: null,
+        isAuthenticated: false,
+        requiresPasswordChange: false
+      });
+      
+      return {
+        success: false,
+        message: errorMessage,
+        code: 'CONNECTION_ERROR'
+      };
     }
   },
 
-  logout: async () => {
+  /**
+   * Cerrar sesión
+   */
+  logout: async (): Promise<void> => {
     set({ isLoading: true });
+    
     try {
       await authService.logout();
-      set({ user: null, isLoading: false, error: null, isAuthenticated: false });
+      
+      set({
+        user: null,
+        isLoading: false,
+        error: null,
+        isAuthenticated: false,
+        requiresPasswordChange: false
+      });
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al cerrar sesión.';
-      set({ isLoading: false, error: errorMessage });
+      
+      // Aunque haya error, limpiar el estado local
+      set({
+        user: null,
+        isLoading: false,
+        error: errorMessage,
+        isAuthenticated: false,
+        requiresPasswordChange: false
+      });
     }
   },
 
-  checkSession: async () => {
-    set({ isLoading: true });
+  // ===== ACCIONES DE CONTRASEÑA =====
+
+  /**
+   * Cambiar contraseña
+   */
+  changePassword: async (data: ChangePasswordData): Promise<AuthResult> => {
+    set({ isLoading: true, error: null });
+    
     try {
-      const user = await authService.validateToken();
-      if (user) {
-        set({ user, isLoading: false, error: null, isAuthenticated: true });
+      const result = await authService.changePassword(data);
+      
+      if (result.success) {
+        // Si el cambio fue exitoso, ya no requiere cambio de contraseña
+        set({
+          isLoading: false,
+          error: null,
+          requiresPasswordChange: false,
+          // Actualizar usuario si viene en la respuesta
+          user: result.user || get().user || undefined
+        });
+        
+        return {
+          success: true,
+          message: result.message,
+          user: result.user || get().user || undefined
+        };
       } else {
-        set({ user: null, isLoading: false, error: null, isAuthenticated: false });
+        set({
+          isLoading: false,
+          error: result.message || 'Error al cambiar contraseña'
+        });
+        
+        return {
+          success: false,
+          message: result.message || 'Error al cambiar contraseña',
+          code: result.code
+        };
+      }
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al cambiar contraseña.';
+      
+      set({
+        isLoading: false,
+        error: errorMessage
+      });
+      
+      return {
+        success: false,
+        message: errorMessage,
+        code: 'CONNECTION_ERROR'
+      };
+    }
+  },
+
+  /**
+   * Solicitar reset de contraseña
+   */
+  resetPassword: async (email: string): Promise<AuthResult> => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const result = await authService.resetPassword(email);
+      
+      set({ isLoading: false });
+      
+      return {
+        success: result.success,
+        message: result.message || (result.success ? 'Email de recuperación enviado exitosamente' : 'Error al solicitar reset de contraseña')
+      };
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al solicitar reset de contraseña.';
+      
+      set({
+        isLoading: false,
+        error: errorMessage
+      });
+      
+      return {
+        success: false,
+        message: errorMessage
+      };
+    }
+  },
+
+  // ===== ACCIONES DE SESIÓN =====
+
+  /**
+   * Validar sesión actual
+   */
+  validateSession: async (): Promise<void> => {
+    set({ isLoading: true });
+    
+    try {
+      const result = await authService.validateToken();
+      
+      if (result.success && result.user) {
+        set({
+          user: result.user,
+          isLoading: false,
+          error: null,
+          isAuthenticated: true,
+          requiresPasswordChange: false // Se puede ajustar según la lógica de negocio
+        });
+      } else {
+        set({
+          user: null,
+          isLoading: false,
+          error: null,
+          isAuthenticated: false,
+          requiresPasswordChange: false
+        });
       }
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al verificar sesión.';
-      set({ user: null, isLoading: false, error: errorMessage, isAuthenticated: false });
+      
+      set({
+        user: null,
+        isLoading: false,
+        error: errorMessage,
+        isAuthenticated: false,
+        requiresPasswordChange: false
+      });
     }
   },
 
-  requestPasswordReset: async (email: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      await authService.requestPasswordReset(email);
-      set({ isLoading: false });
-      return { success: true, message: 'Email de recuperación enviado exitosamente' };
-    } catch (error: unknown) {
-      const errorMessage = (error as { message?: string })?.message || 'Error al solicitar reset de contraseña.';
-      set({ isLoading: false, error: errorMessage });
-      return { success: false, message: errorMessage };
-    }
+  /**
+   * Limpiar error
+   */
+  clearError: (): void => {
+    set({ error: null });
   },
 
-  updatePassword: async (accessToken: string, newPassword: string) => {
-    set({ isLoading: true, error: null });
+  /**
+   * Inicializar store
+   */
+  initialize: async (): Promise<void> => {
     try {
-      await authService.updatePassword(accessToken, newPassword);
-      set({ isLoading: false });
-      return { success: true, message: 'Contraseña actualizada exitosamente' };
-    } catch (error: unknown) {
-      const errorMessage = (error as { message?: string })?.message || 'Error al actualizar contraseña.';
-      set({ isLoading: false, error: errorMessage });
-      return { success: false, message: errorMessage };
-    }
-  },
-
-  clearError: () => set({ error: null }),
-
-  initialize: async () => {
-    try {
-      await get().checkSession();
+      await get().validateSession();
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al inicializar la autenticación.';
-      set({ 
-        user: null, 
-        isLoading: false, 
-        error: errorMessage, 
-        isAuthenticated: false 
+      
+      set({
+        user: null,
+        isLoading: false,
+        error: errorMessage,
+        isAuthenticated: false,
+        requiresPasswordChange: false
       });
+      
       throw error; // Re-lanzar para que AuthInitializer pueda manejarlo
     }
   },
 }));
+
+// ===== EXPORTACIONES DE COMPATIBILIDAD =====
+
+// Alias para compatibilidad con código existente
+export const useCollaboratorAuthStore = useAuthStore;
+
+// Selectores útiles
+export const useAuthUser = () => useAuthStore(state => state.user);
+export const useAuthIsLoading = () => useAuthStore(state => state.isLoading);
+export const useAuthError = () => useAuthStore(state => state.error);
+export const useAuthIsAuthenticated = () => useAuthStore(state => state.isAuthenticated);
+export const useAuthRequiresPasswordChange = () => useAuthStore(state => state.requiresPasswordChange);
+
+// Para migración gradual
+export default useAuthStore;

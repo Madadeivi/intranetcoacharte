@@ -4,6 +4,20 @@
 interface ApiConfig {
   baseUrl: string;
   endpoints: {
+    // Nueva función unificada de autenticación
+    unifiedAuth: {
+      login: string;
+      collaboratorLogin: string;
+      regularLogin: string;
+      register: string;
+      changePassword: string;
+      updateProfile: string;
+      resetPassword: string;
+      validate: string;
+      logout: string;
+      getStats: string;
+    };
+    // DEPRECATED: Mantener para compatibilidad temporal
     auth: {
       login: string;
       logout: string;
@@ -43,45 +57,70 @@ const getApiConfig = (): ApiConfig => {
   const appEnv = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
   
   let baseUrl: string;
+  let anonKey: string;
   
   if (appEnv === 'development') {
     // Desarrollo local - Supabase local
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || 'http://127.0.0.1:54321';
+    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || '';
+    anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || '';
   } else if (appEnv === 'production') {
     // Producción - usar URLs de producción
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zljualvricugqvcvaeht.supabase.co';
+    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   } else {
     // Staging - usar URLs de staging 
-    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_STAGING_URL || 'https://ktjjiprulmqbvycbxxao.supabase.co';
+    baseUrl = process.env.NEXT_PUBLIC_SUPABASE_STAGING_URL || '';
+    anonKey = process.env.NEXT_PUBLIC_SUPABASE_STAGING_ANON_KEY || '';
+  }
+
+  // Validar que las variables requeridas estén configuradas
+  if (!baseUrl) {
+    throw new Error(`SUPABASE_URL no está configurado para el entorno: ${appEnv}. Verificar variables de entorno.`);
+  }
+  
+  if (!anonKey) {
+    throw new Error(`SUPABASE_ANON_KEY no está configurado para el entorno: ${appEnv}. Verificar variables de entorno.`);
   }
 
   const functionsBaseUrl = `${baseUrl}/functions/v1`;
 
-  // Obtener la clave anónima correcta según el entorno
-  let anonKey: string;
-  
-  if (appEnv === 'development') {
-    anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || '';
-  } else if (appEnv === 'production') {
-    anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-  } else {
-    anonKey = process.env.NEXT_PUBLIC_SUPABASE_STAGING_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-  }
-
   return {
     baseUrl: functionsBaseUrl,
     endpoints: {
+      // Nueva función unificada para toda la autenticación
+      unifiedAuth: {
+        // Login de colaboradores (principal)
+        login: `${functionsBaseUrl}/unified-auth`,
+        collaboratorLogin: `${functionsBaseUrl}/unified-auth`,
+        // Login regular (Supabase Auth)
+        regularLogin: `${functionsBaseUrl}/unified-auth`,
+        // Registro
+        register: `${functionsBaseUrl}/unified-auth`,
+        // Cambio de contraseña
+        changePassword: `${functionsBaseUrl}/unified-auth`,
+        // Actualizar perfil
+        updateProfile: `${functionsBaseUrl}/unified-auth`,
+        // Reset de contraseña
+        resetPassword: `${functionsBaseUrl}/unified-auth`,
+        // Validar token
+        validate: `${functionsBaseUrl}/unified-auth`,
+        // Logout
+        logout: `${functionsBaseUrl}/unified-auth`,
+        // Estadísticas (admin)
+        getStats: `${functionsBaseUrl}/unified-auth`,
+      },
+      // DEPRECATED: Mantener para compatibilidad temporal
       auth: {
-        login: `${functionsBaseUrl}/user-auth/login`,
-        logout: `${functionsBaseUrl}/user-auth/logout`,
-        validate: `${functionsBaseUrl}/user-auth/validate`,
-        resetPassword: `${functionsBaseUrl}/user-auth/reset-password`,
-        updatePassword: `${functionsBaseUrl}/user-auth/update-password`,
+        login: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.regularLogin
+        logout: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.logout
+        validate: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.validate
+        resetPassword: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.resetPassword
+        updatePassword: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.changePassword
       },
       collaboratorAuth: {
-        login: `${functionsBaseUrl}/collaborator-auth/login`,
-        changePassword: `${functionsBaseUrl}/collaborator-auth/change-password`,
-        getStats: `${functionsBaseUrl}/collaborator-auth/get-stats`,
+        login: `${functionsBaseUrl}/collaborator-auth`, // DEPRECATED - usar unifiedAuth.login
+        changePassword: `${functionsBaseUrl}/collaborator-auth`, // DEPRECATED - usar unifiedAuth.changePassword
+        getStats: `${functionsBaseUrl}/collaborator-auth`, // DEPRECATED - usar unifiedAuth.getStats
       },
       email: {
         send: `${functionsBaseUrl}/email-service`,
@@ -91,12 +130,12 @@ const getApiConfig = (): ApiConfig => {
       },
       zoho: {
         contacts: {
-          list: `${functionsBaseUrl}/zoho-crm/contacts`,
-          create: `${functionsBaseUrl}/zoho-crm/contacts`,
+          list: `${functionsBaseUrl}/zoho-crm`,
+          create: `${functionsBaseUrl}/zoho-crm`,
         },
         leads: {
-          list: `${functionsBaseUrl}/zoho-crm/leads`,
-          create: `${functionsBaseUrl}/zoho-crm/leads`,
+          list: `${functionsBaseUrl}/zoho-crm`,
+          create: `${functionsBaseUrl}/zoho-crm`,
         },
       },
     },
@@ -220,6 +259,45 @@ export interface LeadRequest {
   Company?: string;
   Lead_Source?: string;
   Lead_Status?: string;
+}
+
+// Nuevas interfaces para la función unificada de autenticación
+export interface UnifiedAuthRequest {
+  action: string;
+  email?: string;
+  password?: string;
+  currentPassword?: string;
+  newPassword?: string;
+  fullName?: string;
+  department?: string;
+  role?: string;
+}
+
+export interface UnifiedAuthResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  error_code?: string;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    department?: string;
+    avatar?: string;
+  };
+  session?: {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+  };
+  password_change_required?: boolean;
+  first_login?: boolean;
+  using_default_password?: boolean;
+  password_migrated?: boolean;
+  statistics?: unknown;
+  requested_by?: string;
+  timestamp?: string;
 }
 
 // Funciones utilitarias para hacer requests
