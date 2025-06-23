@@ -176,7 +176,7 @@ SupportModal.displayName = 'SupportModal';
 
 const HomePage: React.FC = () => {
   const [searchActive, setSearchActive] = useState(false);
-  const { user, logout, isLoading, error, clearError, requiresPasswordChange } = useAuthStore();
+  const { user, logout, isLoading, error, clearError, isAuthenticated } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -400,17 +400,15 @@ const HomePage: React.FC = () => {
     }
   }, [error, clearError]);
 
-  // useEffect para redirección si no está logueado o requiere cambio de contraseña (ya existe, se mantiene)
+  // useEffect para redirección si no está logueado
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/');
-    } else if (!isLoading && user && requiresPasswordChange) {
-      router.push('/set-new-password');
     }
-  }, [user, isLoading, requiresPasswordChange, router]);
+  }, [user, isLoading, isAuthenticated, router]);
 
 
-  if (isLoading || (!user && !requiresPasswordChange)) {
+  if (isLoading || !isAuthenticated) {
     return <div>Cargando...</div>; // O un componente de carga más sofisticado
   }
   
@@ -421,9 +419,11 @@ const HomePage: React.FC = () => {
   }
 
   // Derivaciones de las propiedades del usuario
-  const userInitials = user?.fullName?.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() || user?.username?.[0].toUpperCase() || 'U';
-  const nameParts = user?.fullName?.split(' ') || [];
-  const firstName = nameParts[0] || user?.username || '';
+  const userInitials = user?.name && user.name.trim().length > 0
+    ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0,2).toUpperCase()
+    : (user?.email?.[0]?.toUpperCase() || 'U');
+  const nameParts = user?.name?.split(' ') || [];
+  const firstName = nameParts[0] || user?.email || '';
   const lastName = nameParts.slice(1).join(' ') || '';
   const userEmail = user?.email || '';
 
@@ -782,9 +782,9 @@ const HomePage: React.FC = () => {
         <div className="calendar-column">
           <h2>Calendario</h2>
           <div className="calendar-container">
-            <Calendar
+            <Calendar 
               tileClassName={tileClassName}
-              locale="es-MX" // Asegurar localización
+              locale="es-MX"
             />
           </div>
           <p className="calendar-month-year">{currentMonthYearText}</p>

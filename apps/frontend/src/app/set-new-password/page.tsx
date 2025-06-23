@@ -1,28 +1,26 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
-import { NewPasswordData } from '../../types/auth';
 import { toast } from 'sonner';
 import SetPasswordForm from './SetPasswordForm';
 
 export default function SetNewPasswordPage() {
   const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
   const {
     user,
     isLoading: authIsLoading,
     error: authError,
     clearError,
-    requiresPasswordChange,
-    updateUserPassword: updateUserPasswordAction,
+    updatePassword,
   } = useAuthStore(state => ({
     user: state.user,
     isLoading: state.isLoading,
     error: state.error,
     clearError: state.clearError,
-    requiresPasswordChange: state.requiresPasswordChange,
-    updateUserPassword: state.updateUserPassword,
+    updatePassword: state.updatePassword,
   }));
 
   useEffect(() => {
@@ -33,7 +31,7 @@ export default function SetNewPasswordPage() {
     // Intenta solucionar el problema de caché en la navegación del lado del cliente
     // actualizando los datos del servidor para la ruta actual.
     router.refresh();
-  }, []); // Se ejecuta una vez cuando el componente se monta.
+  }, [router]); // Se ejecuta una vez cuando el componente se monta.
 
   useEffect(() => {
     if (authError) {
@@ -58,12 +56,31 @@ export default function SetNewPasswordPage() {
       return;
     }
 
-    const passwordData: NewPasswordData = { userId: user.id, newPassword: newPasswordValue };
-    const result = await updateUserPasswordAction(passwordData);
+    setIsProcessing(true);
+    try {
+      const hash = typeof window !== 'undefined' ? window.location.hash : '';
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get('access_token');
 
-    if (result.success) {
-      toast.success('Contraseña actualizada exitosamente.');
-      router.push('/home');
+      if (!accessToken) {
+        console.warn('No access_token found in URL hash:', hash);
+        toast.error('Token de acceso no encontrado en la URL. Por favor, vuelve a solicitar el reset de contraseña o revisa el enlace recibido.');
+        router.push('/request-password-reset');
+        return;
+      }
+      const result = await updatePassword(accessToken, newPasswordValue);
+
+      if (result.success) {
+        toast.success('Contraseña actualizada exitosamente.');
+        router.push('/home');
+      } else {
+        toast.error(result.message || 'Error al actualizar la contraseña');
+      }
+    } catch (error) {
+      console.error('Error al actualizar la contraseña:', error);
+      toast.error('Error inesperado al actualizar la contraseña. Revisa la consola para más detalles.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -84,16 +101,14 @@ export default function SetNewPasswordPage() {
     );
   }
 
-  const formTitle = requiresPasswordChange ? "Establecer Nueva Contraseña" : "Actualizar Contraseña";
-  const infoText = requiresPasswordChange 
-    ? "Debes establecer una nueva contraseña para continuar."
-    : "Por favor, introduce y confirma tu nueva contraseña.";
+  const formTitle = "Establecer Nueva Contraseña";
+  const infoText = "Por favor, introduce y confirma tu nueva contraseña.";
 
   return (
     <SetPasswordForm
       formTitle={formTitle}
       infoText={infoText}
-      isLoading={authIsLoading} // Pasar el estado de carga al formulario
+      isLoading={authIsLoading || isProcessing} // Pasar el estado de carga al formulario
       onSubmit={handlePasswordSubmit}
     />
   );

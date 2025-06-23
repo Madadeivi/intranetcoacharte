@@ -7,7 +7,7 @@ import { useAuthStore } from '../store/authStore';
 export default function RootPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const session = useAuthStore((state) => state.session);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
 
   useEffect(() => {
@@ -34,12 +34,12 @@ export default function RootPage() {
       return; // Esperar a que la carga inicial de la sesión termine
     }
 
-    if (user && session) {
+    if (user && isAuthenticated) {
       router.replace('/home');
     } else {
       router.replace('/login');
     }
-  }, [user, session, isLoading, router]);
+  }, [user, isAuthenticated, isLoading, router]);
 
   return (
     <div className="loading-container">
