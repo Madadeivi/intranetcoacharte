@@ -22,6 +22,26 @@ interface AuthRequest {
 }
 
 serve(async (req) => {
+  // Validar que las variables de entorno esenciales estén configuradas
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("Error: SUPABASE_URL y SUPABASE_ANON_KEY son requeridas.");
+    return new Response(
+      JSON.stringify({
+        error: "Configuración del servidor incompleta. Contacte al administrador.",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      },
+    );
+  }
+
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
@@ -33,11 +53,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "http://127.0.0.1:54321",
-      Deno.env.get("SUPABASE_ANON_KEY") ??
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
-    );
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const { action, email, password, fullName, department, role }: AuthRequest =
       await req.json();
