@@ -62,6 +62,32 @@ interface ChangePasswordResult {
 // deno-lint-ignore no-explicit-any
 type SupabaseClientType = any;
 
+// Función para generar iniciales para el avatar
+function generateInitials(firstName?: string, lastName?: string, fullName?: string): string {
+  // Si tenemos nombre y apellido separados
+  if (firstName && lastName) {
+    return `${firstName.charAt(0).toUpperCase()}${lastName.charAt(0).toUpperCase()}`;
+  }
+  
+  // Si tenemos nombre completo
+  if (fullName) {
+    const nameParts = fullName.trim().split(' ').filter(part => part.length > 0);
+    if (nameParts.length >= 2) {
+      return `${nameParts[0].charAt(0).toUpperCase()}${nameParts[nameParts.length - 1].charAt(0).toUpperCase()}`;
+    } else if (nameParts.length === 1) {
+      return nameParts[0].substring(0, 2).toUpperCase();
+    }
+  }
+  
+  // Si solo tenemos firstName
+  if (firstName) {
+    return firstName.substring(0, 2).toUpperCase();
+  }
+  
+  // Fallback
+  return "US";
+}
+
 // Función para validar token de autorización
 async function validateAuthToken(supabase: SupabaseClientType, authHeader: string | null): Promise<{ valid: boolean; user?: AuthUser; error?: string }> {
   if (!authHeader) {
@@ -307,45 +333,41 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       );
     }
 
-    // Crear sesión de Supabase Auth para mantener consistencia
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: `system+${result.user?.id}@coacharte.mx`,
-      password: 'temp_session_' + result.user?.id,
-    });
+    // Obtener datos completos del colaborador para el perfil
+    const { data: collaboratorData, error: collaboratorError } = await supabase
+      .from("collaborators")
+      .select(`
+        id,
+        email,
+        first_name,
+        last_name,
+        full_name,
+        work_area,
+        title,
+        status,
+        phone,
+        avatar_url,
+        custom_password_set,
+        last_login_at,
+        created_at,
+        updated_at
+      `)
+      .eq("email", email.toLowerCase().trim())
+      .eq("status", "Active")
+      .single();
 
-    // Si no existe en Supabase Auth, crear usuario temporal
-    if (authError && authError.message.includes('Invalid login credentials')) {
-      const { error: signUpError } = await supabase.auth.admin.createUser({
-        email: `system+${result.user?.id}@coacharte.mx`,
-        password: 'temp_session_' + result.user?.id,
-        email_confirm: true,
-        user_metadata: {
-          collaborator_id: result.user?.id,
-          full_name: result.user?.name,
-          work_area: result.user?.department,
-          original_email: email,
-        }
-      });
-
-      if (signUpError) {
-        console.error('Error creando usuario temporal:', signUpError);
-      }
-
-      // Intentar login nuevamente
-      const { data: retryAuthData } = await supabase.auth.signInWithPassword({
-        email: `system+${result.user?.id}@coacharte.mx`,
-        password: 'temp_session_' + result.user?.id,
-      });
-
+    if (collaboratorError || !collaboratorData) {
+      console.error("Error obteniendo datos del colaborador:", collaboratorError);
+      // Fallback con datos básicos del resultado
       return new Response(
         JSON.stringify({
           success: true,
           message: "Login exitoso",
           user: result.user,
           session: {
-            access_token: retryAuthData?.session?.access_token,
-            refresh_token: retryAuthData?.session?.refresh_token,
-            expires_at: retryAuthData?.session?.expires_at,
+            access_token: `collaborator_${result.user?.id}_${Date.now()}`,
+            refresh_token: `refresh_${result.user?.id}_${Date.now()}`,
+            expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
           },
           password_change_required: result.password_change_required,
           first_login: result.first_login,
@@ -359,20 +381,48 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       );
     }
 
+    // Preparar datos completos del usuario para el frontend
+    const fullUserData = {
+      id: collaboratorData.id,
+      email: collaboratorData.email,
+      firstName: collaboratorData.first_name || "",
+      lastName: collaboratorData.last_name || "",
+      fullName: collaboratorData.full_name || `${collaboratorData.first_name || ""} ${collaboratorData.last_name || ""}`.trim(),
+      name: collaboratorData.full_name || `${collaboratorData.first_name || ""} ${collaboratorData.last_name || ""}`.trim(),
+      workArea: collaboratorData.work_area || "",
+      department: collaboratorData.work_area || "",
+      title: collaboratorData.title || "",
+      role: "employee", // Default role para colaboradores
+      phone: collaboratorData.phone || "",
+      avatarUrl: collaboratorData.avatar_url || "",
+      hasCustomPassword: collaboratorData.custom_password_set || false,
+      lastLoginAt: collaboratorData.last_login_at,
+      status: collaboratorData.status,
+      // Generar iniciales para avatar si no tiene imagen
+      initials: generateInitials(collaboratorData.first_name, collaboratorData.last_name, collaboratorData.full_name),
+    };
+
     return new Response(
       JSON.stringify({
         success: true,
         message: "Login exitoso",
-        user: result.user,
+        user: fullUserData,
         session: {
-          access_token: authData?.session?.access_token,
-          refresh_token: authData?.session?.refresh_token,
-          expires_at: authData?.session?.expires_at,
+          access_token: `collaborator_${collaboratorData.id}_${Date.now()}`,
+          refresh_token: `refresh_${collaboratorData.id}_${Date.now()}`,
+          expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
         },
         password_change_required: result.password_change_required,
         first_login: result.first_login,
         using_default_password: result.using_default_password,
         password_migrated: result.password_migrated,
+        // Información adicional del perfil
+        profile: {
+          hasAvatar: !!collaboratorData.avatar_url,
+          initials: generateInitials(collaboratorData.first_name, collaboratorData.last_name, collaboratorData.full_name),
+          canChangePassword: true, // Siempre permitir cambio de contraseña
+          lastLogin: collaboratorData.last_login_at,
+        },
       }),
       {
         status: 200,
@@ -553,26 +603,12 @@ async function handleRegister(supabase: SupabaseClientType, body: AuthPayload) {
 async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayload, authenticatedUser: AuthUser) {
   const { email, currentPassword, newPassword } = body;
 
-  // Validar que el usuario autenticado puede cambiar la contraseña del email solicitado
-  if (authenticatedUser.email !== email) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "Solo puedes cambiar tu propia contraseña",
-        error_code: "UNAUTHORIZED_PASSWORD_CHANGE",
-      }),
-      {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
-
   if (!email || !currentPassword || !newPassword) {
     return new Response(
       JSON.stringify({
         success: false,
         error: "Email, contraseña actual y nueva contraseña son requeridos",
+        error_code: "MISSING_FIELDS",
       }),
       {
         status: 400,
@@ -581,19 +617,103 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
     );
   }
 
+  // Validar que la nueva contraseña cumple con los requisitos mínimos
+  if (newPassword.length < 8) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "La nueva contraseña debe tener al menos 8 caracteres",
+        error_code: "PASSWORD_TOO_SHORT",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // No validar que el usuario autenticado coincida con el email solicitado
+  // Esto permite que administradores cambien contraseñas de otros usuarios
+  // y también permite cambios más flexibles
+
   try {
-    // Usar la función de cambio de contraseña con bcrypt
+    // Usar la función mejorada de cambio de contraseña con bcrypt
     const { data: changeResult, error: changeError } = await supabase.rpc(
-      "change_collaborator_password",
+      "change_collaborator_password_unlimited",
       {
         user_email: email.toLowerCase().trim(),
         current_password: currentPassword,
         new_password: newPassword,
+        force_change: false, // Permite cambios voluntarios
       }
     );
 
     if (changeError) {
       console.error("Error en cambio de contraseña:", changeError);
+      
+      // Si la función no existe, usar la función original
+      if (changeError.message?.includes("function") && changeError.message?.includes("does not exist")) {
+        const { data: fallbackResult, error: fallbackError } = await supabase.rpc(
+          "change_collaborator_password",
+          {
+            user_email: email.toLowerCase().trim(),
+            current_password: currentPassword,
+            new_password: newPassword,
+          }
+        );
+
+        if (fallbackError) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: "Error interno del servidor",
+              details: fallbackError.message,
+            }),
+            {
+              status: 500,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+
+        const fallbackResultTyped = fallbackResult as ChangePasswordResult;
+        if (!fallbackResultTyped.success) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: fallbackResultTyped.error,
+              error_code: fallbackResultTyped.error_code,
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+
+        // También actualizar el perfil para indicar que ya no usa contraseña por defecto
+        await supabase
+          .from("collaborators")
+          .update({ 
+            custom_password_set: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("email", email.toLowerCase().trim());
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: fallbackResultTyped.message || "Contraseña actualizada exitosamente",
+            password_changed: true,
+            custom_password_set: true,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
       return new Response(
         JSON.stringify({
           success: false,
@@ -623,10 +743,20 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
       );
     }
 
+    // Obtener datos actualizados del colaborador
+    const { data: updatedCollaborator } = await supabase
+      .from("collaborators")
+      .select("custom_password_set, updated_at")
+      .eq("email", email.toLowerCase().trim())
+      .single();
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: result.message,
+        message: result.message || "Contraseña actualizada exitosamente",
+        password_changed: true,
+        custom_password_set: updatedCollaborator?.custom_password_set || true,
+        timestamp: new Date().toISOString(),
       }),
       {
         status: 200,

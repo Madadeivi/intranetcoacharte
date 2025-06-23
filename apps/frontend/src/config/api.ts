@@ -64,12 +64,12 @@ const createApiConfig = (): ApiConfig => {
     // Desarrollo local - Supabase local
     if (isClient) {
       // En el cliente, usar variables públicas
-      baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || 'http://127.0.0.1:54321';
-      anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+      baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
     } else {
       // En el servidor, usar variables privadas
-      baseUrl = process.env.SUPABASE_LOCAL_URL || 'http://127.0.0.1:54321';
-      anonKey = process.env.SUPABASE_LOCAL_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+      baseUrl = process.env.SUPABASE_LOCAL_URL || process.env.SUPABASE_URL || '';
+      anonKey = process.env.SUPABASE_LOCAL_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
     }
   } else {
     // Producción y staging
@@ -350,11 +350,41 @@ export const makeApiRequest = async <T = unknown>(
 
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
+    // Debug logging para troubleshooting en producción
+    if (process.env.NODE_ENV === 'development' || typeof window !== 'undefined') {
+      console.log('API Request Debug:', {
+        url,
+        status: response.status,
+        ok: response.ok,
+        dataStructure: {
+          hasSuccess: data.hasOwnProperty('success'),
+          hasData: data.hasOwnProperty('data'),
+          keys: Object.keys(data),
+        },
+        responseData: data
+      });
     }
 
-    return data;
+    if (!response.ok) {
+      console.error('API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      });
+      throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
+    }
+
+    // Si el servidor ya devuelve un formato ApiResponse, usarlo directamente
+    if (data.hasOwnProperty('success') && data.hasOwnProperty('data')) {
+      return data;
+    }
+
+    // Si el servidor devuelve directamente los datos, envolverlos en ApiResponse
+    return {
+      success: true,
+      data: data,
+      timestamp: new Date().toISOString()
+    };
   } catch (error) {
     console.error('API request error:', error);
     throw error;

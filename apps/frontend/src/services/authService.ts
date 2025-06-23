@@ -105,6 +105,16 @@ class UnifiedAuthService {
         }
       );
 
+      // Debug logging temporal
+      console.log('Login Response Debug:', {
+        responseSuccess: response.success,
+        hasData: !!response.data,
+        resultSuccess: response.data?.success,
+        hasUser: !!response.data?.user,
+        fullResponse: response,
+        resultData: response.data
+      });
+
       if (response.success && response.data) {
         const result = response.data;
         
@@ -121,9 +131,17 @@ class UnifiedAuthService {
             usingDefaultPassword: result.using_default_password,
             passwordMigrated: result.password_migrated
           };
+        } else {
+          console.warn('Login failed - server returned:', result);
+          return {
+            success: false,
+            message: result.message || result.error || 'Error de autenticación del servidor',
+            code: result.error_code || 'SERVER_AUTH_FAILED'
+          };
         }
       }
 
+      console.warn('Login failed - no valid response structure:', response);
       return {
         success: false,
         message: response.error || 'Error de inicio de sesión',
