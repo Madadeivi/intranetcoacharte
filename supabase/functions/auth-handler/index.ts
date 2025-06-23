@@ -26,11 +26,17 @@ serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Error: SUPABASE_URL y SUPABASE_ANON_KEY son requeridas.");
+  const missingVariables = [];
+  if (!supabaseUrl) missingVariables.push("SUPABASE_URL");
+  if (!supabaseAnonKey) missingVariables.push("SUPABASE_ANON_KEY");
+
+  if (missingVariables.length > 0) {
+    const errorMessage = `Error: Las siguientes variables de entorno son requeridas pero están ausentes: ${missingVariables.join(", ")}.`;
+    console.error(errorMessage);
     return new Response(
       JSON.stringify({
         error: "Configuración del servidor incompleta. Contacte al administrador.",
+        missingVariables,
       }),
       {
         status: 500,
