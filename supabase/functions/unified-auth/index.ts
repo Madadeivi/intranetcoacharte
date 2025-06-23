@@ -691,12 +691,11 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
   try {
     // Usar la función SQL para cambio de contraseña que valida la contraseña actual internamente
     const { data: changeResult, error: changeError } = await supabase.rpc(
-      "change_collaborator_password_unlimited",
+      "change_collaborator_password",
       {
         user_email: email.toLowerCase().trim(),
         current_password: currentPassword,
-        new_password: newPassword,
-        force_change: false
+        new_password: newPassword
       }
     );
 
