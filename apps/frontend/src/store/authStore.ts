@@ -124,6 +124,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   initialize: async () => {
-    await get().checkSession();
+    try {
+      await get().checkSession();
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al inicializar la autenticación.';
+      set({ 
+        user: null, 
+        isLoading: false, 
+        error: errorMessage, 
+        isAuthenticated: false 
+      });
+      throw error; // Re-lanzar para que AuthInitializer pueda manejarlo
+    }
   },
 }));
