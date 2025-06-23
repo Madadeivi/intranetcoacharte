@@ -105,16 +105,6 @@ class UnifiedAuthService {
         }
       );
 
-      // Debug logging temporal
-      console.log('Login Response Debug:', {
-        responseSuccess: response.success,
-        hasData: !!response.data,
-        resultSuccess: response.data?.success,
-        hasUser: !!response.data?.user,
-        fullResponse: response,
-        resultData: response.data
-      });
-
       if (response.success && response.data) {
         const result = response.data;
         

@@ -88,6 +88,13 @@ function generateInitials(firstName?: string, lastName?: string, fullName?: stri
   return "US";
 }
 
+// Función utilitaria para generar tokens seguros criptográficamente
+function generateSecureToken(prefix: string = ''): string {
+  const uuid = crypto.randomUUID();
+  const timestamp = Date.now();
+  return prefix ? `${prefix}_${uuid}_${timestamp}` : `${uuid}_${timestamp}`;
+}
+
 // Función para validar token de autorización
 async function validateAuthToken(supabase: SupabaseClientType, authHeader: string | null): Promise<{ valid: boolean; user?: AuthUser; error?: string }> {
   if (!authHeader) {
@@ -365,8 +372,8 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
           message: "Login exitoso",
           user: result.user,
           session: {
-            access_token: `collaborator_${result.user?.id}_${Date.now()}`,
-            refresh_token: `refresh_${result.user?.id}_${Date.now()}`,
+            access_token: generateSecureToken('collaborator'),
+            refresh_token: generateSecureToken('refresh'),
             expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
           },
           password_change_required: result.password_change_required,
@@ -408,8 +415,8 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
         message: "Login exitoso",
         user: fullUserData,
         session: {
-          access_token: `collaborator_${collaboratorData.id}_${Date.now()}`,
-          refresh_token: `refresh_${collaboratorData.id}_${Date.now()}`,
+          access_token: generateSecureToken('collaborator'),
+          refresh_token: generateSecureToken('refresh'),
           expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
         },
         password_change_required: result.password_change_required,
@@ -603,11 +610,11 @@ async function handleRegister(supabase: SupabaseClientType, body: AuthPayload) {
 async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayload, authenticatedUser: AuthUser) {
   const { email, currentPassword, newPassword } = body;
 
-  if (!email || !currentPassword || !newPassword) {
+  if (!email || !newPassword) {
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Email, contraseña actual y nueva contraseña son requeridos",
+        error: "Email y nueva contraseña son requeridos",
         error_code: "MISSING_FIELDS",
       }),
       {
@@ -632,11 +639,64 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
     );
   }
 
-  // No validar que el usuario autenticado coincida con el email solicitado
-  // Esto permite que administradores cambien contraseñas de otros usuarios
-  // y también permite cambios más flexibles
+  // VALIDACIÓN DE AUTORIZACIÓN: Solo permitir cambio de propia contraseña o por administradores
+  const isAdmin = authenticatedUser.app_metadata?.role === "admin" || 
+                  authenticatedUser.user_metadata?.role === "admin" ||
+                  authenticatedUser.email?.includes("admin@coacharte.mx");
+  const isOwnPassword = authenticatedUser.email?.toLowerCase() === email.toLowerCase();
+  
+  if (!isAdmin && !isOwnPassword) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "No autorizado: solo puedes cambiar tu propia contraseña",
+        error_code: "UNAUTHORIZED",
+      }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
 
   try {
+    // Obtener información del colaborador para validar el estado de la contraseña
+    const { data: collaborator, error: collaboratorError } = await supabase
+      .from('collaborators')
+      .select('id, force_password_change, password_hash')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (collaboratorError || !collaborator) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Usuario no encontrado",
+          error_code: "USER_NOT_FOUND",
+        }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Determinar si necesita contraseña actual
+    const needsCurrentPassword = collaborator.password_hash && !collaborator.force_password_change && !isAdmin;
+    
+    if (needsCurrentPassword && !currentPassword) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Contraseña actual requerida",
+          error_code: "CURRENT_PASSWORD_REQUIRED",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
     // Usar la función mejorada de cambio de contraseña con bcrypt
     const { data: changeResult, error: changeError } = await supabase.rpc(
       "change_collaborator_password_unlimited",
