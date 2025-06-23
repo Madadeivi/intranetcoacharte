@@ -106,6 +106,12 @@ async function validateAuthToken(supabase: SupabaseClientType, authHeader: strin
     return { valid: false, error: "Token inválido" };
   }
 
+  // Si es el anon key, no intentar validarlo como JWT de usuario
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (token === anonKey) {
+    return { valid: true, user: undefined };
+  }
+
   try {
     const { data: userData, error } = await supabase.auth.getUser(token);
     
@@ -179,23 +185,30 @@ serve(async (req: Request) => {
       const body = await req.json() as AuthPayload;
       const { action } = body;
 
-      // Validar autenticación y autorización para acciones protegidas
-      const authHeader = req.headers.get("Authorization");
-      const authValidation = await validateAuthToken(supabase, authHeader);
+      // Acciones públicas que no requieren autenticación JWT
+      const publicActions = ["login", "collaborator-login", "register", "reset-password"];
+      let authValidation: { valid: boolean; user?: AuthUser; error?: string } = { valid: true };
+      let authHeader: string | null = null;
       
-      // Verificar permisos específicos para la acción solicitada
-      if (!hasPermission(authValidation.user, action)) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: "No autorizado para esta acción",
-            details: authValidation.error || "Permisos insuficientes",
-          }),
-          {
-            status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+      // Solo validar JWT para acciones protegidas
+      if (!publicActions.includes(action)) {
+        authHeader = req.headers.get("Authorization");
+        authValidation = await validateAuthToken(supabase, authHeader);
+        
+        // Verificar permisos específicos para la acción solicitada
+        if (!hasPermission(authValidation.user, action)) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: "No autorizado para esta acción",
+              details: authValidation.error || "Permisos insuficientes",
+            }),
+            {
+              status: 403,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
       }
 
       switch (action) {
