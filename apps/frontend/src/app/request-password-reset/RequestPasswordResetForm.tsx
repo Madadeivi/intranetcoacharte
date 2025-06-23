@@ -9,7 +9,7 @@ export const RequestPasswordResetForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const isAuthenticated = useAuthStore((state) => !!state.user && !!state.session);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

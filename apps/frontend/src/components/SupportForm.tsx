@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { emailService } from '../services/emailService';
+import { supportService } from '../services/support';
 import './SupportForm.css';
 import { SupportTicket, SubmitStatus } from '../types/support'; // Importar desde el nuevo archivo
 
@@ -35,11 +35,26 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
     setSubmitStatus({ type: null, message: '' });
 
     try {
-      const response = await emailService.sendSupportTicket({
+      // Validar datos del formulario
+      const ticketData = {
         ...formData,
         userEmail,
         userName,
-      });
+        priority: formData.priority as 'Low' | 'Medium' | 'High' | 'Urgent',
+      };
+
+      const validation = supportService.validateTicketData(ticketData);
+      if (!validation.isValid) {
+        setSubmitStatus({
+          type: 'error',
+          message: validation.errors.join(', '),
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Crear el ticket
+      const response = await supportService.createTicket(ticketData);
 
       if (response.success && response.ticketNumber) {
         setSubmitStatus({
@@ -74,7 +89,7 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
   };
 
   const getPriorityClass = (priority: string) => {
-    switch (priority) {
+    switch (priority.toLowerCase()) {
       case 'urgent': return 'priority-urgent';
       case 'high': return 'priority-high';
       case 'medium': return 'priority-medium';
@@ -142,10 +157,11 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
               className="form-select"
               disabled={isSubmitting}
             >
-              <option value="technical">🔧 Soporte Técnico</option>
-              <option value="general">💬 Consulta General</option>
-              <option value="nomina">💳 Nómina</option>
-              <option value="other">📋 Otro</option>
+              {supportService.getTicketCategories().map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -161,10 +177,11 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
               className={`form-select ${getPriorityClass(formData.priority)}`}
               disabled={isSubmitting}
             >
-              <option value="Low">🟢 Baja</option>
-              <option value="Medium">🟡 Media</option>
-              <option value="High">🟠 Alta</option>
-              <option value="Urgent">🔴 Urgente</option>
+              {supportService.getTicketPriorities().map((priority) => (
+                <option key={priority.value} value={priority.value}>
+                  {priority.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>

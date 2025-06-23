@@ -9,11 +9,11 @@ import { LoginForm } from './LoginForm';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, isLoading, error, requiresPasswordChange, clearError } = useAuthStore(state => ({
+  const { user, isLoading, error, isAuthenticated, clearError } = useAuthStore(state => ({
     user: state.user,
     isLoading: state.isLoading,
     error: state.error,
-    requiresPasswordChange: state.requiresPasswordChange,
+    isAuthenticated: state.isAuthenticated,
     clearError: state.clearError,
   }));
 
@@ -30,16 +30,11 @@ export default function LoginPage() {
       toast.error(error);
       clearError();
     }
-    if (user && !isLoading) { 
-      if (requiresPasswordChange) {
-        toast.info('Debes cambiar tu contraseña.');
-        router.push('/set-new-password');
-      } else {
-        toast.success('Inicio de sesión exitoso');
-        router.push('/home');
-      }
+    if (user && !isLoading && isAuthenticated) { 
+      toast.success('Inicio de sesión exitoso');
+      router.push('/home');
     }
-  }, [user, isLoading, error, requiresPasswordChange, router, clearError]);
+  }, [user, isLoading, error, isAuthenticated, router, clearError]);
 
   return (
     <div className="login-container">
