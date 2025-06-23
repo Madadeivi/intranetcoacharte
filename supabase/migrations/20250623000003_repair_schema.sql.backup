@@ -1,0 +1,32 @@
+-- Migración de reparación: Reconciliar estructura de tablas existentes
+-- Fecha: 2025-06-23
+-- Descripción: Ajustar las diferencias entre el esquema anterior y el nuevo
+
+-- Agregar columna user_id a notifications si no existe (para compatibilidad)
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS user_id UUID;
+
+-- Crear índice para user_id si la columna existe
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);
+
+-- Mantener compatibilidad con recipient_id existente
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient_id ON public.notifications(recipient_id);
+
+-- Verificar si la tabla collaborators necesita ajustes adicionales
+-- La mayoría de columnas se añadirán en la siguiente migración
+
+-- Función para migrar datos de recipient_id a user_id si es necesario
+CREATE OR REPLACE FUNCTION migrate_notification_recipients()
+RETURNS void AS $$
+BEGIN
+    -- Si user_id está vacío pero recipient_id tiene datos, copiar
+    UPDATE public.notifications 
+    SET user_id = recipient_id 
+    WHERE user_id IS NULL AND recipient_id IS NOT NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Ejecutar la migración de datos
+SELECT migrate_notification_recipients();
+
+-- Limpiar la función temporal
+DROP FUNCTION migrate_notification_recipients();

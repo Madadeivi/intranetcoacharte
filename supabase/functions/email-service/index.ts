@@ -1,12 +1,13 @@
 /// <reference lib="deno.ns" />
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
 
 interface EmailRequest {
@@ -19,6 +20,8 @@ interface EmailRequest {
   bcc?: string | string[];
   templateId?: string;
   templateData?: Record<string, unknown>;
+  userId?: string; // ID del usuario para auditoría
+  notificationType?: string; // Tipo de notificación
 }
 
 interface EmailResponse {
@@ -27,6 +30,46 @@ interface EmailResponse {
   messageId?: string;
   error?: string;
   provider?: string;
+}
+
+// Cliente Supabase
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+/**
+ * Registra una notificación en la base de datos
+ */
+async function logNotification(
+  emailData: EmailRequest,
+  success: boolean,
+  messageId?: string,
+  errorMessage?: string
+) {
+  try {
+    const recipients = Array.isArray(emailData.to) ? emailData.to : [emailData.to];
+    
+    for (const recipient of recipients) {
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: emailData.userId || null,
+          recipient_email: recipient,
+          sender_email: emailData.from || Deno.env.get("DEFAULT_FROM_EMAIL") || "intranet@coacharte.mx",
+          subject: emailData.subject,
+          body: emailData.html || emailData.text || '',
+          notification_type: emailData.notificationType || 'general',
+          status: success ? 'sent' : 'failed',
+          error_message: errorMessage || null,
+        });
+
+      if (error) {
+        console.error("Error logging notification:", error);
+      }
+    }
+  } catch (error) {
+    console.error("Error in logNotification:", error);
+  }
 }
 
 async function sendWithResend(emailData: EmailRequest): Promise<EmailResponse> {
@@ -63,6 +106,10 @@ async function sendWithResend(emailData: EmailRequest): Promise<EmailResponse> {
 
     if (response.ok) {
       const data = await response.json();
+      
+      // Registrar notificación exitosa en la base de datos
+      await logNotification(emailData, true, data.id);
+      
       return {
         success: true,
         message: "Email enviado exitosamente con Resend",
@@ -71,10 +118,20 @@ async function sendWithResend(emailData: EmailRequest): Promise<EmailResponse> {
       };
     } else {
       const errorData = await response.text();
-      throw new Error(`Resend error: ${response.status} - ${errorData}`);
+      const errorMessage = `Resend error: ${response.status} - ${errorData}`;
+      
+      // Registrar notificación fallida en la base de datos
+      await logNotification(emailData, false, undefined, errorMessage);
+      
+      throw new Error(errorMessage);
     }
   } catch (error: unknown) {
-    throw new Error(`Error con Resend: ${error instanceof Error ? error.message : "Unknown error"}`);
+    const errorMessage = `Error con Resend: ${error instanceof Error ? error.message : "Unknown error"}`;
+    
+    // Registrar error en la base de datos
+    await logNotification(emailData, false, undefined, errorMessage);
+    
+    throw new Error(errorMessage);
   }
 }
 
@@ -167,11 +224,82 @@ serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const url = new URL(req.url);
+  const path = url.pathname;
+
+  // GET endpoints
+  if (req.method === "GET") {
+    // Obtener historial de notificaciones
+    if (path.includes("/notifications")) {
+      try {
+        const userId = url.searchParams.get("userId");
+        const limit = parseInt(url.searchParams.get("limit") || "50");
+        const offset = parseInt(url.searchParams.get("offset") || "0");
+
+        let query = supabase
+          .from('notifications')
+          .select('*')
+          .order('sent_at', { ascending: false })
+          .range(offset, offset + limit - 1);
+
+        if (userId) {
+          query = query.eq('user_id', userId);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          throw error;
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: data || [],
+            count: data?.length || 0,
+            limit,
+            offset,
+            timestamp: new Date().toISOString(),
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      } catch (error: unknown) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Error al obtener historial de notificaciones",
+            details: error instanceof Error ? error.message : "Unknown error",
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+    }
+
+    // Endpoint no encontrado para GET
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Endpoint no encontrado",
+      }),
+      {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  // POST endpoints
   if (req.method !== "POST") {
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Método no permitido. Use POST.",
+        error: "Método no permitido. Use POST para enviar emails o GET para consultar historial.",
       }),
       {
         status: 405,
