@@ -23,8 +23,8 @@ interface AuthRequest {
 
 serve(async (req) => {
   // Validar que las variables de entorno esenciales estén configuradas
-  const supabaseUrl = Deno.env.get(SUPABASE_URL_ENV);
-  const supabaseAnonKey = Deno.env.get(SUPABASE_ANON_KEY_ENV);
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
   const missingVariables = [];
   if (!supabaseUrl) missingVariables.push("SUPABASE_URL");
@@ -67,7 +67,7 @@ serve(async (req) => {
       await req.json();
 
     switch (action) {
-      case "login":
+      case "login": {
         if (!email || !password) {
           return new Response(
             JSON.stringify({ error: "Email y contraseña son requeridos" }),
@@ -102,8 +102,8 @@ serve(async (req) => {
             },
           },
         );
-
-      case "register":
+      }
+      case "register": {
         if (!email || !password || !fullName) {
           return new Response(
             JSON.stringify({
@@ -148,8 +148,8 @@ serve(async (req) => {
             },
           },
         );
-
-      case "reset-password":
+      }
+      case "reset-password": {
         if (!email) {
           return new Response(
             JSON.stringify({ error: "Email es requerido" }),
@@ -160,7 +160,7 @@ serve(async (req) => {
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(
           email,
           {
-            redirectTo: `${Deno.env.get("CLIENT_URL_FROM_ENV")}/reset-password`,
+            redirectTo: `${Deno.env.get("CLIENT_URL_FROM_ENV")}/set-new-password`,
           },
         );
 
@@ -184,12 +184,13 @@ serve(async (req) => {
             },
           },
         );
-
-      default:
+      }
+      default: {
         return new Response(
           JSON.stringify({ error: "Acción no válida" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
+      }
     }
   } catch (error: unknown) {
     console.error("Error en auth-handler:", error);
