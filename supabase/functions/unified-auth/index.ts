@@ -186,7 +186,7 @@ serve(async (req: Request) => {
       const { action } = body;
 
       // Acciones públicas que no requieren autenticación JWT
-      const publicActions = ["login", "collaborator-login", "register", "reset-password"];
+      const publicActions = ["login", "collaborator-login", "register", "reset-password", "change-password"];
       let authValidation: { valid: boolean; user?: AuthUser; error?: string } = { valid: true };
       let authHeader: string | null = null;
       
@@ -225,9 +225,9 @@ serve(async (req: Request) => {
         case "register":
           return await handleRegister(supabase, body);
 
-        // Cambio de contraseña
+        // Cambio de contraseña (público - maneja autenticación internamente)
         case "change-password":
-          return await handleChangePassword(supabase, body, authValidation.user!);
+          return await handleChangePassword(supabase, body, authValidation.user);
 
         // Actualizar perfil
         case "update-profile":
@@ -620,7 +620,7 @@ async function handleRegister(supabase: SupabaseClientType, body: AuthPayload) {
 }
 
 // Handler para cambio de contraseña
-async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayload, authenticatedUser: AuthUser) {
+async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayload, authenticatedUser?: AuthUser) {
   const { email, currentPassword, newPassword } = body;
 
   if (!email || !newPassword) {
@@ -629,6 +629,20 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
         success: false,
         error: "Email y nueva contraseña son requeridos",
         error_code: "MISSING_FIELDS",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  if (!currentPassword) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Contraseña actual es requerida",
+        error_code: "MISSING_CURRENT_PASSWORD",
       }),
       {
         status: 400,
@@ -652,141 +666,42 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
     );
   }
 
-  // VALIDACIÓN DE AUTORIZACIÓN: Solo permitir cambio de propia contraseña o por administradores
-  const isAdmin = authenticatedUser.app_metadata?.role === "admin" || 
-                  authenticatedUser.user_metadata?.role === "admin" ||
-                  authenticatedUser.email?.includes("admin@coacharte.mx");
-  const isOwnPassword = authenticatedUser.email?.toLowerCase() === email.toLowerCase();
-  
-  if (!isAdmin && !isOwnPassword) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "No autorizado: solo puedes cambiar tu propia contraseña",
-        error_code: "UNAUTHORIZED",
-      }),
-      {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+  // VALIDACIÓN DE AUTORIZACIÓN: Si hay usuario autenticado, validar permisos
+  if (authenticatedUser) {
+    const isAdmin = authenticatedUser.app_metadata?.role === "admin" || 
+                    authenticatedUser.user_metadata?.role === "admin" ||
+                    authenticatedUser.email?.includes("admin@coacharte.mx");
+    const isOwnPassword = authenticatedUser.email?.toLowerCase() === email.toLowerCase();
+    
+    if (!isAdmin && !isOwnPassword) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "No autorizado: solo puedes cambiar tu propia contraseña",
+          error_code: "UNAUTHORIZED",
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
   }
 
   try {
-    // Obtener información del colaborador para validar el estado de la contraseña
-    const { data: collaborator, error: collaboratorError } = await supabase
-      .from('collaborators')
-      .select('id, force_password_change, password_hash')
-      .eq('email', email.toLowerCase().trim())
-      .single();
-
-    if (collaboratorError || !collaborator) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Usuario no encontrado",
-          error_code: "USER_NOT_FOUND",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Determinar si necesita contraseña actual
-    const needsCurrentPassword = collaborator.password_hash && !collaborator.force_password_change && !isAdmin;
-    
-    if (needsCurrentPassword && !currentPassword) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Contraseña actual requerida",
-          error_code: "CURRENT_PASSWORD_REQUIRED",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-    // Usar la función mejorada de cambio de contraseña con bcrypt
+    // Usar la función SQL para cambio de contraseña que valida la contraseña actual internamente
     const { data: changeResult, error: changeError } = await supabase.rpc(
       "change_collaborator_password_unlimited",
       {
         user_email: email.toLowerCase().trim(),
         current_password: currentPassword,
         new_password: newPassword,
-        force_change: false, // Permite cambios voluntarios
+        force_change: false
       }
     );
 
     if (changeError) {
       console.error("Error en cambio de contraseña:", changeError);
-      
-      // Si la función no existe, usar la función original
-      if (changeError.message?.includes("function") && changeError.message?.includes("does not exist")) {
-        const { data: fallbackResult, error: fallbackError } = await supabase.rpc(
-          "change_collaborator_password",
-          {
-            user_email: email.toLowerCase().trim(),
-            current_password: currentPassword,
-            new_password: newPassword,
-          }
-        );
-
-        if (fallbackError) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: "Error interno del servidor",
-              details: fallbackError.message,
-            }),
-            {
-              status: 500,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
-        }
-
-        const fallbackResultTyped = fallbackResult as ChangePasswordResult;
-        if (!fallbackResultTyped.success) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: fallbackResultTyped.error,
-              error_code: fallbackResultTyped.error_code,
-            }),
-            {
-              status: 400,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
-        }
-
-        // También actualizar el perfil para indicar que ya no usa contraseña por defecto
-        await supabase
-          .from("collaborators")
-          .update({ 
-            custom_password_set: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("email", email.toLowerCase().trim());
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: fallbackResultTyped.message || "Contraseña actualizada exitosamente",
-            password_changed: true,
-            custom_password_set: true,
-          }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
       return new Response(
         JSON.stringify({
           success: false,
@@ -800,7 +715,7 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
       );
     }
 
-    const result = changeResult as ChangePasswordResult;
+    const result = changeResult as { success: boolean; error?: string; error_code?: string; message?: string };
 
     if (!result.success) {
       return new Response(
@@ -816,19 +731,10 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
       );
     }
 
-    // Obtener datos actualizados del colaborador
-    const { data: updatedCollaborator } = await supabase
-      .from("collaborators")
-      .select("custom_password_set, updated_at")
-      .eq("email", email.toLowerCase().trim())
-      .single();
-
     return new Response(
       JSON.stringify({
         success: true,
-        message: result.message || "Contraseña actualizada exitosamente",
-        password_changed: true,
-        custom_password_set: updatedCollaborator?.custom_password_set || true,
+        message: "Contraseña actualizada exitosamente",
         timestamp: new Date().toISOString(),
       }),
       {
@@ -837,12 +743,12 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
       }
     );
   } catch (error) {
-    console.error("Error en cambio de contraseña:", error);
+    console.error("Error inesperado en cambio de contraseña:", error);
     return new Response(
       JSON.stringify({
         success: false,
         error: "Error interno del servidor",
-        details: error instanceof Error ? error.message : String(error),
+        details: error instanceof Error ? error.message : "Error desconocido",
       }),
       {
         status: 500,
