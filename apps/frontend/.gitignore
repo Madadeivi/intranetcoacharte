@@ -30,8 +30,26 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# 🔐 Environment Variables - CRÍTICO PARA SEGURIDAD
+# NUNCA commitear archivos con credenciales reales
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.staging
+.env.staging.local
+.env.production
+.env.production.local
+
+# Backup de credenciales
+*.env.backup
+*.env.bak
+
+# EXCEPCIÓN: Solo archivos de ejemplo son seguros
+!.env.example
+!.env.local.example
 
 # vercel
 .vercel
