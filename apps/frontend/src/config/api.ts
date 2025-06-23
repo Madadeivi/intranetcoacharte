@@ -57,23 +57,44 @@ const createApiConfig = (): ApiConfig => {
   let baseUrl: string;
   let anonKey: string;
   
-  if (process.env.NODE_ENV === 'development') {
-    // Desarrollo local - Supabase local
-    baseUrl = process.env.SUPABASE_LOCAL_URL || 'http://127.0.0.1:54321';
-    anonKey = process.env.SUPABASE_LOCAL_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+  // Detectar si estamos en el cliente o servidor
+  const isClient = typeof window !== 'undefined';
+  
+  if (isClient) {
+    // EN EL CLIENTE: Solo usar variables públicas, nunca variables privadas
+    if (process.env.NODE_ENV === 'development') {
+      // Desarrollo: usar variables locales si existen, sino usar las públicas por defecto
+      baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    } else {
+      // Producción/Staging: solo usar variables públicas
+      baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    }
   } else {
-    // Producción y staging - usar variables sin NEXT_PUBLIC_
-    baseUrl = process.env.SUPABASE_URL || '';
-    anonKey = process.env.SUPABASE_ANON_KEY || '';
+    // EN EL SERVIDOR: Usar variables privadas con fallback seguro
+    if (process.env.NODE_ENV === 'development') {
+      // Desarrollo: preferir variables locales, fallback a las normales
+      baseUrl = process.env.SUPABASE_LOCAL_URL || process.env.SUPABASE_URL || '';
+      anonKey = process.env.SUPABASE_LOCAL_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+    } else {
+      // Producción/Staging: solo variables privadas, sin fallback a públicas
+      baseUrl = process.env.SUPABASE_URL || '';
+      anonKey = process.env.SUPABASE_ANON_KEY || '';
+    }
   }
 
   // Validar que las variables requeridas estén configuradas
   if (!baseUrl) {
-    throw new Error(`SUPABASE_URL no está configurado. Verificar variables de entorno.`);
+    const context = isClient ? 'cliente' : 'servidor';
+    const prefix = isClient ? 'NEXT_PUBLIC_' : '';
+    throw new Error(`${prefix}SUPABASE_URL no está configurado en ${context}. Verificar variables de entorno.`);
   }
   
   if (!anonKey) {
-    throw new Error(`SUPABASE_ANON_KEY no está configurado. Verificar variables de entorno.`);
+    const context = isClient ? 'cliente' : 'servidor';
+    const prefix = isClient ? 'NEXT_PUBLIC_' : '';
+    throw new Error(`${prefix}SUPABASE_ANON_KEY no está configurado en ${context}. Verificar variables de entorno.`);
   }
 
   const functionsBaseUrl = `${baseUrl}/functions/v1`;
@@ -329,13 +350,48 @@ export const makeApiRequest = async <T = unknown>(
 
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
+    // Solo debug logging en desarrollo, nunca en producción
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Request Debug:', {
+        url,
+        status: response.status,
+        ok: response.ok,
+        dataStructure: {
+          hasSuccess: data.hasOwnProperty('success'),
+          hasData: data.hasOwnProperty('data'),
+          keys: Object.keys(data),
+        }
+      });
     }
 
-    return data;
+    if (!response.ok) {
+      // Solo log de errores en desarrollo para evitar exposición de datos sensibles
+      if (process.env.NODE_ENV === 'development') {
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          data
+        });
+      }
+      throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
+    }
+
+    // Si el servidor ya devuelve un formato ApiResponse, usarlo directamente
+    if (data.hasOwnProperty('success') && data.hasOwnProperty('data')) {
+      return data;
+    }
+
+    // Si el servidor devuelve directamente los datos, envolverlos en ApiResponse
+    return {
+      success: true,
+      data: data,
+      timestamp: new Date().toISOString()
+    };
   } catch (error) {
-    console.error('API request error:', error);
+    // Solo log de errores en desarrollo para evitar exposición de información sensible
+    if (process.env.NODE_ENV === 'development') {
+      console.error('API request error:', error);
+    }
     throw error;
   }
 };
