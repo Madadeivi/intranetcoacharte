@@ -45,9 +45,6 @@ interface LoginResult {
     role: string;
     department: string;
   };
-  password_change_required?: boolean;
-  first_login?: boolean;
-  using_default_password?: boolean;
   password_migrated?: boolean;
 }
 
@@ -187,11 +184,12 @@ serve(async (req: Request) => {
 
       // Acciones públicas que no requieren autenticación JWT
       const publicActions = ["login", "collaborator-login", "register", "reset-password", "change-password"];
+      const adminActions = ["admin-reset-password", "admin-set-password"]; // Acciones administrativas que usan service role directamente
       let authValidation: { valid: boolean; user?: AuthUser; error?: string } = { valid: true };
       let authHeader: string | null = null;
       
-      // Solo validar JWT para acciones protegidas
-      if (!publicActions.includes(action)) {
+      // Solo validar JWT para acciones protegidas (no públicas ni administrativas)
+      if (!publicActions.includes(action) && !adminActions.includes(action)) {
         authHeader = req.headers.get("Authorization");
         authValidation = await validateAuthToken(supabase, authHeader);
         
@@ -209,6 +207,9 @@ serve(async (req: Request) => {
             }
           );
         }
+      } else if (adminActions.includes(action)) {
+        // Para acciones administrativas, obtener el header pero no validar JWT
+        authHeader = req.headers.get("Authorization");
       }
 
       switch (action) {
@@ -249,6 +250,10 @@ serve(async (req: Request) => {
         case "get-stats":
         case "get-login-statistics":
           return await handleGetStats(supabase, authValidation.user!);
+
+        // Función administrativa para establecer contraseña masiva (requiere service role key)
+        case "admin-set-password":
+          return await handleAdminSetPassword(supabase, body, authHeader);
 
         default:
           return new Response(
@@ -377,28 +382,23 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       .single();
 
     if (collaboratorError || !collaboratorData) {
-      console.error("Error obteniendo datos del colaborador:", collaboratorError);
-      // Fallback con datos básicos del resultado
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "Login exitoso",
-          user: result.user,
-          session: {
-            access_token: generateSecureToken('collaborator'),
-            refresh_token: generateSecureToken('refresh'),
-            expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
-          },
-          password_change_required: result.password_change_required,
-          first_login: result.first_login,
-          using_default_password: result.using_default_password,
-          password_migrated: result.password_migrated,
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      console.error("Error obteniendo datos del colaborador:", collaboratorError);        return new Response(
+          JSON.stringify({
+            success: true,
+            message: "Login exitoso",
+            user: result.user,
+            session: {
+              access_token: generateSecureToken('collaborator'),
+              refresh_token: generateSecureToken('refresh'),
+              expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
+            },
+            password_migrated: result.password_migrated,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
     }
 
     // Preparar datos completos del usuario para el frontend
@@ -432,17 +432,7 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
           refresh_token: generateSecureToken('refresh'),
           expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
         },
-        password_change_required: result.password_change_required,
-        first_login: result.first_login,
-        using_default_password: result.using_default_password,
         password_migrated: result.password_migrated,
-        // Información adicional del perfil
-        profile: {
-          hasAvatar: !!collaboratorData.avatar_url,
-          initials: generateInitials(collaboratorData.first_name, collaboratorData.last_name, collaboratorData.full_name),
-          canChangePassword: true, // Siempre permitir cambio de contraseña
-          lastLogin: collaboratorData.last_login_at,
-        },
       }),
       {
         status: 200,
@@ -980,6 +970,215 @@ async function handleGetStats(supabase: SupabaseClientType, authenticatedUser: A
     );
   } catch (error) {
     console.error("Error obteniendo estadísticas:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Error interno del servidor",
+        details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
+// Handler para reset administrativo de contraseña
+async function handleAdminResetPassword(supabase: SupabaseClientType, body: AuthPayload, authHeader: string | null) {
+  const { email, newPassword } = body;
+
+  if (!email || !newPassword) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Email y nueva contraseña son requeridos",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // Verificar que se use service role key
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const providedToken = authHeader?.replace("Bearer ", "");
+  
+  if (!providedToken || providedToken !== serviceRoleKey) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Acceso denegado. Se requiere service role key",
+      }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  try {
+    // Usar función administrativa para resetear contraseña
+    const { data: resetResult, error: resetError } = await supabase.rpc(
+      "admin_reset_collaborator_password",
+      {
+        user_email: email.toLowerCase().trim(),
+        new_password: newPassword
+      }
+    );
+
+    if (resetError) {
+      console.error("Error en reset administrativo:", resetError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error interno del servidor",
+          details: resetError.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const result = resetResult as { success: boolean; error?: string; message?: string };
+
+    if (!result.success) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: result.error,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Contraseña reseteada exitosamente por administrador",
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("Error en reset administrativo:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Error interno del servidor",
+        details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
+// Handler para establecer contraseña masiva (administrativo)
+async function handleAdminSetPassword(supabase: SupabaseClientType, body: AuthPayload, authHeader: string | null) {
+  const { password } = body;
+
+  if (!password) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Contraseña es requerida",
+        error_code: "MISSING_PASSWORD",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // Verificar que se use service role key
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!authHeader || !authHeader.includes(serviceRoleKey || "")) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Se requiere service role key para esta operación",
+        error_code: "SERVICE_ROLE_REQUIRED",
+      }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  try {
+    // Generar hash bcrypt para la nueva contraseña
+    const { data: passwordHash, error: hashError } = await supabase.rpc(
+      "hash_password_bcrypt",
+      { plain_password: password }
+    );
+
+    if (hashError || !passwordHash) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error generando hash de contraseña",
+          details: hashError?.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Actualizar contraseña para todos los colaboradores activos
+    const { data: updateResult, error: updateError } = await supabase
+      .from("collaborators")
+      .update({
+        intranet_password: passwordHash,
+        custom_password_set: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("status", "Active")
+      .neq("locked", true);
+
+    if (updateError) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error actualizando contraseñas",
+          details: updateError.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Contraseña establecida para todos los colaboradores activos`,
+        updated_count: updateResult?.length || 0,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("Error en admin-set-password:", error);
     return new Response(
       JSON.stringify({
         success: false,
