@@ -45,9 +45,6 @@ interface LoginResult {
     role: string;
     department: string;
   };
-  password_change_required?: boolean;
-  first_login?: boolean;
-  using_default_password?: boolean;
   password_migrated?: boolean;
 }
 
@@ -56,6 +53,23 @@ interface ChangePasswordResult {
   error?: string;
   error_code?: string;
   message?: string;
+}
+
+interface CollaboratorData {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string | null;
+  work_area: string | null;
+  title: string | null;
+  status: string;
+  phone: string | null;
+  avatar_url: string | null;
+  custom_password_set: boolean | null;
+  last_login_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // Tipo para el cliente Supabase con tipos relajados
@@ -126,6 +140,10 @@ async function validateAuthToken(supabase: SupabaseClientType, authHeader: strin
   }
 }
 
+// Constantes para mejorar mantenibilidad
+const SESSION_DURATION_MS = 60 * 60 * 1000; // 1 hora
+const MIN_PASSWORD_LENGTH = 8;
+
 // Función para validar permisos específicos
 function hasPermission(user: AuthUser | undefined, action: string): boolean {
   // Acciones públicas que no requieren autenticación
@@ -186,12 +204,13 @@ serve(async (req: Request) => {
       const { action } = body;
 
       // Acciones públicas que no requieren autenticación JWT
-      const publicActions = ["login", "collaborator-login", "register", "reset-password"];
+      const publicActions = ["login", "collaborator-login", "register", "reset-password", "change-password"];
+      const adminActions = ["admin-set-password"]; // Acciones administrativas que usan service role directamente
       let authValidation: { valid: boolean; user?: AuthUser; error?: string } = { valid: true };
       let authHeader: string | null = null;
       
-      // Solo validar JWT para acciones protegidas
-      if (!publicActions.includes(action)) {
+      // Solo validar JWT para acciones protegidas (no públicas ni administrativas)
+      if (!publicActions.includes(action) && !adminActions.includes(action)) {
         authHeader = req.headers.get("Authorization");
         authValidation = await validateAuthToken(supabase, authHeader);
         
@@ -209,6 +228,9 @@ serve(async (req: Request) => {
             }
           );
         }
+      } else if (adminActions.includes(action)) {
+        // Para acciones administrativas, obtener el header pero no validar JWT
+        authHeader = req.headers.get("Authorization");
       }
 
       switch (action) {
@@ -225,9 +247,9 @@ serve(async (req: Request) => {
         case "register":
           return await handleRegister(supabase, body);
 
-        // Cambio de contraseña
+        // Cambio de contraseña (público - maneja autenticación internamente)
         case "change-password":
-          return await handleChangePassword(supabase, body, authValidation.user!);
+          return await handleChangePassword(supabase, body, authValidation.user);
 
         // Actualizar perfil
         case "update-profile":
@@ -249,6 +271,10 @@ serve(async (req: Request) => {
         case "get-stats":
         case "get-login-statistics":
           return await handleGetStats(supabase, authValidation.user!);
+
+        // Función administrativa para establecer contraseña masiva (requiere service role key)
+        case "admin-set-password":
+          return await handleAdminSetPassword(supabase, body, authHeader);
 
         default:
           return new Response(
@@ -374,31 +400,27 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       `)
       .eq("email", email.toLowerCase().trim())
       .eq("status", "Active")
-      .single();
+      .single() as { data: CollaboratorData | null; error: unknown };
 
     if (collaboratorError || !collaboratorData) {
       console.error("Error obteniendo datos del colaborador:", collaboratorError);
-      // Fallback con datos básicos del resultado
       return new Response(
-        JSON.stringify({
-          success: true,
-          message: "Login exitoso",
-          user: result.user,
-          session: {
-            access_token: generateSecureToken('collaborator'),
-            refresh_token: generateSecureToken('refresh'),
-            expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
-          },
-          password_change_required: result.password_change_required,
-          first_login: result.first_login,
-          using_default_password: result.using_default_password,
-          password_migrated: result.password_migrated,
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+          JSON.stringify({
+            success: true,
+            message: "Login exitoso",
+            user: result.user,
+            session: {
+              access_token: generateSecureToken('collaborator'),
+              refresh_token: generateSecureToken('refresh'),
+              expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
+            },
+            password_migrated: result.password_migrated,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
     }
 
     // Preparar datos completos del usuario para el frontend
@@ -419,7 +441,11 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       lastLoginAt: collaboratorData.last_login_at,
       status: collaboratorData.status,
       // Generar iniciales para avatar si no tiene imagen
-      initials: generateInitials(collaboratorData.first_name, collaboratorData.last_name, collaboratorData.full_name),
+      initials: generateInitials(
+        collaboratorData.first_name ?? undefined, 
+        collaboratorData.last_name ?? undefined, 
+        collaboratorData.full_name ?? undefined
+      ),
     };
 
     return new Response(
@@ -430,19 +456,9 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
         session: {
           access_token: generateSecureToken('collaborator'),
           refresh_token: generateSecureToken('refresh'),
-          expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
+          expires_at: Date.now() + SESSION_DURATION_MS,
         },
-        password_change_required: result.password_change_required,
-        first_login: result.first_login,
-        using_default_password: result.using_default_password,
         password_migrated: result.password_migrated,
-        // Información adicional del perfil
-        profile: {
-          hasAvatar: !!collaboratorData.avatar_url,
-          initials: generateInitials(collaboratorData.first_name, collaboratorData.last_name, collaboratorData.full_name),
-          canChangePassword: true, // Siempre permitir cambio de contraseña
-          lastLogin: collaboratorData.last_login_at,
-        },
       }),
       {
         status: 200,
@@ -620,7 +636,7 @@ async function handleRegister(supabase: SupabaseClientType, body: AuthPayload) {
 }
 
 // Handler para cambio de contraseña
-async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayload, authenticatedUser: AuthUser) {
+async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayload, authenticatedUser?: AuthUser) {
   const { email, currentPassword, newPassword } = body;
 
   if (!email || !newPassword) {
@@ -637,12 +653,26 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
     );
   }
 
-  // Validar que la nueva contraseña cumple con los requisitos mínimos
-  if (newPassword.length < 8) {
+  if (!currentPassword) {
     return new Response(
       JSON.stringify({
         success: false,
-        error: "La nueva contraseña debe tener al menos 8 caracteres",
+        error: "Contraseña actual es requerida",
+        error_code: "MISSING_CURRENT_PASSWORD",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // Validar que la nueva contraseña cumple con los requisitos mínimos
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: `La nueva contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`,
         error_code: "PASSWORD_TOO_SHORT",
       }),
       {
@@ -652,141 +682,46 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
     );
   }
 
-  // VALIDACIÓN DE AUTORIZACIÓN: Solo permitir cambio de propia contraseña o por administradores
-  const isAdmin = authenticatedUser.app_metadata?.role === "admin" || 
-                  authenticatedUser.user_metadata?.role === "admin" ||
-                  authenticatedUser.email?.includes("admin@coacharte.mx");
-  const isOwnPassword = authenticatedUser.email?.toLowerCase() === email.toLowerCase();
-  
-  if (!isAdmin && !isOwnPassword) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "No autorizado: solo puedes cambiar tu propia contraseña",
-        error_code: "UNAUTHORIZED",
-      }),
-      {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+  // VALIDACIÓN DE AUTORIZACIÓN: Siempre validar permisos para cambio de contraseña
+  if (authenticatedUser) {
+    // Si hay usuario autenticado, validar que tenga permisos
+    const isAdmin = authenticatedUser.app_metadata?.role === "admin" || 
+                    authenticatedUser.user_metadata?.role === "admin" ||
+                    authenticatedUser.email?.includes("admin@coacharte.mx");
+    const isOwnPassword = authenticatedUser.email?.toLowerCase() === email.toLowerCase();
+    
+    if (!isAdmin && !isOwnPassword) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "No autorizado: solo puedes cambiar tu propia contraseña",
+          error_code: "UNAUTHORIZED",
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+  } else {
+    // Si no hay usuario autenticado, solo permitir si la función SQL valida la contraseña actual
+    // La seguridad se delega a la función change_collaborator_password que requiere contraseña actual
+    console.log("Cambio de contraseña sin usuario autenticado - validación delegada a función SQL");
   }
 
   try {
-    // Obtener información del colaborador para validar el estado de la contraseña
-    const { data: collaborator, error: collaboratorError } = await supabase
-      .from('collaborators')
-      .select('id, force_password_change, password_hash')
-      .eq('email', email.toLowerCase().trim())
-      .single();
-
-    if (collaboratorError || !collaborator) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Usuario no encontrado",
-          error_code: "USER_NOT_FOUND",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Determinar si necesita contraseña actual
-    const needsCurrentPassword = collaborator.password_hash && !collaborator.force_password_change && !isAdmin;
-    
-    if (needsCurrentPassword && !currentPassword) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Contraseña actual requerida",
-          error_code: "CURRENT_PASSWORD_REQUIRED",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-    // Usar la función mejorada de cambio de contraseña con bcrypt
+    // Usar la función SQL para cambio de contraseña que valida la contraseña actual internamente
     const { data: changeResult, error: changeError } = await supabase.rpc(
-      "change_collaborator_password_unlimited",
+      "change_collaborator_password",
       {
         user_email: email.toLowerCase().trim(),
         current_password: currentPassword,
-        new_password: newPassword,
-        force_change: false, // Permite cambios voluntarios
+        new_password: newPassword
       }
     );
 
     if (changeError) {
       console.error("Error en cambio de contraseña:", changeError);
-      
-      // Si la función no existe, usar la función original
-      if (changeError.message?.includes("function") && changeError.message?.includes("does not exist")) {
-        const { data: fallbackResult, error: fallbackError } = await supabase.rpc(
-          "change_collaborator_password",
-          {
-            user_email: email.toLowerCase().trim(),
-            current_password: currentPassword,
-            new_password: newPassword,
-          }
-        );
-
-        if (fallbackError) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: "Error interno del servidor",
-              details: fallbackError.message,
-            }),
-            {
-              status: 500,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
-        }
-
-        const fallbackResultTyped = fallbackResult as ChangePasswordResult;
-        if (!fallbackResultTyped.success) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: fallbackResultTyped.error,
-              error_code: fallbackResultTyped.error_code,
-            }),
-            {
-              status: 400,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
-        }
-
-        // También actualizar el perfil para indicar que ya no usa contraseña por defecto
-        await supabase
-          .from("collaborators")
-          .update({ 
-            custom_password_set: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("email", email.toLowerCase().trim());
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: fallbackResultTyped.message || "Contraseña actualizada exitosamente",
-            password_changed: true,
-            custom_password_set: true,
-          }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
       return new Response(
         JSON.stringify({
           success: false,
@@ -800,7 +735,7 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
       );
     }
 
-    const result = changeResult as ChangePasswordResult;
+    const result = changeResult as { success: boolean; error?: string; error_code?: string; message?: string };
 
     if (!result.success) {
       return new Response(
@@ -816,19 +751,10 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
       );
     }
 
-    // Obtener datos actualizados del colaborador
-    const { data: updatedCollaborator } = await supabase
-      .from("collaborators")
-      .select("custom_password_set, updated_at")
-      .eq("email", email.toLowerCase().trim())
-      .single();
-
     return new Response(
       JSON.stringify({
         success: true,
-        message: result.message || "Contraseña actualizada exitosamente",
-        password_changed: true,
-        custom_password_set: updatedCollaborator?.custom_password_set || true,
+        message: "Contraseña actualizada exitosamente",
         timestamp: new Date().toISOString(),
       }),
       {
@@ -837,12 +763,12 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
       }
     );
   } catch (error) {
-    console.error("Error en cambio de contraseña:", error);
+    console.error("Error inesperado en cambio de contraseña:", error);
     return new Response(
       JSON.stringify({
         success: false,
         error: "Error interno del servidor",
-        details: error instanceof Error ? error.message : String(error),
+        details: error instanceof Error ? error.message : "Error desconocido",
       }),
       {
         status: 500,
@@ -1075,6 +1001,116 @@ async function handleGetStats(supabase: SupabaseClientType, authenticatedUser: A
     );
   } catch (error) {
     console.error("Error obteniendo estadísticas:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Error interno del servidor",
+        details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
+// Handler para establecer contraseña masiva (administrativo)
+async function handleAdminSetPassword(supabase: SupabaseClientType, body: AuthPayload, authHeader: string | null) {
+  const { password } = body;
+
+  if (!password) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Contraseña es requerida",
+        error_code: "MISSING_PASSWORD",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // Verificar que se use service role key
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const providedToken = authHeader?.replace("Bearer ", "");
+  
+  if (!providedToken || providedToken !== serviceRoleKey) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Se requiere service role key para esta operación",
+        error_code: "SERVICE_ROLE_REQUIRED",
+      }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  try {
+    // Generar hash bcrypt para la nueva contraseña
+    const { data: passwordHash, error: hashError } = await supabase.rpc(
+      "hash_password_bcrypt",
+      { plain_password: password }
+    );
+
+    if (hashError || !passwordHash) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error generando hash de contraseña",
+          details: hashError?.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Actualizar contraseña para todos los colaboradores activos
+    const { data: updateResult, error: updateError } = await supabase
+      .from("collaborators")
+      .update({
+        intranet_password: passwordHash,
+        custom_password_set: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("status", "Active")
+      .neq("locked", true);
+
+    if (updateError) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error actualizando contraseñas",
+          details: updateError.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Contraseña establecida para todos los colaboradores activos`,
+        updated_count: updateResult?.length || 0,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("Error en admin-set-password:", error);
     return new Response(
       JSON.stringify({
         success: false,
