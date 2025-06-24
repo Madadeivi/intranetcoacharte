@@ -382,7 +382,8 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       .single();
 
     if (collaboratorError || !collaboratorData) {
-      console.error("Error obteniendo datos del colaborador:", collaboratorError);        return new Response(
+      console.error("Error obteniendo datos del colaborador:", collaboratorError);
+      return new Response(
           JSON.stringify({
             success: true,
             message: "Login exitoso",
