@@ -55,6 +55,23 @@ interface ChangePasswordResult {
   message?: string;
 }
 
+interface CollaboratorData {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string | null;
+  work_area: string | null;
+  title: string | null;
+  status: string;
+  phone: string | null;
+  avatar_url: string | null;
+  custom_password_set: boolean | null;
+  last_login_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Tipo para el cliente Supabase con tipos relajados
 // deno-lint-ignore no-explicit-any
 type SupabaseClientType = any;
@@ -123,6 +140,10 @@ async function validateAuthToken(supabase: SupabaseClientType, authHeader: strin
   }
 }
 
+// Constantes para mejorar mantenibilidad
+const SESSION_DURATION_MS = 60 * 60 * 1000; // 1 hora
+const MIN_PASSWORD_LENGTH = 8;
+
 // Función para validar permisos específicos
 function hasPermission(user: AuthUser | undefined, action: string): boolean {
   // Acciones públicas que no requieren autenticación
@@ -184,7 +205,7 @@ serve(async (req: Request) => {
 
       // Acciones públicas que no requieren autenticación JWT
       const publicActions = ["login", "collaborator-login", "register", "reset-password", "change-password"];
-      const adminActions = ["admin-reset-password", "admin-set-password"]; // Acciones administrativas que usan service role directamente
+      const adminActions = ["admin-set-password"]; // Acciones administrativas que usan service role directamente
       let authValidation: { valid: boolean; user?: AuthUser; error?: string } = { valid: true };
       let authHeader: string | null = null;
       
@@ -379,7 +400,7 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       `)
       .eq("email", email.toLowerCase().trim())
       .eq("status", "Active")
-      .single();
+      .single() as { data: CollaboratorData | null; error: unknown };
 
     if (collaboratorError || !collaboratorData) {
       console.error("Error obteniendo datos del colaborador:", collaboratorError);
@@ -420,7 +441,11 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       lastLoginAt: collaboratorData.last_login_at,
       status: collaboratorData.status,
       // Generar iniciales para avatar si no tiene imagen
-      initials: generateInitials(collaboratorData.first_name, collaboratorData.last_name, collaboratorData.full_name),
+      initials: generateInitials(
+        collaboratorData.first_name ?? undefined, 
+        collaboratorData.last_name ?? undefined, 
+        collaboratorData.full_name ?? undefined
+      ),
     };
 
     return new Response(
@@ -431,7 +456,7 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
         session: {
           access_token: generateSecureToken('collaborator'),
           refresh_token: generateSecureToken('refresh'),
-          expires_at: Date.now() + (60 * 60 * 1000), // 1 hora
+          expires_at: Date.now() + SESSION_DURATION_MS,
         },
         password_migrated: result.password_migrated,
       }),
@@ -643,11 +668,11 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
   }
 
   // Validar que la nueva contraseña cumple con los requisitos mínimos
-  if (newPassword.length < 8) {
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
     return new Response(
       JSON.stringify({
         success: false,
-        error: "La nueva contraseña debe tener al menos 8 caracteres",
+        error: `La nueva contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`,
         error_code: "PASSWORD_TOO_SHORT",
       }),
       {
@@ -657,8 +682,9 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
     );
   }
 
-  // VALIDACIÓN DE AUTORIZACIÓN: Si hay usuario autenticado, validar permisos
+  // VALIDACIÓN DE AUTORIZACIÓN: Siempre validar permisos para cambio de contraseña
   if (authenticatedUser) {
+    // Si hay usuario autenticado, validar que tenga permisos
     const isAdmin = authenticatedUser.app_metadata?.role === "admin" || 
                     authenticatedUser.user_metadata?.role === "admin" ||
                     authenticatedUser.email?.includes("admin@coacharte.mx");
@@ -677,6 +703,10 @@ async function handleChangePassword(supabase: SupabaseClientType, body: AuthPayl
         }
       );
     }
+  } else {
+    // Si no hay usuario autenticado, solo permitir si la función SQL valida la contraseña actual
+    // La seguridad se delega a la función change_collaborator_password que requiere contraseña actual
+    console.log("Cambio de contraseña sin usuario autenticado - validación delegada a función SQL");
   }
 
   try {
@@ -985,107 +1015,6 @@ async function handleGetStats(supabase: SupabaseClientType, authenticatedUser: A
   }
 }
 
-// Handler para reset administrativo de contraseña
-async function handleAdminResetPassword(supabase: SupabaseClientType, body: AuthPayload, authHeader: string | null) {
-  const { email, newPassword } = body;
-
-  if (!email || !newPassword) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "Email y nueva contraseña son requeridos",
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  // Verificar que se use service role key
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const providedToken = authHeader?.replace("Bearer ", "");
-  
-  if (!providedToken || providedToken !== serviceRoleKey) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "Acceso denegado. Se requiere service role key",
-      }),
-      {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  try {
-    // Usar función administrativa para resetear contraseña
-    const { data: resetResult, error: resetError } = await supabase.rpc(
-      "admin_reset_collaborator_password",
-      {
-        user_email: email.toLowerCase().trim(),
-        new_password: newPassword
-      }
-    );
-
-    if (resetError) {
-      console.error("Error en reset administrativo:", resetError);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Error interno del servidor",
-          details: resetError.message,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const result = resetResult as { success: boolean; error?: string; message?: string };
-
-    if (!result.success) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: result.error,
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Contraseña reseteada exitosamente por administrador",
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  } catch (error) {
-    console.error("Error en reset administrativo:", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "Error interno del servidor",
-        details: error instanceof Error ? error.message : String(error),
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
-}
-
 // Handler para establecer contraseña masiva (administrativo)
 async function handleAdminSetPassword(supabase: SupabaseClientType, body: AuthPayload, authHeader: string | null) {
   const { password } = body;
@@ -1106,7 +1035,9 @@ async function handleAdminSetPassword(supabase: SupabaseClientType, body: AuthPa
 
   // Verificar que se use service role key
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!authHeader || !authHeader.includes(serviceRoleKey || "")) {
+  const providedToken = authHeader?.replace("Bearer ", "");
+  
+  if (!providedToken || providedToken !== serviceRoleKey) {
     return new Response(
       JSON.stringify({
         success: false,
