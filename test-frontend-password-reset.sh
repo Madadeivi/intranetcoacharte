@@ -30,8 +30,8 @@ echo
 PROD_URL="https://zljualvricugqvcvaeht.supabase.co/functions/v1/unified-auth"
 STAGING_URL="https://ktjjiprulmqbvycbxxao.supabase.co/functions/v1/unified-auth"
 
-PROD_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsanVhbHZyaWN1Z3F2Y3ZhZWh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxMDMzNjQsImV4cCI6MjA2NDY3OTM2NH0.Wn82eTNriEzyWZafVpSeQtACIdRg9YXy885skgpp5yg"
-STAGING_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0amppcHJ1bG1xYnZ5Y2J4eGFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNzgyOTksImV4cCI6MjA2NDY1NDI5OX0.2cyj0F0X8vgmJRpOXUjJdD3st5nqP-w8wkaKTxLSr8E"
+PROD_ANON_KEY="${PROD_ANON_KEY}"
+STAGING_ANON_KEY="${STAGING_ANON_KEY}"
 
 echo "🏭 PRODUCCIÓN:"
 PROD_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X POST "$PROD_URL" \
