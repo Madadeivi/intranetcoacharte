@@ -421,7 +421,12 @@ const HomePage: React.FC = () => {
 
   // Derivaciones de las propiedades del usuario
   // Función para generar iniciales mejorada
-  const generateUserInitials = (user: any): string => {
+  const generateUserInitials = (user: {
+    initials?: string;
+    fullName?: string;
+    name?: string;
+    email?: string;
+  } | null): string => {
     // Si el backend ya envió las iniciales, usarlas
     if (user?.initials && user.initials.length >= 2) {
       return user.initials;
