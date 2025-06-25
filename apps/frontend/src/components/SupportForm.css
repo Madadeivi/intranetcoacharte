@@ -1,35 +1,44 @@
-/* SupportForm.css - Estilos refinados para el formulario de soporte */
+@import '../styles/variables.css';
+@import '../styles/typography.css';
+
+/* SupportForm.css - Estilos alineados con el estilo de Coacharte */
 
 .support-form-container {
   width: 100%;
-  max-width: 100%;
-  padding: 3rem 2.5rem 2.5rem;
-  background: var(--color-text-on-primary); /* Reemplazado #fff */
-  font-family: 'Geometria', Arial, sans-serif;
-  position: relative;
-  box-sizing: border-box;
+  max-width: var(--max-width-form);
   margin: 0 auto;
-}
-
-/* Ajuste para cuando está dentro del modal */
-.support-form-modal .support-form-container {
-  padding: 2rem 2.5rem;
-  width: 100%;
-  margin: 0;
+  padding-block: var(--form-container-padding-block);
+  padding-inline: var(--form-container-padding-inline);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--form-shadow);
+  background: var(--input-background-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-large);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Geometria', Arial, sans-serif;
 }
 
 /* Header del formulario */
 .support-form-header {
+  width: 100%;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-medium);
 }
 
 .support-form-title {
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  font-size: 2rem;
   color: var(--color-text-title);
-  margin: 0 0 0.5rem 0;
+  font-size: var(--font-size-form-title);
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  margin: 0 0 var(--spacing-medium) 0;
+  width: 100%;
   letter-spacing: -0.02em;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .support-form-subtitle {
@@ -40,11 +49,16 @@
   line-height: 1.4;
 }
 
-/* Alertas de estado */
+/* Alertas de estado - Alineadas con el estilo de la aplicación */
 .support-form-alert {
-  margin-bottom: var(--spacing-large); /* Reemplazado 2rem */
-  padding: var(--spacing-medium); /* Reemplazado 1.25rem */
-  border-radius: var(--border-radius-large); /* Reemplazado 0.75rem */
+  width: 100%;
+  margin-top: var(--spacing-large);
+  padding: var(--input-padding-y) var(--input-padding-x);
+  border-radius: var(--border-radius-input);
+  font-family: 'Geometria', sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  box-sizing: border-box;
   animation: slideDown 0.3s ease-out;
 }
 
@@ -61,14 +75,15 @@
 
 .alert-success {
   background: var(--color-success-background);
-  border: 1.5px solid var(--color-success-border);
   color: var(--color-success-text);
+  border: 1.5px solid var(--color-success-border);
+  font-weight: 500;
 }
 
 .alert-error {
   background: var(--color-error-background);
-  border: 1.5px solid var(--color-error-border);
   color: var(--color-error-text);
+  border: 1.5px solid var(--color-error-border);
 }
 
 .alert-content strong {
@@ -214,24 +229,24 @@
 
 /* Tarjeta de información del usuario */
 .user-info-card {
-  background: linear-gradient(135deg, var(--neutral-background) 0%, var(--neutral-background-disabled) 100%); /* Reemplazado #f8f9fa, #f5f6f8 */
+  background: linear-gradient(135deg, var(--neutral-background) 0%, var(--neutral-background-disabled) 100%);
   border: 1.5px solid var(--color-primary-30);
-  border-radius: 0.75rem; /* Considerar var(--border-radius-large) si existe */
-  padding: 1.5rem; /* Considerar var(--spacing-large) si existe */
-  margin-top: 0.5rem;
-  box-shadow: 0 2px 8px var(--color-primary-5); /* Reemplazado rgba(30, 136, 229, 0.05) */
+  border-radius: var(--border-radius-large);
+  padding: var(--spacing-large);
+  margin-top: var(--spacing-small);
+  box-shadow: var(--shadow-sm);
   transition: box-shadow 0.3s ease;
 }
 
 .user-info-card:hover {
-  box-shadow: 0 4px 16px var(--color-primary-10); /* Reemplazado rgba(30, 136, 229, 0.1) */
+  box-shadow: var(--shadow-md);
 }
 
 .user-info-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* Considerar var(--spacing-small) si existe */
-  margin-bottom: 1rem; /* Considerar var(--spacing-medium) si existe */
+  gap: var(--spacing-smedium);
+  margin-bottom: var(--spacing-medium);
 }
 
 .user-info-icon {
@@ -243,7 +258,7 @@
   height: 2.5rem;
   background: var(--color-primary-100);
   border-radius: 50%;
-  box-shadow: 0 2px 8px var(--color-primary-10); /* Reemplazado rgba(30, 136, 229, 0.15) */
+  box-shadow: var(--shadow-sm);
 }
 
 .user-info-card h3 {
@@ -256,19 +271,19 @@
 .user-info-details {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Considerar var(--spacing-small) si existe */
+  gap: var(--spacing-smedium);
 }
 
 .info-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* Considerar var(--spacing-small) si existe */
+  gap: var(--spacing-smedium);
 }
 
 .info-label {
   font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
   color: var(--color-text-secondary);
-  margin-right: 0.5rem;
+  margin-right: var(--spacing-small);
 }
 
 .info-value {
@@ -277,37 +292,63 @@
   font-weight: 500;
 }
 
-/* Botón de envío */
+/* Botón de envío - Alineado con SetPasswordForm */
 .submit-button {
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  background: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-  padding: 0.875rem 1.5rem; /* Considerar variables de padding */
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  background: var(--primary-action-color);
+  color: var(--button-text-color);
+  padding: var(--input-padding-y);
   border: none;
-  border-radius: 0.625rem; /* Considerar var(--border-radius-medium) si existe */
+  border-radius: var(--border-radius-input);
   font-size: 1.1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* Considerar var(--spacing-small) si existe */
+  gap: var(--spacing-small);
   width: 100%;
-  margin-top: 1rem; /* Considerar var(--spacing-medium) si existe */
+  margin-top: var(--spacing-medium);
+  letter-spacing: -0.01em;
+  box-shadow: var(--button-shadow);
+  position: relative;
+  overflow: hidden;
 }
 
-.submit-button:hover {
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.submit-button:hover::before {
+  transform: translateX(100%);
+}
+
+.submit-button:hover:not(:disabled) {
   background: var(--color-primary-80);
+  transform: translateY(-2px);
+  box-shadow: var(--button-shadow-hover);
 }
 
-.submit-button:active {
-  transform: scale(0.98);
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--button-shadow-active);
 }
 
 .submit-button:disabled {
-  background: var(--neutral-background-disabled, #cccccc); 
-  color: var(--neutral-text-disabled, #666666);
+  background: var(--button-background-disabled);
+  color: var(--button-text-disabled);
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
   opacity: 0.7;
 }
 
@@ -315,12 +356,12 @@
   font-size: 1.3em;
 }
 
-/* Spinner de carga */
+/* Spinner de carga - Alineado con SetPasswordForm */
 .loading-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--color-primary-30); /* Reemplazado rgba(255, 255, 255, 0.3) */
-  border-top-color: var(--color-text-on-primary); /* Reemplazado #fff */
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -339,11 +380,13 @@
 /* Responsive */
 @media (max-width: 768px) {
   .support-form-container {
-    padding: 2rem 1.5rem 1.5rem; /* Considerar variables de padding */
+    padding-block: var(--spacing-xl);
+    padding-inline: var(--spacing-large);
+    gap: var(--spacing-medium);
   }
 
   .support-form-modal .support-form-container {
-    padding: 1.5rem;
+    padding: var(--spacing-large);
   }
 
   .support-form-title {
@@ -356,32 +399,41 @@
 
   .form-row {
     grid-template-columns: 1fr;
-    gap: 1.5rem; /* Considerar var(--spacing-medium) si existe */
+    gap: var(--spacing-large);
   }
 
+  .form-input,
+  .form-select,
+  .form-textarea,
   .submit-button {
+    padding: calc(var(--input-padding-y) * 0.9);
     font-size: 1rem;
-    padding: 0.75rem 1.25rem; /* Considerar variables de padding */
+  }
+
+  .form-label {
+    font-size: 0.9rem;
   }
 
   .close-button {
-    top: 1rem; /* Considerar var(--spacing-small) o ajustar */
-    right: 1rem; /* Considerar var(--spacing-small) o ajustar */
+    top: var(--spacing-medium);
+    right: var(--spacing-medium);
     font-size: 1.6rem;
   }
 }
 
 @media (max-width: 480px) {
   .support-form-container {
-    padding: 1.5rem 1rem 1rem; /* Considerar variables de padding */
-    max-width: var(--max-width-form, 450px); /* Asegura que el max-width se aplique */
-    margin: 0 auto; /* Centra el formulario en vistas móviles si no está en un modal */
+    padding-block: var(--spacing-large);
+    padding-inline: var(--spacing-medium);
+    max-width: var(--max-width-form);
+    margin: 0 auto;
+    border-radius: var(--border-radius-medium);
   }
 
   .support-form-modal .support-form-container {
-    padding: 1.5rem 1rem;
-    width: 100%; /* Asegura que ocupe todo el ancho disponible en el modal */
-    max-width: 100%; /* Anula el max-width-form dentro del modal en móviles */
+    padding: var(--spacing-large) var(--spacing-medium);
+    width: 100%;
+    max-width: 100%;
     margin: 0;
   }
 
@@ -393,20 +445,26 @@
     font-size: 0.9rem;
   }
 
+  .form-label {
+    font-size: 0.85rem;
+  }
+
   .form-input,
   .form-select,
   .form-textarea {
     font-size: 1rem;
-    padding: 0.75rem 1rem; /* Considerar variables de padding */
+    padding: calc(var(--input-padding-y) * 0.85) calc(var(--input-padding-x) * 0.9);
   }
 
   .submit-button {
-    padding: 0.75rem 1rem; /* Considerar variables de padding */
+    font-size: 1rem;
+    padding: calc(var(--input-padding-y) * 0.875);
   }
 
   .support-form-alert {
-    padding: 1rem; /* Considerar var(--spacing-small) si existe */
-    border-radius: 0.5rem; /* Considerar var(--border-radius-small) si existe */
+    padding: calc(var(--input-padding-y) * 0.875) var(--input-padding-x);
+    font-size: 0.9rem;
+    border-radius: var(--border-radius-input);
   }
 
   .alert-content strong {
@@ -415,33 +473,33 @@
 
   .ticket-id {
     font-size: 1rem;
-    padding: 0.2rem 0.6rem;
+    padding: var(--spacing-xs) calc(var(--spacing-small) * 0.8);
   }
 }
 
-/* Estilos para el botón de cierre */
+/* Estilos para el botón de cierre - Alineado con SetPasswordForm */
 .close-button {
   position: absolute;
-  top: var(--spacing-medium); /* 1rem */
-  right: var(--spacing-medium); /* 1rem */
+  top: var(--spacing-medium);
+  right: var(--spacing-medium);
   background: transparent;
   border: none;
-  font-size: 2rem; /* 24px */
+  font-size: 2rem;
   font-weight: bold;
-  color: var(--color-text-secondary); /* Ajustado para mejor contraste */
+  color: var(--color-text-secondary);
   cursor: pointer;
-  padding: var(--spacing-xs); /* 0.5rem */
+  padding: var(--spacing-xs);
   line-height: 1;
   transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
-  z-index: 10; /* Asegura que esté sobre otros elementos del formulario */
+  z-index: 10;
 }
 
 .close-button:hover {
-  color: var(--color-text-title); /* Más oscuro al pasar el mouse */
+  color: var(--color-text-title);
   transform: scale(1.1);
 }
 
-/* Animación para la aparición del formulario (si es necesario directamente aquí) */
+/* Animación para la aparición del formulario */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -453,55 +511,28 @@
   }
 }
 
-/* Aplicar animación si se desea que el formulario aparezca con ella */
 .support-form-container.animated {
   animation: fadeInUp 0.5s ease-out forwards;
 }
 
-/* Estilos para el contenedor de carga */
+/* Contenedor de carga - Simplificado y alineado */
 .loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem; /* Considerar var(--spacing-large) si existe */
-  background-color: var(--color-text-on-primary); /* Fondo blanco */
-  border-radius: 0.75rem; /* Considerar var(--border-radius-medium) si existe */
-  box-shadow: var(--shadow-medium); /* Sombra media */
-  margin-top: 2rem; /* Espacio superior */
-}
-
-.loading-spinner {
-  border: 4px solid var(--color-primary-10); /* Color primario claro para el borde */
-  border-top: 4px solid var(--color-primary-100); /* Color primario oscuro para la parte superior */
-  border-radius: 50%;
-  width: 40px; /* Tamaño del spinner */
-  height: 40px; /* Tamaño del spinner */
-  animation: spin 1s linear infinite;
+  padding: var(--spacing-xl);
+  background-color: var(--input-background-color);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-md);
+  margin-top: var(--spacing-xl);
 }
 
 .loading-text {
-  margin-left: 1rem; /* Espacio a la izquierda del texto */
-  font-size: 1.1rem; /* Tamaño de fuente */
-  color: var(--color-text-secondary); /* Color de texto secundario */
+  margin-left: var(--spacing-medium);
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+  font-family: 'Geometria', Arial, sans-serif;
 }
 
-.support-form button[type="submit"] {
-  display: block;
-  width: 100%;
-  padding: var(--spacing-medium);
-  background-color: var(--primary-action-color);
-  color: var(--button-text-color);
-  border: none;
-  border-radius: var(--border-radius-medium);
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  margin-top: var(--spacing-large);
-}
-
-.support-form button[type="submit"]:hover {
-  background-color: var(--neutral-color-lightest); /* Asumiendo que este es el fondo claro en hover */
-  color: var(--primary-action-color); /* Añadido para contraste */
-  border: 1px solid var(--primary-action-color); /* Mantener o ajustar según el diseño deseado */
-}
+/* Botón submit adicional - Eliminado para evitar duplicación */
+/* Las siguientes reglas ya están cubiertas por .submit-button arriba */

@@ -31,7 +31,6 @@ import Avatar from '../../components/Avatar';
 
 // Constantes de client_backup (adaptadas)
 const DISABLED_CARDS: string[] = [
-  'Mi Cuenta',
   'Recursos Humanos', 
   'Procesos y Documentación', 
   'Soporte y Comunicación', 
@@ -638,12 +637,12 @@ const HomePage: React.FC = () => {
             <ArrowBackIosNewIcon />
           </button>
           <div className="card-grid" ref={cardCarouselRef}>
-            <div className={`main-card ${DISABLED_CARDS.includes('Mi Cuenta') ? 'disabled' : ''}`}>
+            <Link href="/profile" className={`main-card ${DISABLED_CARDS.includes('Mi Cuenta') ? 'disabled' : ''}`}>
               <AccountCircleIcon className="main-card-icon" />
               <h3>Mi Cuenta</h3>
               <p>Gestiona tu perfil, documentos y accesos</p>
-              <a href="#" onClick={(e) => e.preventDefault()}>Acceder</a>
-            </div>
+              <span>Acceder</span>
+            </Link>
             <div className={`main-card ${DISABLED_CARDS.includes('Recursos Humanos') ? 'disabled' : ''}`}>
               <GroupsIcon className="main-card-icon" />
               <h3>Recursos Humanos</h3>
@@ -814,10 +813,10 @@ const HomePage: React.FC = () => {
               <EventIcon className="quicklink-icon" />
               <h3>Calendario de Eventos</h3>
             </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+            <Link href="/profile" className="quicklink">
               <AccountCircleIcon className="quicklink-icon" />
               <h3>Mi Perfil</h3>
-            </a>
+            </Link>
           </div>
           <button 
             onClick={() => scrollQuicklinkCarouselBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
