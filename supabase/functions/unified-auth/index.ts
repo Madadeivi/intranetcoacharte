@@ -58,7 +58,6 @@ interface ChangePasswordResult {
 interface CollaboratorData {
   id: string;
   email: string;
-  first_name: string | null;
   last_name: string | null;
   full_name: string | null;
   work_area: string | null;
@@ -385,7 +384,6 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       .select(`
         id,
         email,
-        first_name,
         last_name,
         full_name,
         work_area,
@@ -427,10 +425,10 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
     const fullUserData = {
       id: collaboratorData.id,
       email: collaboratorData.email,
-      firstName: collaboratorData.first_name || "",
+      firstName: "", // No disponible en el schema actual
       lastName: collaboratorData.last_name || "",
-      fullName: collaboratorData.full_name || `${collaboratorData.first_name || ""} ${collaboratorData.last_name || ""}`.trim(),
-      name: collaboratorData.full_name || `${collaboratorData.first_name || ""} ${collaboratorData.last_name || ""}`.trim(),
+      fullName: collaboratorData.full_name || collaboratorData.last_name || "",
+      name: collaboratorData.full_name || collaboratorData.last_name || "",
       workArea: collaboratorData.work_area || "",
       department: collaboratorData.work_area || "",
       title: collaboratorData.title || "",
@@ -442,7 +440,7 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       status: collaboratorData.status,
       // Generar iniciales para avatar si no tiene imagen
       initials: generateInitials(
-        collaboratorData.first_name ?? undefined, 
+        undefined, // firstName no disponible
         collaboratorData.last_name ?? undefined, 
         collaboratorData.full_name ?? undefined
       ),

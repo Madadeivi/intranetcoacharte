@@ -1,14 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
 import { toast } from 'sonner';
 import SetPasswordForm from './SetPasswordForm';
 
-export default function SetNewPasswordPage() {
+function SetNewPasswordContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Verificar si es un cambio voluntario de contraseña
+  const isVoluntaryChange = searchParams.get('voluntary') === 'true';
   
   // Store unificado
   const {
@@ -50,27 +54,35 @@ export default function SetNewPasswordPage() {
       }
     }
     
-    // Si es un usuario autenticado pero no requiere cambio de contraseña, redirigir
-    if (isUserAuthenticated && !requiresPasswordChange) {
+    // Si es un usuario autenticado pero no requiere cambio de contraseña Y no es un cambio voluntario, redirigir
+    if (isUserAuthenticated && !requiresPasswordChange && !isVoluntaryChange) {
       toast.info('Ya has establecido tu contraseña personalizada.');
       router.push('/home');
     }
-  }, [user, authIsLoading, router, isUserAuthenticated, requiresPasswordChange]);
+  }, [user, authIsLoading, router, isUserAuthenticated, requiresPasswordChange, isVoluntaryChange]);
 
-  const handlePasswordSubmit = async (newPasswordValue: string) => {
+  const handlePasswordSubmit = async (newPasswordValue: string, currentPasswordValue?: string) => {
     setIsProcessing(true);
     
     try {
       if (isUserAuthenticated && user) {
+        // Determinar la contraseña actual según el tipo de cambio
+        const currentPassword = isVoluntaryChange 
+          ? currentPasswordValue || '' // Para cambio voluntario, usar la contraseña actual proporcionada
+          : 'Coacharte2025'; // Para cambio obligatorio, usar la contraseña temporal por defecto
+        
         // Cambio de contraseña usando servicio unificado
         const result = await changePassword({
           email: user.email,
-          currentPassword: 'Coacharte2025', // Contraseña temporal por defecto
+          currentPassword,
           newPassword: newPasswordValue,
         });
 
         if (result.success) {
-          toast.success('Contraseña actualizada exitosamente con bcrypt para mayor seguridad.');
+          const successMessage = isVoluntaryChange 
+            ? 'Contraseña actualizada exitosamente.' 
+            : 'Contraseña actualizada exitosamente con bcrypt para mayor seguridad.';
+          toast.success(successMessage);
           router.push('/home');
         } else {
           toast.error(result.message || 'Error al actualizar la contraseña');
@@ -103,14 +115,23 @@ export default function SetNewPasswordPage() {
     );
   }
 
-  // Textos específicos según el tipo de usuario
-  const formTitle = requiresPasswordChange
-    ? "Establece tu Contraseña Personalizada" 
-    : "Establecer Nueva Contraseña";
+  const handleCancel = () => {
+    // Para cambios voluntarios, navegar de vuelta sin afectar el estado de la sesión
+    router.push('/home');
+  };
+
+  // Textos específicos según el tipo de usuario y cambio
+  const formTitle = isVoluntaryChange
+    ? "Cambiar Contraseña"
+    : (requiresPasswordChange
+      ? "Establece tu Contraseña Personalizada" 
+      : "Establecer Nueva Contraseña");
     
-  const infoText = requiresPasswordChange
-    ? "Como es tu primer acceso, debes establecer una contraseña personalizada para futuras sesiones." 
-    : "Por favor, introduce y confirma tu nueva contraseña.";
+  const infoText = isVoluntaryChange
+    ? "Ingresa tu contraseña actual y luego establece una nueva contraseña para tu cuenta."
+    : (requiresPasswordChange
+      ? "Como es tu primer acceso, debes establecer una contraseña personalizada para futuras sesiones." 
+      : "Por favor, introduce y confirma tu nueva contraseña.");
 
   return (
     <SetPasswordForm
@@ -118,6 +139,20 @@ export default function SetNewPasswordPage() {
       infoText={infoText}
       isLoading={authIsLoading || isProcessing}
       onSubmit={handlePasswordSubmit}
+      requireCurrentPassword={isVoluntaryChange}
+      onCancel={isVoluntaryChange ? handleCancel : undefined}
     />
+  );
+}
+
+export default function SetNewPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <p className="text-xl text-gray-700">Cargando...</p>
+      </div>
+    }>
+      <SetNewPasswordContent />
+    </Suspense>
   );
 }
