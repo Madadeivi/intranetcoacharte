@@ -48,9 +48,18 @@ fi
 PROD_URL="https://zljualvricugqvcvaeht.supabase.co"
 STAGING_URL="https://ktjjiprulmqbvycbxxao.supabase.co"
 
-PROD_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsanVhbHZyaWN1Z3F2Y3ZhZWh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxMDMzNjQsImV4cCI6MjA2NDY3OTM2NH0.Wn82eTNriEzyWZafVpSeQtACIdRg9YXy885skgpp5yg"
-STAGING_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0amppcHJ1bG1xYnZ5Y2J4eGFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNzgyOTksImV4cCI6MjA2NDY1NDI5OX0.2cyj0F0X8vgmJRpOXUjJdD3st5nqP-w8wkaKTxLSr8E"
+# Cargar claves ANON desde variables de entorno
+if [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
+    print_color $RED "❌ Clave ANON de producción no encontrada en las variables de entorno"
+    exit 1
+fi
+PROD_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY"
 
+if [ -z "$STAGING_ANON_KEY" ]; then
+    print_color $RED "❌ Clave ANON de staging no encontrada en las variables de entorno"
+    exit 1
+fi
+STAGING_ANON_KEY="$STAGING_ANON_KEY"
 # Email de prueba
 TEST_EMAIL="david.dorantes@coacharte.mx"
 
