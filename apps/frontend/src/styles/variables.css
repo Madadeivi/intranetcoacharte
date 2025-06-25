@@ -38,6 +38,7 @@
   --color-text-placeholder: #999; /* Added from Home.css review */
   --color-text-tertiary: #4A5568; /* Assuming this was intended for notice-date or similar, common gray */
   --color-text-on-primary-muted: #ccc; /* Added for footer text on dark background */
+  --placeholder-text-color: #999; /* Para placeholders de inputs */
 
   /* Colores de Estado */
   --color-success-text: #2e7d32;
