@@ -58,7 +58,6 @@ interface ChangePasswordResult {
 interface CollaboratorData {
   id: string;
   email: string;
-  first_name: string | null;
   last_name: string | null;
   full_name: string | null;
   work_area: string | null;
@@ -385,7 +384,6 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       .select(`
         id,
         email,
-        first_name,
         last_name,
         full_name,
         work_area,
@@ -427,10 +425,10 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
     const fullUserData = {
       id: collaboratorData.id,
       email: collaboratorData.email,
-      firstName: collaboratorData.first_name || "",
+      firstName: "", // No disponible en el schema actual
       lastName: collaboratorData.last_name || "",
-      fullName: collaboratorData.full_name || `${collaboratorData.first_name || ""} ${collaboratorData.last_name || ""}`.trim(),
-      name: collaboratorData.full_name || `${collaboratorData.first_name || ""} ${collaboratorData.last_name || ""}`.trim(),
+      fullName: collaboratorData.full_name || collaboratorData.last_name || "",
+      name: collaboratorData.full_name || collaboratorData.last_name || "",
       workArea: collaboratorData.work_area || "",
       department: collaboratorData.work_area || "",
       title: collaboratorData.title || "",
@@ -442,7 +440,7 @@ async function handleCollaboratorLogin(supabase: SupabaseClientType, body: AuthP
       status: collaboratorData.status,
       // Generar iniciales para avatar si no tiene imagen
       initials: generateInitials(
-        collaboratorData.first_name ?? undefined, 
+        undefined, // firstName no disponible
         collaboratorData.last_name ?? undefined, 
         collaboratorData.full_name ?? undefined
       ),
@@ -848,16 +846,36 @@ async function handleResetPassword(supabase: SupabaseClientType, body: AuthPaylo
   }
 
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${Deno.env.get("CLIENT_URL_FROM_ENV")}/set-new-password`,
+    // MÉTODO HÍBRIDO: Usar tanto Supabase Auth como nuestro email-service personalizado
+    
+    // 1. Primero usar el método estándar de Supabase Auth
+    const clientUrl = Deno.env.get("CLIENT_URL_FROM_ENV") || "";
+    
+    const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${clientUrl}/set-new-password`,
     });
 
-    if (error) {
+    // 2. Paralelamente, enviar email personalizado usando nuestro email-service
+    const customEmailPromise = sendCustomPasswordResetEmail(email, clientUrl);
+
+    // Ejecutar ambos métodos
+    const [customEmailResult] = await Promise.allSettled([customEmailPromise]);
+
+    // Log de resultados para diagnóstico
+    console.log("Reset password results:", {
+      supabaseAuth: authError ? `Error: ${authError.message}` : "Success",
+      customEmail: customEmailResult.status === "fulfilled" ? "Success" : `Error: ${customEmailResult.reason}`,
+      email: email,
+      timestamp: new Date().toISOString()
+    });
+
+    // Si Supabase Auth falla pero nuestro email funciona, seguir adelante
+    if (authError && customEmailResult.status === "rejected") {
       return new Response(
         JSON.stringify({
           success: false,
           error: "Error al enviar email de recuperación",
-          details: error.message,
+          details: authError.message,
         }),
         {
           status: 500,
@@ -870,6 +888,10 @@ async function handleResetPassword(supabase: SupabaseClientType, body: AuthPaylo
       JSON.stringify({
         success: true,
         message: "Email de recuperación enviado exitosamente",
+        details: {
+          supabaseAuth: !authError,
+          customEmail: customEmailResult.status === "fulfilled"
+        }
       }),
       {
         status: 200,
@@ -890,6 +912,209 @@ async function handleResetPassword(supabase: SupabaseClientType, body: AuthPaylo
       }
     );
   }
+}
+
+/**
+ * Envía email personalizado de recuperación de contraseña usando nuestro email-service
+ */
+async function sendCustomPasswordResetEmail(email: string, clientUrl: string): Promise<void> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !serviceRoleKey || !clientUrl) {
+      throw new Error("Variables de entorno faltantes para email personalizado");
+    }
+
+    // Generar token temporal para reset (válido por 1 hora)
+    const resetToken = crypto.randomUUID();
+    const _expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora - para futura implementación
+    
+    // Guardar token en la base de datos (necesitaríamos crear una tabla para esto)
+    // Por ahora, generar URL directa de Supabase
+    const resetUrl = `${clientUrl}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+
+    // Generar HTML del email
+    const emailHtml = generatePasswordResetEmailHtml(email, resetUrl);
+
+    // Enviar usando nuestro email-service
+    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/email-service`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({
+        to: email,
+        subject: "Restablecer tu contraseña - Coacharte Intranet",
+        html: emailHtml,
+        from: Deno.env.get("DEFAULT_FROM_EMAIL") || "soporte@coacharte.mx",
+        notificationType: "password_reset",
+        userId: email, // Para auditoría
+      }),
+    });
+
+    if (!emailResponse.ok) {
+      const errorText = await emailResponse.text();
+      throw new Error(`Email service error: ${errorText}`);
+    }
+
+    const result = await emailResponse.json();
+    if (!result.success) {
+      throw new Error(`Email service failed: ${result.error}`);
+    }
+
+    console.log("Custom password reset email sent successfully:", {
+      email,
+      messageId: result.messageId,
+      provider: result.provider
+    });
+
+  } catch (error) {
+    console.error("Error sending custom password reset email:", error);
+    throw error;
+  }
+}
+
+/**
+ * Genera el HTML para el email de recuperación de contraseña
+ */
+function generatePasswordResetEmailHtml(email: string, resetUrl: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restablecer tu contraseña</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+        h1 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white !important;
+            padding: 14px 32px;
+            text-decoration: none !important;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid #2563eb;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .button:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+            border-color: #1d4ed8;
+        }
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        .warning {
+            background-color: #fef3cd;
+            border: 1px solid #fecaca;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="https://intranetcoacharte.com/assets/coacharte-logo.png" alt="Coacharte" class="logo">
+        </div>
+        
+        <h1>Restablecer tu contraseña</h1>
+        
+        <p>Hola,</p>
+        
+        <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en Coacharte Intranet asociada con el email <strong>${email}</strong>.</p>
+        
+        <p>Para restablecer tu contraseña, haz clic en el siguiente enlace:</p>
+        
+        <div class="button-container">
+            <p style="margin-bottom: 15px; color: #64748b; font-size: 14px;">
+                Haz clic en el botón para restablecer tu contraseña de forma segura:
+            </p>
+            <a href="${resetUrl}" class="button" style="display: inline-block; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white !important; padding: 14px 32px; text-decoration: none !important; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); border: 2px solid #2563eb; text-align: center; letter-spacing: 0.5px;">
+                🔐 Restablecer mi contraseña
+            </a>
+            <p style="margin-top: 15px; color: #64748b; font-size: 12px;">
+                Este enlace es válido por 1 hora
+            </p>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Importante:</strong>
+            <ul>
+                <li>Este enlace es válido solo por 1 hora por seguridad</li>
+                <li>Si no solicitaste este cambio, puedes ignorar este email</li>
+                <li>Tu contraseña actual seguirá siendo válida hasta que la cambies</li>
+            </ul>
+        </div>
+        
+        <p>Si tienes problemas con el enlace, copia y pega la siguiente URL en tu navegador:</p>
+        <p style="word-break: break-all; font-size: 12px; color: #666;">${resetUrl}</p>
+        
+        <div class="footer">
+            <p>Este email fue enviado automáticamente desde Coacharte Intranet.</p>
+            <p>Si necesitas ayuda, contacta a <a href="mailto:soporte@coacharte.mx">soporte@coacharte.mx</a></p>
+            <p>&copy; ${new Date().getFullYear()} Coacharte. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
+  `;
 }
 
 // Handler para validar token

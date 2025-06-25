@@ -322,7 +322,7 @@ const HomePage: React.FC = () => {
   };
 
   const handlePasswordChange = () => {
-    router.push('/set-new-password');
+    router.push('/set-new-password?voluntary=true');
   };
 
   useEffect(() => {

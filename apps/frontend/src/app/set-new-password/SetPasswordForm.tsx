@@ -11,7 +11,9 @@ interface SetPasswordFormProps {
   infoText?: string; 
   submitButtonText?: string;
   isLoading: boolean; 
-  onSubmit: (password: string) => Promise<void>; 
+  onSubmit: (password: string, currentPassword?: string) => Promise<void>; 
+  requireCurrentPassword?: boolean;
+  onCancel?: () => void;
 }
 
 const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
@@ -20,7 +22,10 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
   submitButtonText = 'Establecer Contraseña',
   isLoading,
   onSubmit,
+  requireCurrentPassword = false,
+  onCancel,
 }) => {
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { user } = useAuthStore();
@@ -37,7 +42,13 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
       toast.error('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
-    await onSubmit(newPassword);
+
+    if (requireCurrentPassword && !currentPassword) {
+      toast.error('Debes ingresar tu contraseña actual.');
+      return;
+    }
+
+    await onSubmit(newPassword, requireCurrentPassword ? currentPassword : undefined);
   };
 
   // Determinar el href del enlace de regreso
@@ -59,6 +70,20 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
         <h2>{formTitle}</h2>
         {infoText && <p className="mb-6 text-sm text-gray-600 text-center">{infoText}</p>} 
         <form onSubmit={internalHandleSubmit} className="set-password-form">
+          {requireCurrentPassword && (
+            <div className="form-group">
+              <label htmlFor="currentPassword">Contraseña Actual:</label>
+              <input
+                type="password"
+                id="currentPassword"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Ingresa tu contraseña actual"
+                autoComplete="current-password"
+                required
+              />
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="newPassword">Nueva Contraseña:</label>
             <input
@@ -91,9 +116,15 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
             {isLoading ? 'Procesando...' : submitButtonText}
           </button>
         </form>
-        <Link href={backLinkHref} className="back-to-login-button">
-          {currentUser ? 'Volver a Inicio' : 'Volver a Iniciar Sesión'}
-        </Link>
+        {onCancel ? (
+          <button onClick={onCancel} className="back-to-login-button" type="button">
+            Volver a Inicio
+          </button>
+        ) : (
+          <Link href={backLinkHref} className="back-to-login-button">
+            {currentUser ? 'Volver a Inicio' : 'Volver a Iniciar Sesión'}
+          </Link>
+        )}
       </div>
     </div>
   );
