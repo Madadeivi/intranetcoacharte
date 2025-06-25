@@ -24,9 +24,20 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  initials?: string;
   role: string;
   department?: string;
+  workArea?: string;
+  title?: string;
+  phone?: string;
   avatar?: string;
+  avatarUrl?: string;
+  hasCustomPassword?: boolean;
+  lastLoginAt?: string;
+  status?: string;
 }
 
 export interface AuthSession {

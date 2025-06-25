@@ -27,6 +27,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 
 import { useAuthStore } from '../../store/authStore'; 
 import SupportForm from '../../components/SupportForm';
+import Avatar from '../../components/Avatar';
 
 // Constantes de client_backup (adaptadas)
 const DISABLED_CARDS: string[] = [
@@ -419,14 +420,54 @@ const HomePage: React.FC = () => {
   }
 
   // Derivaciones de las propiedades del usuario
-  const userInitials = user?.name && user.name.trim().length > 0
-    ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0,2).toUpperCase()
-    : (user?.email?.[0]?.toUpperCase() || 'U');
-  const nameParts = user?.name?.split(' ') || [];
-  const firstName = nameParts[0] || user?.email || '';
-  const lastName = nameParts.slice(1).join(' ') || '';
+  // Función para generar iniciales mejorada
+  const generateUserInitials = (user: {
+    initials?: string;
+    fullName?: string;
+    name?: string;
+    email?: string;
+  } | null): string => {
+    // Si el backend ya envió las iniciales, usarlas
+    if (user?.initials && user.initials.length >= 2) {
+      return user.initials;
+    }
+    
+    // Si tenemos fullName, usar primer nombre y último apellido
+    if (user?.fullName && user.fullName.trim().length > 0) {
+      const nameParts = user.fullName.trim().split(' ').filter((part: string) => part.length > 0);
+      if (nameParts.length >= 2) {
+        return `${nameParts[0].charAt(0).toUpperCase()}${nameParts[nameParts.length - 1].charAt(0).toUpperCase()}`;
+      } else if (nameParts.length === 1) {
+        return nameParts[0].substring(0, 2).toUpperCase();
+      }
+    }
+    
+    // Fallback con user.name
+    if (user?.name && user.name.trim().length > 0) {
+      const nameParts = user.name.trim().split(' ').filter((part: string) => part.length > 0);
+      if (nameParts.length >= 2) {
+        return `${nameParts[0].charAt(0).toUpperCase()}${nameParts[nameParts.length - 1].charAt(0).toUpperCase()}`;
+      } else if (nameParts.length === 1) {
+        return nameParts[0].substring(0, 2).toUpperCase();
+      }
+    }
+    
+    // Último recurso: primera letra del email
+    return user?.email?.[0]?.toUpperCase() || 'U';
+  };
+
+  const userInitials = generateUserInitials(user);
+  
+  // Usar fullName preferentemente, luego name como fallback
+  const displayName = user?.fullName || user?.name || user?.email || '';
+  const userFullName = user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || displayName;
   const userEmail = user?.email || '';
 
+
+  // Extraer firstName y lastName para el formulario de soporte
+  const nameParts = userFullName.split(' ').filter((part: string) => part.length > 0);
+  const firstName = nameParts[0] || user?.email || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
 
   // JSX principal del componente HomePage
   return (
@@ -457,8 +498,14 @@ const HomePage: React.FC = () => {
               <path d="M11 20c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6V9c0-3.07-1.63-5.64-5-6.32V2a1 1 0 1 0-2 0v.68C6.63 3.36 5 5.92 5 9v5l-1.29 1.29A1 1 0 0 0 5 17h12a1 1 0 0 0 .71-1.71L17 14zM17 15H5v-1.17l1.41-1.41C6.79 12.21 7 11.7 7 11.17V9c0-2.76 1.12-5 4-5s4 2.24 4 5v2.17c0 .53.21 1.04.59 1.42L17 13.83V15z" fill="currentColor" />
             </svg>
           </span>
-          <span className="user-avatar">{userInitials}</span>
-          <span className="user-name">{firstName} {lastName}</span>
+          <Avatar
+            src={user?.avatarUrl || user?.avatar}
+            alt={`Avatar de ${displayName}`}
+            initials={user?.initials || userInitials}
+            size="md"
+            className="user-avatar"
+          />
+          <span className="user-name">{userFullName}</span>
           {/* Dropdown solo visible en desktop */}
           <span className="user-dropdown-arrow desktop-only" aria-label="Más opciones" onClick={() => setDropdownOpen(v => !v)} title="Opciones de usuario">
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -482,9 +529,15 @@ const HomePage: React.FC = () => {
         <div className="mobile-nav-menu" ref={mobileMenuRef}>
           {/* Información del usuario */}
           <div className="mobile-user-info">
-            <span className="mobile-user-avatar">{userInitials}</span>
+            <Avatar
+              src={user?.avatarUrl || user?.avatar}
+              alt={`Avatar de ${displayName}`}
+              initials={user?.initials || userInitials}
+              size="lg"
+              className="mobile-user-avatar"
+            />
             <div className="mobile-user-details">
-              <span className="mobile-user-name">{firstName} {lastName}</span>
+              <span className="mobile-user-name">{userFullName}</span>
               <span className="mobile-user-email">{userEmail}</span>
             </div>
           </div>

@@ -1,0 +1,144 @@
+/* Avatar Component Styles */
+
+/* Variables CSS fallback si no están definidas */
+:root {
+  --color-primary-100: #3b82f6;
+  --color-text-on-primary: #ffffff;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  font-weight: 600;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  flex-shrink: 0;
+}
+
+/* Compatibilidad con clases existentes */
+.avatar.user-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: var(--text-base);
+}
+
+.avatar.mobile-user-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: var(--text-base);
+}
+
+/* Tamaños del avatar */
+.avatar-sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: var(--text-xs);
+}
+
+.avatar-md {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: var(--text-sm);
+}
+
+.avatar-lg {
+  width: 3rem;
+  height: 3rem;
+  font-size: var(--text-base);
+}
+
+.avatar-xl {
+  width: 4rem;
+  height: 4rem;
+  font-size: var(--text-lg);
+}
+
+/* Estados interactivos */
+.avatar-clickable {
+  cursor: pointer;
+}
+
+.avatar-clickable:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+.avatar-clickable:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
+}
+
+/* Imagen del avatar */
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Iniciales del avatar */
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Imagen de precarga (oculta) */
+.avatar-preload {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Variantes de color */
+.avatar-secondary {
+  background-color: var(--color-secondary-100);
+  color: var(--color-text-on-secondary);
+}
+
+.avatar-success {
+  background-color: var(--color-success-100);
+  color: var(--color-text-on-success);
+}
+
+.avatar-warning {
+  background-color: var(--color-warning-100);
+  color: var(--color-text-on-warning);
+}
+
+.avatar-error {
+  background-color: var(--color-error-100);
+  color: var(--color-text-on-error);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .avatar-lg {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: var(--text-sm);
+  }
+  
+  .avatar-xl {
+    width: 3rem;
+    height: 3rem;
+    font-size: var(--text-base);
+  }
+}
