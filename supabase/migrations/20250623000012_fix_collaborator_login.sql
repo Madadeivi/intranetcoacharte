@@ -161,3 +161,8 @@ EXCEPTION WHEN OTHERS THEN
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Actualizar registros existentes para que tengan un internal_record
+UPDATE collaborators
+SET internal_record = CONCAT('COA-', LPAD(id::text, 4, '0'))
+WHERE internal_record IS NULL;

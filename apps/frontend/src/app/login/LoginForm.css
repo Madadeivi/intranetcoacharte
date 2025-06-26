@@ -276,12 +276,20 @@ body.login-page,
 body:has(.login-container) {
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
   min-height: 100vh;
+  max-height: 100vh; /* Limitar la altura máxima */
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
   padding: 1rem;
   box-sizing: border-box;
+  overflow: hidden; /* Evitar scroll innecesario */
+}
+
+/* Contenedor con altura optimizada */
+.login-page .login-container {
+  max-height: calc(100vh - 2rem); /* Altura máxima menos padding */
+  overflow-y: auto; /* Scroll interno si es necesario */
 }
 
 /* Responsive Design */

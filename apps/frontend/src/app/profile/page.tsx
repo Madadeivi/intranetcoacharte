@@ -44,7 +44,18 @@ export default function ProfilePage() {
         setError(null);
         
         // Por ahora usamos datos mock, luego se conectará con la API real
-        const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id);
+        // Pasamos la información del usuario logueado para generar datos mock más realistas
+        const userInfo = {
+          fullName: user.fullName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          avatarUrl: user.avatarUrl,
+          initials: user.initials,
+          internalRecord: user.internalRecord || 'COA-0000', // Asegurar un valor por defecto
+          phone: user.phone,
+        };
+        const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id, userInfo);
         setProfile(profileData);
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -65,7 +76,18 @@ export default function ProfilePage() {
       setError(null);
       
       // Por ahora usamos datos mock, luego se conectará con la API real
-      const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id);
+      // Pasamos la información del usuario logueado para generar datos mock más realistas
+      const userInfo = {
+        fullName: user.fullName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        initials: user.initials,
+        internalRecord: user.internalRecord || 'COA-0000', // Asegurar un valor por defecto
+        phone: user.phone,
+      };
+      const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id, userInfo);
       setProfile(profileData);
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -237,12 +259,12 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {profile.employeeId && (
+          {profile.internalRecord && (
             <div className="detail-item">
               <BadgeIcon className="detail-icon" />
               <div className="detail-content">
-                <span className="detail-label">ID Empleado</span>
-                <span className="detail-value">{profile.employeeId}</span>
+                <span className="detail-label">ID Interno</span>
+                <span className="detail-value">{profile.internalRecord}</span>
               </div>
             </div>
           )}
@@ -259,7 +281,7 @@ export default function ProfilePage() {
 
         {profile.documents.length > 0 ? (
           <div className="documents-list">
-            {profile.documents.map((doc) => (
+            {profile.documents.map((doc: CollaboratorDocument) => (
               <div key={doc.id} className="document-item">
                 <div className="document-icon">
                   {CollaboratorService.getDocumentIcon(doc.type)}

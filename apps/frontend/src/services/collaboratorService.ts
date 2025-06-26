@@ -1,4 +1,26 @@
 // Servicio para manejar datos del perfil del colaborador desde Zoho CRM
+
+// Interfaz extendida para datos del usuario desde el authStore
+interface UserInfo {
+  id?: string;
+  name?: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  title?: string;
+  position?: string;
+  department?: string;
+  workArea?: string;
+  avatar?: string;
+  avatarUrl?: string;
+  initials?: string;
+  internalRecord?: string; // Cambiado de employeeId a internalRecord
+  phone?: string;
+  status?: string;
+  role?: string;
+}
+
 export interface CollaboratorDocument {
   id: string;
   name: string;
@@ -21,7 +43,7 @@ export interface CollaboratorProfile {
   initials: string;
   documents: CollaboratorDocument[];
   phone?: string;
-  employeeId?: string;
+  internalRecord?: string; // Cambiado de employeeId a internalRecord
   status: 'Activo' | 'Inactivo' | 'Vacaciones';
 }
 
@@ -104,66 +126,33 @@ export class CollaboratorService {
   }
 
   // Función para generar datos de prueba (mock) mientras se implementa el backend
-  static async getMockCollaboratorProfile(collaboratorId: string): Promise<CollaboratorProfile> {
+  static async getMockCollaboratorProfile(collaboratorId: string, userInfo?: UserInfo): Promise<CollaboratorProfile> {
     // Simular delay de API
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    return {
+    if (!userInfo) {
+      throw new Error('No se pudo obtener la información del usuario desde Zoho CRM.');
+    }
+
+    const mockData = {
       id: collaboratorId,
-      fullName: 'María Elena González Rodríguez',
-      firstName: 'María Elena',
-      lastName: 'González Rodríguez',
-      email: 'maria.gonzalez@coacharte.com',
-      position: 'Coordinadora de Capacitación',
-      department: 'Recursos Humanos',
+      fullName: userInfo.fullName || userInfo.name || `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || 'Usuario Coacharte',
+      firstName: userInfo.firstName || (userInfo.name?.split(' ')[0] || '').trim() || 'Usuario',
+      lastName: userInfo.lastName || (userInfo.name?.split(' ').slice(1).join(' ') || '').trim() || 'Coacharte',
+      email: userInfo.email || 'usuario@coacharte.com',
+      position: userInfo.title || userInfo.position || 'Colaborador',
+      department: userInfo.department || userInfo.workArea || 'General',
       joinDate: '2023-03-15',
-      avatarUrl: '', // Vacío para probar con iniciales
-      initials: 'MG',
-      employeeId: 'COA-2023-015',
-      phone: '+52 55 1234-5678',
-      status: 'Activo',
-      documents: [
-        {
-          id: '1',
-          name: 'Contrato de Trabajo - María González.pdf',
-          type: 'Contrato',
-          url: '#',
-          uploadDate: '2023-03-15',
-          size: '2.4 MB'
-        },
-        {
-          id: '2',
-          name: 'Curriculum Vitae - María González.pdf',
-          type: 'CV',
-          url: '#',
-          uploadDate: '2023-03-15',
-          size: '1.8 MB'
-        },
-        {
-          id: '3',
-          name: 'Certificación en Coaching - María González.pdf',
-          type: 'Certificación',
-          url: '#',
-          uploadDate: '2023-05-20',
-          size: '3.2 MB'
-        },
-        {
-          id: '4',
-          name: 'Evaluación de Desempeño Q2-2024.pdf',
-          type: 'Evaluación',
-          url: '#',
-          uploadDate: '2024-07-15',
-          size: '1.5 MB'
-        },
-        {
-          id: '5',
-          name: 'Carta de Recomendación.pdf',
-          type: 'Referencia',
-          url: '#',
-          uploadDate: '2023-03-10',
-          size: '900 KB'
-        }
-      ]
+      avatarUrl: userInfo.avatar || userInfo.avatarUrl || '',
+      initials: userInfo.initials || this.generateInitials(userInfo.fullName || userInfo.name || 'UC'),
+      internalRecord: userInfo.internalRecord || `COA-${Date.now().toString().slice(-4)}`,
+      phone: userInfo.phone || '+52 55 0000-0000',
+      status: 'Activo' as const,
+    };
+
+    return {
+      ...mockData,
+      documents: [], // Sin documentos hardcodeados
     };
   }
 
@@ -205,5 +194,18 @@ export class CollaboratorService {
     };
 
     return iconMap[type] || iconMap.default;
+  }
+
+  static generateInitials(fullName: string): string {
+    if (!fullName || fullName.trim() === '') return 'UC';
+  
+    const names = fullName.trim().split(' ').filter(name => name.length > 0);
+    if (names.length === 0) return 'UC';
+    if (names.length === 1) {
+      return names[0].charAt(0).toUpperCase();
+    }
+    
+    // Tomar primera letra del primer nombre y primera letra del primer apellido
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
   }
 }
