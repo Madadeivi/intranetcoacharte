@@ -142,7 +142,7 @@ export class CollaboratorService {
       joinDate: '2023-03-15', // Se podría calcular o venir del backend
       avatarUrl: userInfo.avatar || userInfo.avatarUrl || '', // Vacío para probar con iniciales
       initials: userInfo.initials || this.generateInitials(userInfo.fullName || userInfo.name || 'UC'),
-      employeeId: userInfo.employeeId || `COA-${Date.now().toString().slice(-4)}`,
+      employeeId: userInfo.employeeId || `COA-${timestamp.toString().slice(-4)}`,
       phone: userInfo.phone || '+52 55 0000-0000',
       status: 'Activo' as const,
     } : {
