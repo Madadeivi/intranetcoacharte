@@ -142,23 +142,6 @@ export class CollaboratorService {
       email: userInfo.email || 'usuario@coacharte.com',
       position: userInfo.title || userInfo.position || 'Colaborador',
       department: userInfo.department || userInfo.workArea || 'General',
-<<<<<<< HEAD
-      joinDate: '2023-03-15', // Se podría calcular o venir del backend
-      avatarUrl: userInfo.avatar || userInfo.avatarUrl || '', // Vacío para probar con iniciales
-      initials: userInfo.initials || this.generateInitials(userInfo.fullName || userInfo.name || 'UC'),
-      employeeId: userInfo.employeeId || `COA-${timestamp.toString().slice(-4)}`,
-      phone: userInfo.phone || '+52 55 0000-0000',
-      status: 'Activo' as const,
-    } : {
-      id: collaboratorId,
-      fullName: 'María Elena González Rodríguez',
-      firstName: 'María Elena',
-      lastName: 'González Rodríguez',
-      email: 'maria.gonzalez@coacharte.com',
-      position: 'Coordinadora de Capacitación',
-      department: 'Recursos Humanos',
-=======
->>>>>>> d90e3bc (fix issues on reset password, get user info and profile user)
       joinDate: '2023-03-15',
       avatarUrl: userInfo.avatar || userInfo.avatarUrl || '',
       initials: userInfo.initials || this.generateInitials(userInfo.fullName || userInfo.name || 'UC'),

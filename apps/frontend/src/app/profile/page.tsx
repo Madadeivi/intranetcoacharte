@@ -45,9 +45,6 @@ export default function ProfilePage() {
         
         // Por ahora usamos datos mock, luego se conectará con la API real
         // Pasamos la información del usuario logueado para generar datos mock más realistas
-<<<<<<< HEAD
-        const profileData = await fetchMockCollaboratorProfile(user.id, user);
-=======
         const userInfo = {
           fullName: user.fullName,
           firstName: user.firstName,
@@ -59,7 +56,6 @@ export default function ProfilePage() {
           phone: user.phone,
         };
         const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id, userInfo);
->>>>>>> d90e3bc (fix issues on reset password, get user info and profile user)
         setProfile(profileData);
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -285,7 +281,7 @@ export default function ProfilePage() {
 
         {profile.documents.length > 0 ? (
           <div className="documents-list">
-            {profile.documents.map((doc) => (
+            {profile.documents.map((doc: CollaboratorDocument) => (
               <div key={doc.id} className="document-item">
                 <div className="document-icon">
                   {CollaboratorService.getDocumentIcon(doc.type)}
