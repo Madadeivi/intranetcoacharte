@@ -1,4 +1,26 @@
 // Servicio para manejar datos del perfil del colaborador desde Zoho CRM
+
+// Interfaz extendida para datos del usuario desde el authStore
+interface UserInfo {
+  id?: string;
+  name?: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  title?: string;
+  position?: string;
+  department?: string;
+  workArea?: string;
+  avatar?: string;
+  avatarUrl?: string;
+  initials?: string;
+  employeeId?: string;
+  phone?: string;
+  status?: string;
+  role?: string;
+}
+
 export interface CollaboratorDocument {
   id: string;
   name: string;
@@ -104,11 +126,26 @@ export class CollaboratorService {
   }
 
   // Función para generar datos de prueba (mock) mientras se implementa el backend
-  static async getMockCollaboratorProfile(collaboratorId: string): Promise<CollaboratorProfile> {
+  static async getMockCollaboratorProfile(collaboratorId: string, userInfo?: UserInfo): Promise<CollaboratorProfile> {
     // Simular delay de API
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    return {
+    // Si hay información del usuario logueado, usarla; sino usar datos por defecto
+    const mockData = userInfo ? {
+      id: collaboratorId,
+      fullName: userInfo.fullName || userInfo.name || `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || 'Usuario Coacharte',
+      firstName: userInfo.firstName || userInfo.name?.split(' ')[0] || 'Usuario',
+      lastName: userInfo.lastName || userInfo.name?.split(' ').slice(1).join(' ') || 'Coacharte',
+      email: userInfo.email || 'usuario@coacharte.com',
+      position: userInfo.title || userInfo.position || 'Colaborador',
+      department: userInfo.department || userInfo.workArea || 'General',
+      joinDate: '2023-03-15', // Se podría calcular o venir del backend
+      avatarUrl: userInfo.avatar || userInfo.avatarUrl || '', // Vacío para probar con iniciales
+      initials: userInfo.initials || this.generateInitials(userInfo.fullName || userInfo.name || 'UC'),
+      employeeId: userInfo.employeeId || `COA-${Date.now().toString().slice(-4)}`,
+      phone: userInfo.phone || '+52 55 0000-0000',
+      status: 'Activo' as const,
+    } : {
       id: collaboratorId,
       fullName: 'María Elena González Rodríguez',
       firstName: 'María Elena',
@@ -121,7 +158,11 @@ export class CollaboratorService {
       initials: 'MG',
       employeeId: 'COA-2023-015',
       phone: '+52 55 1234-5678',
-      status: 'Activo',
+      status: 'Activo' as const,
+    };
+
+    return {
+      ...mockData,
       documents: [
         {
           id: '1',
@@ -205,5 +246,17 @@ export class CollaboratorService {
     };
 
     return iconMap[type] || iconMap.default;
+  }
+
+  static generateInitials(fullName: string): string {
+    if (!fullName || fullName.trim() === '') return 'UC';
+    
+    const names = fullName.trim().split(' ');
+    if (names.length === 1) {
+      return names[0].charAt(0).toUpperCase();
+    }
+    
+    // Tomar primera letra del primer nombre y primera letra del primer apellido
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
   }
 }

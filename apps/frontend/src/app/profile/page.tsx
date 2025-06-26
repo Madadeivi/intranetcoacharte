@@ -44,7 +44,8 @@ export default function ProfilePage() {
         setError(null);
         
         // Por ahora usamos datos mock, luego se conectará con la API real
-        const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id);
+        // Pasamos la información del usuario logueado para generar datos mock más realistas
+        const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id, user);
         setProfile(profileData);
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -65,7 +66,8 @@ export default function ProfilePage() {
       setError(null);
       
       // Por ahora usamos datos mock, luego se conectará con la API real
-      const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id);
+      // Pasamos la información del usuario logueado para generar datos mock más realistas
+      const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id, user);
       setProfile(profileData);
     } catch (err) {
       console.error('Error loading profile:', err);
