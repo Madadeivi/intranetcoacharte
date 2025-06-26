@@ -15,7 +15,7 @@ interface UserInfo {
   avatar?: string;
   avatarUrl?: string;
   initials?: string;
-  employeeId?: string;
+  internalRecord?: string; // Cambiado de employeeId a internalRecord
   phone?: string;
   status?: string;
   role?: string;
@@ -43,7 +43,7 @@ export interface CollaboratorProfile {
   initials: string;
   documents: CollaboratorDocument[];
   phone?: string;
-  employeeId?: string;
+  internalRecord?: string; // Cambiado de employeeId a internalRecord
   status: 'Activo' | 'Inactivo' | 'Vacaciones';
 }
 
@@ -130,15 +130,19 @@ export class CollaboratorService {
     // Simular delay de API
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Si hay información del usuario logueado, usarla; sino usar datos por defecto
-    const mockData = userInfo ? {
+    if (!userInfo) {
+      throw new Error('No se pudo obtener la información del usuario desde Zoho CRM.');
+    }
+
+    const mockData = {
       id: collaboratorId,
       fullName: userInfo.fullName || userInfo.name || `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || 'Usuario Coacharte',
-      firstName: userInfo.firstName || userInfo.name?.split(' ')[0] || 'Usuario',
-      lastName: userInfo.lastName || userInfo.name?.split(' ').slice(1).join(' ') || 'Coacharte',
+      firstName: userInfo.firstName || (userInfo.name?.split(' ')[0] || '').trim() || 'Usuario',
+      lastName: userInfo.lastName || (userInfo.name?.split(' ').slice(1).join(' ') || '').trim() || 'Coacharte',
       email: userInfo.email || 'usuario@coacharte.com',
       position: userInfo.title || userInfo.position || 'Colaborador',
       department: userInfo.department || userInfo.workArea || 'General',
+<<<<<<< HEAD
       joinDate: '2023-03-15', // Se podría calcular o venir del backend
       avatarUrl: userInfo.avatar || userInfo.avatarUrl || '', // Vacío para probar con iniciales
       initials: userInfo.initials || this.generateInitials(userInfo.fullName || userInfo.name || 'UC'),
@@ -153,58 +157,19 @@ export class CollaboratorService {
       email: 'maria.gonzalez@coacharte.com',
       position: 'Coordinadora de Capacitación',
       department: 'Recursos Humanos',
+=======
+>>>>>>> d90e3bc (fix issues on reset password, get user info and profile user)
       joinDate: '2023-03-15',
-      avatarUrl: '', // Vacío para probar con iniciales
-      initials: 'MG',
-      employeeId: 'COA-2023-015',
-      phone: '+52 55 1234-5678',
+      avatarUrl: userInfo.avatar || userInfo.avatarUrl || '',
+      initials: userInfo.initials || this.generateInitials(userInfo.fullName || userInfo.name || 'UC'),
+      internalRecord: userInfo.internalRecord || `COA-${Date.now().toString().slice(-4)}`,
+      phone: userInfo.phone || '+52 55 0000-0000',
       status: 'Activo' as const,
     };
 
     return {
       ...mockData,
-      documents: [
-        {
-          id: '1',
-          name: 'Contrato de Trabajo - María González.pdf',
-          type: 'Contrato',
-          url: '#',
-          uploadDate: '2023-03-15',
-          size: '2.4 MB'
-        },
-        {
-          id: '2',
-          name: 'Curriculum Vitae - María González.pdf',
-          type: 'CV',
-          url: '#',
-          uploadDate: '2023-03-15',
-          size: '1.8 MB'
-        },
-        {
-          id: '3',
-          name: 'Certificación en Coaching - María González.pdf',
-          type: 'Certificación',
-          url: '#',
-          uploadDate: '2023-05-20',
-          size: '3.2 MB'
-        },
-        {
-          id: '4',
-          name: 'Evaluación de Desempeño Q2-2024.pdf',
-          type: 'Evaluación',
-          url: '#',
-          uploadDate: '2024-07-15',
-          size: '1.5 MB'
-        },
-        {
-          id: '5',
-          name: 'Carta de Recomendación.pdf',
-          type: 'Referencia',
-          url: '#',
-          uploadDate: '2023-03-10',
-          size: '900 KB'
-        }
-      ]
+      documents: [], // Sin documentos hardcodeados
     };
   }
 

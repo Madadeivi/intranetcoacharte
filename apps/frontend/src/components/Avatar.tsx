@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Avatar.css';
+import Image from 'next/image';
 
 interface AvatarProps {
   /** URL de la imagen del avatar */
@@ -67,12 +68,14 @@ const Avatar: React.FC<AvatarProps> = ({
       })}
     >
       {showImage ? (
-        <img
+        <Image
           src={src}
           alt={alt || 'Avatar del usuario'}
+          width={100}
+          height={100}
+          className="avatar-img"
           onLoad={handleImageLoad}
           onError={handleImageError}
-          className="avatar-image"
         />
       ) : (
         <span className="avatar-initials">
@@ -82,10 +85,12 @@ const Avatar: React.FC<AvatarProps> = ({
       
       {/* Imagen oculta para pre-cargar */}
       {src && !imageLoaded && !imageError && (
-        <img
+        <Image
           src={src}
           alt=""
           className="avatar-preload"
+          width={100}
+          height={100}
           onLoad={handleImageLoad}
           onError={handleImageError}
         />

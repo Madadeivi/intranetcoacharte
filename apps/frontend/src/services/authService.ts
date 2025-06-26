@@ -38,6 +38,7 @@ export interface User {
   hasCustomPassword?: boolean;
   lastLoginAt?: string;
   status?: string;
+  internalRecord?: string; // Cambiado de employeeId a internalRecord
 }
 
 export interface AuthSession {

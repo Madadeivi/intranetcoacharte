@@ -82,3 +82,6 @@ CREATE POLICY "collaborators_read_policy" ON public.collaborators
 
 CREATE POLICY "collaborators_write_policy" ON public.collaborators
     FOR ALL USING (true);
+
+ALTER TABLE collaborators
+RENAME COLUMN employee_id TO internal_record;

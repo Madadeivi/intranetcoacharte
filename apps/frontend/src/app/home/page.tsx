@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import 'react-calendar/dist/Calendar.css';
 import Calendar from 'react-calendar';
+import Image from 'next/image';
 
 // Iconos existentes en el archivo actual de Next.js
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -474,7 +475,7 @@ const HomePage: React.FC = () => {
       {/* Header y barra de navegación */}
       <header className="home-header">
         <div className="logo">
-          <img src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="home-logo-img" />
+          <Image src="/assets/coacharte-logo.png" alt="Logo Coacharte" width={200} height={100} className="home-logo-img" />
         </div>
         <nav className="home-nav">
           {navItems.map(item => (
@@ -705,7 +706,7 @@ const HomePage: React.FC = () => {
               title: "Modelo de Cultura Integral", 
               detail: "Coacharte presenta su nuevo **Modelo de Cultura Integral** que fortalecerá nuestros valores organizacionales.\n\nEste modelo integra prácticas de bienestar, desarrollo profesional y compromiso social para crear un ambiente de trabajo más inclusivo y colaborativo."
             })}>
-              <img src="/assets/banner_modelo.png" alt="Modelo de Cultura Integral" className="notice-card-img" />
+              <Image src="/assets/banner_modelo.png" alt="Modelo de Cultura Integral" width={300} height={150} className="notice-card-img" />
               <div className="notice-card-content">
                 <div className="notice-date">5 Jun 2025</div>
                 <h4>Modelo de Cultura Integral</h4>
@@ -718,7 +719,7 @@ const HomePage: React.FC = () => {
               title: "Ajuste Salarial 2024", 
               detail: "Se ha implementado el **ajuste salarial anual correspondiente al 2024**.\n\nEl incremento se verá reflejado en la nómina de este mes. Consulta tu nuevo salario en el portal de recursos humanos."
             })}>
-              <img src="/assets/banner_ajuste.png" alt="Ajuste Salarial 2024" className="notice-card-img" />
+              <Image src="/assets/banner_ajuste.png" alt="Ajuste Salarial 2024" width={300} height={150} className="notice-card-img" />
               <div className="notice-card-content">
                 <div className="notice-date">10 Jun 2025</div>
                 <h4>Ajuste Salarial 2024</h4>
@@ -731,7 +732,7 @@ const HomePage: React.FC = () => {
               title: "Bono 2024", 
               detail: "¡Excelentes noticias! Se ha aprobado el **bono de productividad 2024** para todos los colaboradores.\n\nEl bono se pagará junto con la nómina del próximo mes. ¡Gracias por su excelente desempeño durante este año!"
             })}>
-              <img src="/assets/banner_bono.png" alt="Bono 2024" className="notice-card-img" />
+              <Image src="/assets/banner_bono.png" alt="Bono 2024" width={300} height={150} className="notice-card-img" />
               <div className="notice-card-content">
                 <div className="notice-date">8 Jun 2025</div>
                 <h4>Bono 2024</h4>
@@ -744,7 +745,7 @@ const HomePage: React.FC = () => {
               title: "Día del Padre", 
               detail: "Este **15 de Junio** celebramos el Día del Padre en Coacharte.\n\n¡Todos los papás de nuestra empresa tendrán un día especial con actividades, sorpresas y un reconocimiento especial por ser padres ejemplares!"
             })}>
-              <img src="/assets/banner_padre.png" alt="Día del Padre" className="notice-card-img" />
+              <Image src="/assets/banner_padre.png" alt="Día del Padre" width={300} height={150} className="notice-card-img" />
               <div className="notice-card-content">
                 <div className="notice-date">3 Jun 2025</div>
                 <h4>Día del Padre</h4>
@@ -862,7 +863,7 @@ const HomePage: React.FC = () => {
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-brand-section">
-            <img src="/assets/coacharte-bco@4x.png" alt="Coacharte Blanco" className="footer-logo" />
+            <Image src="/assets/coacharte-bco@4x.png" alt="Coacharte Blanco" width={200} height={100} className="footer-logo" />
             <p className="footer-slogan">Transformando vidas a través del coaching empresarial</p>
           </div>
           <div className="footer-links-section">
