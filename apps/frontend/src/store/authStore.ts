@@ -17,7 +17,7 @@ import authService, { User, LoginCredentials, ChangePasswordData, AuthResult } f
 
 interface AuthState {
   // Estado
-  user: User | null | undefined; // Cambiado para aceptar undefined
+  user: User | null;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -42,7 +42,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   // ===== ESTADO INICIAL =====
-  user: undefined, // Cambiado de null a undefined
+  user: null,
   isLoading: true,
   error: null,
   isAuthenticated: false,
@@ -68,12 +68,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           requiresPasswordChange: result.requiresPasswordChange || false
         });
         
-        return result;
+        return {
+          success: true,
+          message: result.message,
+          user: result.user,
+          requiresPasswordChange: result.requiresPasswordChange,
+          usingDefaultPassword: result.usingDefaultPassword,
+          passwordMigrated: result.passwordMigrated
+        };
       } else {
         set({
           isLoading: false,
           error: result.message || 'Error de inicio de sesión',
-          user: undefined,
+          user: null,
           isAuthenticated: false,
           requiresPasswordChange: false
         });
@@ -81,7 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return {
           success: false,
           message: result.message || 'Error de inicio de sesión',
-          code: result.code || 'UNKNOWN_ERROR',
+          code: result.code
         };
       }
     } catch (error: unknown) {
@@ -90,7 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         isLoading: false,
         error: errorMessage,
-        user: undefined,
+        user: null,
         isAuthenticated: false,
         requiresPasswordChange: false
       });
@@ -98,7 +105,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return {
         success: false,
         message: errorMessage,
-        code: 'CONNECTION_ERROR',
+        code: 'CONNECTION_ERROR'
       };
     }
   },
@@ -121,12 +128,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           requiresPasswordChange: false
         });
         
-        return result;
+        return {
+          success: true,
+          message: result.message,
+          user: result.user
+        };
       } else {
         set({
           isLoading: false,
           error: result.message || 'Credenciales incorrectas',
-          user: undefined,
+          user: null,
           isAuthenticated: false,
           requiresPasswordChange: false
         });
@@ -134,7 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return {
           success: false,
           message: result.message || 'Credenciales incorrectas',
-          code: result.code || 'UNKNOWN_ERROR',
+          code: result.code
         };
       }
     } catch (error: unknown) {
@@ -143,7 +154,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         isLoading: false,
         error: errorMessage,
-        user: undefined,
+        user: null,
         isAuthenticated: false,
         requiresPasswordChange: false
       });
@@ -151,7 +162,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return {
         success: false,
         message: errorMessage,
-        code: 'CONNECTION_ERROR',
+        code: 'CONNECTION_ERROR'
       };
     }
   },
@@ -175,9 +186,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al cerrar sesión.';
       
+      // Aunque haya error, limpiar el estado local
       set({
+        user: null,
         isLoading: false,
-        error: errorMessage
+        error: errorMessage,
+        isAuthenticated: false,
+        requiresPasswordChange: false
       });
     }
   },
