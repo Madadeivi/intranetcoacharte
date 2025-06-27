@@ -146,7 +146,7 @@ const MIN_PASSWORD_LENGTH = 8;
 // Función para validar permisos específicos
 function hasPermission(user: AuthUser | undefined, action: string): boolean {
   // Acciones públicas que no requieren autenticación
-  const publicActions = ["login", "collaborator-login", "register", "reset-password"];
+  const publicActions = ["login", "collaborator-login", "register", "reset-password", "change-password", "set-new-password"];
   if (publicActions.includes(action)) {
     return true;
   }
@@ -203,7 +203,7 @@ serve(async (req: Request) => {
       const { action } = body;
 
       // Acciones públicas que no requieren autenticación JWT
-      const publicActions = ["login", "collaborator-login", "register", "reset-password", "change-password"];
+      const publicActions = ["login", "collaborator-login", "register", "reset-password", "change-password", "set-new-password"];
       const adminActions = ["admin-set-password"]; // Acciones administrativas que usan service role directamente
       let authValidation: { valid: boolean; user?: AuthUser; error?: string } = { valid: true };
       let authHeader: string | null = null;
@@ -258,6 +258,10 @@ serve(async (req: Request) => {
         case "reset-password":
           return await handleResetPassword(supabase, body);
 
+        // Establecer nueva contraseña (después del reset)
+        case "set-new-password":
+          return await handleSetNewPassword(supabase, body);
+
         // Validar token
         case "validate-token":
           return await handleValidateToken(supabase, authValidation.user!);
@@ -282,7 +286,7 @@ serve(async (req: Request) => {
               error: "Acción no válida",
               availableActions: [
                 "login", "collaborator-login", "login-regular", "register", 
-                "change-password", "update-profile", "reset-password", 
+                "change-password", "update-profile", "reset-password", "set-new-password",
                 "validate-token", "logout", "get-stats"
               ],
             }),
@@ -1115,6 +1119,110 @@ function generatePasswordResetEmailHtml(email: string, resetUrl: string): string
 </body>
 </html>
   `;
+}
+
+// Handler para establecer nueva contraseña (después del reset)
+async function handleSetNewPassword(supabase: SupabaseClientType, body: AuthPayload) {
+  const { email, newPassword } = body;
+
+  if (!email || !newPassword) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Email y nueva contraseña son requeridos",
+        error_code: "MISSING_FIELDS",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // Validar que la nueva contraseña cumple con los requisitos mínimos
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: `La nueva contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`,
+        error_code: "PASSWORD_TOO_SHORT",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  try {
+    // Usar la función SQL para resetear contraseña (sin requerir contraseña actual)
+    const { data: resetResult, error: resetError } = await supabase.rpc(
+      "reset_collaborator_password",
+      {
+        user_email: email.toLowerCase().trim(),
+        new_password: newPassword
+      }
+    );
+
+    if (resetError) {
+      console.error("Error en reset de contraseña:", resetError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error interno del servidor",
+          details: resetError.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Verificar el resultado de la función SQL
+    if (!resetResult || !resetResult.success) {
+      const errorMessage = resetResult?.error || "Error desconocido";
+      const errorCode = resetResult?.error_code || "UNKNOWN_ERROR";
+      
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: errorMessage,
+          error_code: errorCode,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Respuesta exitosa
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Contraseña establecida exitosamente",
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+
+  } catch (error) {
+    console.error("Error al establecer nueva contraseña:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Error interno del servidor",
+        details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
 }
 
 // Handler para validar token

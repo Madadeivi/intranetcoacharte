@@ -83,5 +83,15 @@ CREATE POLICY "collaborators_read_policy" ON public.collaborators
 CREATE POLICY "collaborators_write_policy" ON public.collaborators
     FOR ALL USING (true);
 
+-- Actualizar registros existentes para que tengan un internal_record
+-- Agregar columna internal_record si no existe
 ALTER TABLE collaborators
-RENAME COLUMN employee_id TO internal_record;
+ADD COLUMN IF NOT EXISTS internal_record VARCHAR(100);
+
+-- Solo renombrar si employee_id existe
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'collaborators'::regclass AND attname = 'employee_id') THEN
+        ALTER TABLE collaborators RENAME COLUMN employee_id TO internal_record;
+    END IF;
+END $$;

@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuración
-FRONTEND_URL=${FRONTEND_URL:-"https://intranetcoacharte.vercel.app"}
+FRONTEND_URL=${FRONTEND_URL:-"https://www.intranetcoacharte.com"}
 STAGING_URL=${STAGING_URL:-"https://intranetcoacharte-staging.vercel.app"}
 
 echo -e "${BLUE}🏥 HEALTH CHECK - Intranet Coacharte${NC}"

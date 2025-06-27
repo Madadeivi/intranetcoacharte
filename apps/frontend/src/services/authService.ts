@@ -12,7 +12,7 @@
  */
 
 import { 
-  getApiConfig, 
+  apiConfig, 
   makeApiRequest, 
   UnifiedAuthRequest, 
   UnifiedAuthResponse
@@ -24,21 +24,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  fullName?: string;
-  firstName?: string;
-  lastName?: string;
-  initials?: string;
   role: string;
   department?: string;
-  workArea?: string;
-  title?: string;
-  phone?: string;
   avatar?: string;
-  avatarUrl?: string;
-  hasCustomPassword?: boolean;
-  lastLoginAt?: string;
-  status?: string;
-  internalRecord?: string; // Cambiado de employeeId a internalRecord
 }
 
 export interface AuthSession {
@@ -110,7 +98,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        getApiConfig().endpoints.unifiedAuth.login,
+        apiConfig.endpoints.unifiedAuth.login,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -133,17 +121,9 @@ class UnifiedAuthService {
             usingDefaultPassword: result.using_default_password,
             passwordMigrated: result.password_migrated
           };
-        } else {
-          console.warn('Login failed - server returned:', result);
-          return {
-            success: false,
-            message: result.message || result.error || 'Error de autenticación del servidor',
-            code: result.error_code || 'SERVER_AUTH_FAILED'
-          };
         }
       }
 
-      console.warn('Login failed - no valid response structure:', response);
       return {
         success: false,
         message: response.error || 'Error de inicio de sesión',
@@ -171,7 +151,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        getApiConfig().endpoints.unifiedAuth.regularLogin,
+        apiConfig.endpoints.unifiedAuth.regularLogin,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -218,7 +198,7 @@ class UnifiedAuthService {
 
       const token = this.getToken();
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        getApiConfig().endpoints.unifiedAuth.changePassword,
+        apiConfig.endpoints.unifiedAuth.changePassword,
         {
           method: 'POST',
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
@@ -265,7 +245,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        getApiConfig().endpoints.unifiedAuth.resetPassword,
+        apiConfig.endpoints.unifiedAuth.resetPassword,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -293,6 +273,45 @@ class UnifiedAuthService {
   }
 
   /**
+   * Establecer nueva contraseña (después del reset)
+   */
+  async setNewPassword(email: string, newPassword: string): Promise<AuthResult> {
+    try {
+      const request: UnifiedAuthRequest = {
+        action: 'set-new-password',
+        email: email,
+        newPassword: newPassword
+      };
+
+      const response = await makeApiRequest<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.resetPassword,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+
+      if (response.success && response.data?.success) {
+        return {
+          success: true,
+          message: response.data.message || 'Contraseña actualizada exitosamente'
+        };
+      }
+
+      return {
+        success: false,
+        message: response.error || 'Error al actualizar contraseña'
+      };
+    } catch (error) {
+      console.error('Error al establecer nueva contraseña:', error);
+      return {
+        success: false,
+        message: 'Error de conexión'
+      };
+    }
+  }
+
+  /**
    * Validar token actual
    */
   async validateToken(): Promise<AuthResult> {
@@ -307,7 +326,7 @@ class UnifiedAuthService {
       };
 
       const response = await makeApiRequest<UnifiedAuthResponse>(
-        getApiConfig().endpoints.unifiedAuth.validate,
+        apiConfig.endpoints.unifiedAuth.validate,
         {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
@@ -354,7 +373,7 @@ class UnifiedAuthService {
         };
 
         await makeApiRequest<UnifiedAuthResponse>(
-          getApiConfig().endpoints.unifiedAuth.logout,
+          apiConfig.endpoints.unifiedAuth.logout,
           {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },

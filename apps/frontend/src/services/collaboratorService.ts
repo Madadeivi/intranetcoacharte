@@ -49,11 +49,25 @@ export interface CollaboratorProfile {
 
 export class CollaboratorService {
   private static baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://your-project.supabase.co/functions/v1' 
+    ? 'https://zljualvricugqvcvaeht.supabase.co/functions/v1' 
     : 'http://localhost:54321/functions/v1';
 
-  static async getCollaboratorProfile(collaboratorId: string): Promise<CollaboratorProfile> {
+  static async getCollaboratorProfile(collaboratorId: string, userInfo?: UserInfo): Promise<CollaboratorProfile> {
     try {
+      // Intentar obtener datos de la base de datos primero
+      const dbResponse = await fetch(`${this.baseUrl}/collaborator-db/${collaboratorId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (dbResponse.ok) {
+        const data = await dbResponse.json();
+        return data;
+      }
+
+      // Si falla la base de datos, intentar Zoho CRM
       const response = await fetch(`${this.baseUrl}/collaborator-profile/profile/${collaboratorId}`, {
         method: 'GET',
         headers: {
@@ -62,21 +76,25 @@ export class CollaboratorService {
       });
 
       if (!response.ok) {
-        // Si la API falla, usar datos mock como fallback
-        console.warn(`API failed with status ${response.status}, using mock data`);
-        return this.getMockCollaboratorProfile(collaboratorId);
+        console.warn(`API failed with status ${response.status}, using fallback data`);
+        if (userInfo) {
+          return this.getMockCollaboratorProfile(collaboratorId, userInfo);
+        }
+        throw new Error('No se pudo obtener la información del colaborador');
       }
 
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching collaborator profile, using mock data:', error);
-      // En caso de error, usar datos mock como fallback
-      return this.getMockCollaboratorProfile(collaboratorId);
+      console.error('Error fetching collaborator profile:', error);
+      if (userInfo) {
+        return this.getMockCollaboratorProfile(collaboratorId, userInfo);
+      }
+      throw new Error('No se pudo obtener la información del colaborador');
     }
   }
 
-  static async getCollaboratorDocuments(collaboratorId: string): Promise<CollaboratorDocument[]> {
+  static async getCollaboratorDocuments(collaboratorId: string, userInfo?: UserInfo): Promise<CollaboratorDocument[]> {
     try {
       const response = await fetch(`${this.baseUrl}/collaborator-profile/documents/${collaboratorId}`, {
         method: 'GET',
@@ -86,17 +104,23 @@ export class CollaboratorService {
       });
 
       if (!response.ok) {
-        console.warn(`API failed with status ${response.status}, using mock data`);
-        const mockProfile = await this.getMockCollaboratorProfile(collaboratorId);
-        return mockProfile.documents;
+        console.warn(`API failed with status ${response.status}, using fallback data`);
+        if (userInfo) {
+          const mockProfile = await this.getMockCollaboratorProfile(collaboratorId, userInfo);
+          return mockProfile.documents;
+        }
+        return [];
       }
 
       const data = await response.json();
       return data.documents || [];
     } catch (error) {
-      console.error('Error fetching collaborator documents, using mock data:', error);
-      const mockProfile = await this.getMockCollaboratorProfile(collaboratorId);
-      return mockProfile.documents;
+      console.error('Error fetching collaborator documents:', error);
+      if (userInfo) {
+        const mockProfile = await this.getMockCollaboratorProfile(collaboratorId, userInfo);
+        return mockProfile.documents;
+      }
+      return [];
     }
   }
 

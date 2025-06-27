@@ -46,16 +46,13 @@ export default function ProfilePage() {
         // Por ahora usamos datos mock, luego se conectará con la API real
         // Pasamos la información del usuario logueado para generar datos mock más realistas
         const userInfo = {
-          fullName: user.fullName,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          id: user.id,
+          name: user.name,
           email: user.email,
-          avatarUrl: user.avatarUrl,
-          initials: user.initials,
-          internalRecord: user.internalRecord || 'COA-0000', // Asegurar un valor por defecto
-          phone: user.phone,
+          department: user.department,
+          avatarUrl: user.avatar,
         };
-        const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id, userInfo);
+        const profileData = await CollaboratorService.getCollaboratorProfile(user.id, userInfo);
         setProfile(profileData);
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -75,19 +72,14 @@ export default function ProfilePage() {
       setLoading(true);
       setError(null);
       
-      // Por ahora usamos datos mock, luego se conectará con la API real
-      // Pasamos la información del usuario logueado para generar datos mock más realistas
       const userInfo = {
-        fullName: user.fullName,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: user.id,
+        name: user.name,
         email: user.email,
-        avatarUrl: user.avatarUrl,
-        initials: user.initials,
-        internalRecord: user.internalRecord || 'COA-0000', // Asegurar un valor por defecto
-        phone: user.phone,
+        department: user.department,
+        avatarUrl: user.avatar,
       };
-      const profileData = await CollaboratorService.getMockCollaboratorProfile(user.id, userInfo);
+      const profileData = await CollaboratorService.getCollaboratorProfile(user.id, userInfo);
       setProfile(profileData);
     } catch (err) {
       console.error('Error loading profile:', err);
