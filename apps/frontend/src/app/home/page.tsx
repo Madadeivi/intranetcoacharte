@@ -30,7 +30,6 @@ import SupportForm from '../../components/SupportForm';
 
 // Constantes de client_backup (adaptadas)
 const DISABLED_CARDS: string[] = [
-  'Mi Cuenta',
   'Recursos Humanos', 
   'Procesos y Documentación', 
   'Soporte y Comunicación', 
@@ -97,7 +96,7 @@ const debounce = <T extends (...args: unknown[]) => void>(func: T, wait: number)
 
 const navItems = [
   { label: 'Inicio', href: '/home' },
-  { label: 'Mi Cuenta', href: '#' }, // Mantener # si aún no hay ruta
+  { label: 'Mi Cuenta', href: '/profile' },
   { label: 'Recursos Humanos', href: '#' },
   { label: 'Procesos', href: '#' },
 ];
@@ -322,7 +321,7 @@ const HomePage: React.FC = () => {
   };
 
   const handlePasswordChange = () => {
-    router.push('/set-new-password');
+    router.push('/set-new-password?voluntary=true');
   };
 
   useEffect(() => {
@@ -589,7 +588,7 @@ const HomePage: React.FC = () => {
               <AccountCircleIcon className="main-card-icon" />
               <h3>Mi Cuenta</h3>
               <p>Gestiona tu perfil, documentos y accesos</p>
-              <a href="#" onClick={(e) => e.preventDefault()}>Acceder</a>
+              <Link href="/profile">Acceder</Link>
             </div>
             <div className={`main-card ${DISABLED_CARDS.includes('Recursos Humanos') ? 'disabled' : ''}`}>
               <GroupsIcon className="main-card-icon" />
@@ -761,10 +760,10 @@ const HomePage: React.FC = () => {
               <EventIcon className="quicklink-icon" />
               <h3>Calendario de Eventos</h3>
             </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+            <Link href="/profile" className="quicklink">
               <AccountCircleIcon className="quicklink-icon" />
               <h3>Mi Perfil</h3>
-            </a>
+            </Link>
           </div>
           <button 
             onClick={() => scrollQuicklinkCarouselBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
