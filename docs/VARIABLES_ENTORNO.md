@@ -19,7 +19,7 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID].supabase.co:5432/p
 NEXT_PUBLIC_APP_ENV=staging|production
 
 # URLs de la aplicación
-CLIENT_URL_FROM_ENV=https://[pre-]intranetcoacharte.com
+CLIENT_URL_FROM_ENV=https://www.intranetcoacharte.com
 ```
 
 ## 🔐 Integración Zoho CRM & Desk

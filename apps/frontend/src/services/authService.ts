@@ -273,6 +273,45 @@ class UnifiedAuthService {
   }
 
   /**
+   * Establecer nueva contraseña (después del reset)
+   */
+  async setNewPassword(email: string, newPassword: string): Promise<AuthResult> {
+    try {
+      const request: UnifiedAuthRequest = {
+        action: 'set-new-password',
+        email: email,
+        newPassword: newPassword
+      };
+
+      const response = await makeApiRequest<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.resetPassword,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+
+      if (response.success && response.data?.success) {
+        return {
+          success: true,
+          message: response.data.message || 'Contraseña actualizada exitosamente'
+        };
+      }
+
+      return {
+        success: false,
+        message: response.error || 'Error al actualizar contraseña'
+      };
+    } catch (error) {
+      console.error('Error al establecer nueva contraseña:', error);
+      return {
+        success: false,
+        message: 'Error de conexión'
+      };
+    }
+  }
+
+  /**
    * Validar token actual
    */
   async validateToken(): Promise<AuthResult> {

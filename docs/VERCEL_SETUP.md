@@ -145,7 +145,7 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-ID-PROD].supabase.co:5
 
 # Aplicación
 NEXT_PUBLIC_APP_ENV=production
-CLIENT_URL_FROM_ENV=https://intranetcoacharte.com
+CLIENT_URL_FROM_ENV=https://www.intranetcoacharte.com
 
 # Zoho CRM & Desk (mismas credenciales)
 NEXT_PUBLIC_ZOHO_CLIENT_ID=::youwouldnoguess::

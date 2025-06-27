@@ -31,6 +31,7 @@ interface AuthState {
   // Acciones de contraseña
   changePassword: (data: ChangePasswordData) => Promise<AuthResult>;
   resetPassword: (email: string) => Promise<AuthResult>;
+  setNewPassword: (email: string, newPassword: string) => Promise<AuthResult>;
   
   // Acciones de sesión
   validateSession: () => Promise<void>;
@@ -268,6 +269,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       };
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al solicitar reset de contraseña.';
+      
+      set({
+        isLoading: false,
+        error: errorMessage
+      });
+      
+      return {
+        success: false,
+        message: errorMessage
+      };
+    }
+  },
+
+  /**
+   * Establecer nueva contraseña (después del reset)
+   */
+  setNewPassword: async (email: string, newPassword: string): Promise<AuthResult> => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const result = await authService.setNewPassword(email, newPassword);
+      
+      set({ isLoading: false });
+      
+      return {
+        success: result.success,
+        message: result.message || (result.success ? 'Contraseña actualizada exitosamente' : 'Error al actualizar contraseña')
+      };
+    } catch (error: unknown) {
+      const errorMessage = (error as { message?: string })?.message || 'Error al establecer nueva contraseña.';
       
       set({
         isLoading: false,

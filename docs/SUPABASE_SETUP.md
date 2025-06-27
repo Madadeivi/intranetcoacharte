@@ -182,7 +182,7 @@ EMAIL_FROM=soporte@coacharte.mx
 
 # Variables de aplicación
 APP_ENV=production
-CLIENT_URL=https://intranetcoacharte.com
+CLIENT_URL=https://www.intranetcoacharte.com
 
 # JWT para validación en Edge Functions
 JWT_SECRET=::youwouldnoguess::
