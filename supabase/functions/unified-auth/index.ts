@@ -850,36 +850,53 @@ async function handleResetPassword(supabase: SupabaseClientType, body: AuthPaylo
   }
 
   try {
-    // MÉTODO HÍBRIDO: Usar tanto Supabase Auth como nuestro email-service personalizado
-    
-    // 1. Primero usar el método estándar de Supabase Auth
     const clientUrl = Deno.env.get("CLIENT_URL_FROM_ENV") || "";
     
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${clientUrl}/set-new-password`,
-    });
+    // Intentar enviar email personalizado con manejo de errores
+    try {
+      await sendCustomPasswordResetEmail(email, clientUrl);
+      
+      // Log de resultado exitoso para diagnóstico
+      console.log("Reset password results:", {
+        method: "custom-email-only",
+        email: email,
+        clientUrl: clientUrl,
+        success: true,
+        timestamp: new Date().toISOString()
+      });
 
-    // 2. Paralelamente, enviar email personalizado usando nuestro email-service
-    const customEmailPromise = sendCustomPasswordResetEmail(email, clientUrl);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Email de recuperación enviado exitosamente",
+          details: {
+            supabaseAuth: false, // Desactivado para evitar URLs incorrectas
+            customEmail: true
+          }
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+      
+    } catch (emailError) {
+      // Log de error para diagnóstico
+      console.error("Reset password email failed:", {
+        method: "custom-email-only",
+        email: email,
+        clientUrl: clientUrl,
+        success: false,
+        error: emailError instanceof Error ? emailError.message : "Unknown error",
+        timestamp: new Date().toISOString()
+      });
 
-    // Ejecutar ambos métodos
-    const [customEmailResult] = await Promise.allSettled([customEmailPromise]);
-
-    // Log de resultados para diagnóstico
-    console.log("Reset password results:", {
-      supabaseAuth: authError ? `Error: ${authError.message}` : "Success",
-      customEmail: customEmailResult.status === "fulfilled" ? "Success" : `Error: ${customEmailResult.reason}`,
-      email: email,
-      timestamp: new Date().toISOString()
-    });
-
-    // Si Supabase Auth falla pero nuestro email funciona, seguir adelante
-    if (authError && customEmailResult.status === "rejected") {
       return new Response(
         JSON.stringify({
           success: false,
           error: "Error al enviar email de recuperación",
-          details: authError.message,
+          details: emailError instanceof Error ? emailError.message : "Error desconocido en el servicio de email",
+          email_service_error: true
         }),
         {
           status: 500,
@@ -887,21 +904,6 @@ async function handleResetPassword(supabase: SupabaseClientType, body: AuthPaylo
         }
       );
     }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Email de recuperación enviado exitosamente",
-        details: {
-          supabaseAuth: !authError,
-          customEmail: customEmailResult.status === "fulfilled"
-        }
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
   } catch (error) {
     console.error("Error en reset de contraseña:", error);
     return new Response(
