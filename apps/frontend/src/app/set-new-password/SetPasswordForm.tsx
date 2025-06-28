@@ -11,8 +11,7 @@ interface SetPasswordFormProps {
   infoText?: string; 
   submitButtonText?: string;
   isLoading: boolean; 
-  onSubmit: (password: string, currentPassword?: string) => Promise<void>; 
-  requireCurrentPassword?: boolean;
+  onSubmit: (password: string) => Promise<void>; 
   onCancel?: () => void;
 }
 
@@ -22,10 +21,8 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
   submitButtonText = 'Establecer Contraseña',
   isLoading,
   onSubmit,
-  requireCurrentPassword = false,
   onCancel,
 }) => {
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { user } = useAuthStore();
@@ -43,12 +40,12 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
       return;
     }
 
-    if (requireCurrentPassword && !currentPassword) {
-      toast.error('Debes ingresar tu contraseña actual.');
-      return;
+    try {
+      await onSubmit(newPassword);
+    } catch (error) {
+      console.error('Error al establecer contraseña:', error);
+      toast.error('Error al establecer la contraseña. Intenta nuevamente.');
     }
-
-    await onSubmit(newPassword, requireCurrentPassword ? currentPassword : undefined);
   };
 
   // Determinar el href del enlace de regreso
@@ -70,20 +67,6 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
         <h2>{formTitle}</h2>
         {infoText && <p className="mb-6 text-sm text-gray-600 text-center">{infoText}</p>} 
         <form onSubmit={internalHandleSubmit} className="set-password-form">
-          {requireCurrentPassword && (
-            <div className="form-group">
-              <label htmlFor="currentPassword">Contraseña Actual:</label>
-              <input
-                type="password"
-                id="currentPassword"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Ingresa tu contraseña actual"
-                autoComplete="current-password"
-                required
-              />
-            </div>
-          )}
           <div className="form-group">
             <label htmlFor="newPassword">Nueva Contraseña:</label>
             <input

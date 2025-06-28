@@ -87,7 +87,7 @@ class UnifiedAuthService {
   // ===== MÉTODOS PÚBLICOS =====
 
   /**
-   * Login principal (colaboradores)
+   * Login principal (usuarios)
    */
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     try {
@@ -131,101 +131,6 @@ class UnifiedAuthService {
       };
     } catch (error) {
       console.error('Error en login:', error);
-      return {
-        success: false,
-        message: 'Error de conexión',
-        code: 'CONNECTION_ERROR'
-      };
-    }
-  }
-
-  /**
-   * Login para usuarios externos (fallback)
-   */
-  async regularLogin(credentials: LoginCredentials): Promise<AuthResult> {
-    try {
-      const request: UnifiedAuthRequest = {
-        action: 'regular-login',
-        email: credentials.email,
-        password: credentials.password
-      };
-
-      const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.regularLogin,
-        {
-          method: 'POST',
-          body: JSON.stringify(request),
-        }
-      );
-
-      if (response.success && response.data?.success && response.data.user) {
-        this.setSession(response.data.user, response.data.session);
-        
-        return {
-          success: true,
-          message: response.data.message,
-          user: response.data.user,
-          session: response.data.session
-        };
-      }
-
-      return {
-        success: false,
-        message: response.error || 'Credenciales incorrectas',
-        code: 'INVALID_CREDENTIALS'
-      };
-    } catch (error) {
-      console.error('Error en login regular:', error);
-      return {
-        success: false,
-        message: 'Error de conexión',
-        code: 'CONNECTION_ERROR'
-      };
-    }
-  }
-
-  /**
-   * Cambiar contraseña
-   */
-  async changePassword(data: ChangePasswordData): Promise<AuthResult> {
-    try {
-      const request: UnifiedAuthRequest = {
-        action: 'change-password',
-        email: data.email,
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword
-      };
-
-      const token = this.getToken();
-      const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.changePassword,
-        {
-          method: 'POST',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-          body: JSON.stringify(request),
-        }
-      );
-
-      if (response.success && response.data?.success) {
-        // Si hay usuario actualizado, guardar
-        if (response.data.user) {
-          this.updateUser(response.data.user);
-        }
-        
-        return {
-          success: true,
-          message: response.data.message || 'Contraseña actualizada correctamente',
-          user: response.data.user
-        };
-      }
-
-      return {
-        success: false,
-        message: response.error || 'Error al cambiar contraseña',
-        code: response.data?.error_code
-      };
-    } catch (error) {
-      console.error('Error en cambio de contraseña:', error);
       return {
         success: false,
         message: 'Error de conexión',
