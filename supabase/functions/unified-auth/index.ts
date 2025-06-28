@@ -162,9 +162,9 @@ serve(async (req: Request) => {
       }
 
       switch (action) {
-        // Login regular con Supabase Auth (para usuarios externos)
+        // Login principal (colaboradores y usuarios)
         case "login":
-          return await handleRegularLogin(supabase, body);
+          return await handleLogin(supabase, body);
 
         // Registro de usuarios nuevos
         case "register":
@@ -238,8 +238,8 @@ serve(async (req: Request) => {
   }
 });
 
-// Handler para login regular con Supabase Auth
-async function handleRegularLogin(supabase: SupabaseClientType, body: AuthPayload) {
+// Handler para login principal
+async function handleLogin(supabase: SupabaseClientType, body: AuthPayload) {
   const { email, password } = body;
 
   if (!email || !password) {

@@ -40,7 +40,12 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
       return;
     }
 
-    await onSubmit(newPassword);
+    try {
+      await onSubmit(newPassword);
+    } catch (error) {
+      console.error('Error al establecer contraseña:', error);
+      toast.error('Error al establecer la contraseña. Intenta nuevamente.');
+    }
   };
 
   // Determinar el href del enlace de regreso
