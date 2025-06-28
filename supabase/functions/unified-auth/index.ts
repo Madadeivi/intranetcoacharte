@@ -850,33 +850,60 @@ async function handleResetPassword(supabase: SupabaseClientType, body: AuthPaylo
   }
 
   try {
-    
     const clientUrl = Deno.env.get("CLIENT_URL_FROM_ENV") || "";
     
-    await sendCustomPasswordResetEmail(email, clientUrl);
-
-    // Log de resultado para diagnóstico
-    console.log("Reset password results:", {
-      method: "custom-email-only",
-      email: email,
-      clientUrl: clientUrl,
-      timestamp: new Date().toISOString()
-    });
-
-    return new Response(
-      JSON.stringify({
+    // Intentar enviar email personalizado con manejo de errores
+    try {
+      await sendCustomPasswordResetEmail(email, clientUrl);
+      
+      // Log de resultado exitoso para diagnóstico
+      console.log("Reset password results:", {
+        method: "custom-email-only",
+        email: email,
+        clientUrl: clientUrl,
         success: true,
-        message: "Email de recuperación enviado exitosamente",
-        details: {
-          supabaseAuth: false, // Desactivado para evitar URLs incorrectas
-          customEmail: true
+        timestamp: new Date().toISOString()
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Email de recuperación enviado exitosamente",
+          details: {
+            supabaseAuth: false, // Desactivado para evitar URLs incorrectas
+            customEmail: true
+          }
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+      );
+      
+    } catch (emailError) {
+      // Log de error para diagnóstico
+      console.error("Reset password email failed:", {
+        method: "custom-email-only",
+        email: email,
+        clientUrl: clientUrl,
+        success: false,
+        error: emailError instanceof Error ? emailError.message : "Unknown error",
+        timestamp: new Date().toISOString()
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error al enviar email de recuperación",
+          details: emailError instanceof Error ? emailError.message : "Error desconocido en el servicio de email",
+          email_service_error: true
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
   } catch (error) {
     console.error("Error en reset de contraseña:", error);
     return new Response(
