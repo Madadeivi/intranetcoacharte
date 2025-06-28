@@ -15,7 +15,7 @@ export const LoginForm: React.FC = () => {
   const router = useRouter();
   
   // Usar el store unificado
-  const { login, regularLogin } = useAuthStore();
+  const { login } = useAuthStore();
 
   const validateEmail = (emailToValidate: string) => {
     const regex = /^[a-zA-Z0-9._%+-]+@(coacharte|caretra)\.mx$/;
@@ -57,24 +57,12 @@ export const LoginForm: React.FC = () => {
         // Si requiere cambio de contraseña, redirigir a la página correspondiente
         if (result.requiresPasswordChange || result.usingDefaultPassword) {
           toast.info('Debes cambiar tu contraseña antes de continuar');
-          router.push('/set-new-password');
+          router.push(`/set-new-password?email=${encodeURIComponent(email)}`);
         } else {
           router.push('/home');
         }
       } else {
-        // Si el login principal falla, intentar con login regular como fallback
-        if (result.code === 'LOGIN_FAILED' || result.code === 'INVALID_CREDENTIALS') {
-          const fallbackResult = await regularLogin(credentials);
-          
-          if (fallbackResult.success) {
-            toast.success('Login exitoso (usuario externo)');
-            router.push('/home');
-          } else {
-            toast.error(result.message || 'Credenciales incorrectas');
-          }
-        } else {
-          toast.error(result.message || 'Error al iniciar sesión');
-        }
+        toast.error(result.message || 'Error al iniciar sesión');
       }
       
     } catch (error) {
