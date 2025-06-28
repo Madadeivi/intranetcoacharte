@@ -850,51 +850,26 @@ async function handleResetPassword(supabase: SupabaseClientType, body: AuthPaylo
   }
 
   try {
-    // MÉTODO HÍBRIDO: Usar tanto Supabase Auth como nuestro email-service personalizado
     
-    // 1. Primero usar el método estándar de Supabase Auth
     const clientUrl = Deno.env.get("CLIENT_URL_FROM_ENV") || "";
     
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${clientUrl}/set-new-password`,
-    });
+    await sendCustomPasswordResetEmail(email, clientUrl);
 
-    // 2. Paralelamente, enviar email personalizado usando nuestro email-service
-    const customEmailPromise = sendCustomPasswordResetEmail(email, clientUrl);
-
-    // Ejecutar ambos métodos
-    const [customEmailResult] = await Promise.allSettled([customEmailPromise]);
-
-    // Log de resultados para diagnóstico
+    // Log de resultado para diagnóstico
     console.log("Reset password results:", {
-      supabaseAuth: authError ? `Error: ${authError.message}` : "Success",
-      customEmail: customEmailResult.status === "fulfilled" ? "Success" : `Error: ${customEmailResult.reason}`,
+      method: "custom-email-only",
       email: email,
+      clientUrl: clientUrl,
       timestamp: new Date().toISOString()
     });
-
-    // Si Supabase Auth falla pero nuestro email funciona, seguir adelante
-    if (authError && customEmailResult.status === "rejected") {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Error al enviar email de recuperación",
-          details: authError.message,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "Email de recuperación enviado exitosamente",
         details: {
-          supabaseAuth: !authError,
-          customEmail: customEmailResult.status === "fulfilled"
+          supabaseAuth: false, // Desactivado para evitar URLs incorrectas
+          customEmail: true
         }
       }),
       {
