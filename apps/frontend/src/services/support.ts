@@ -1,8 +1,8 @@
 // Servicio para manejo de tickets de soporte
 
 import { 
-  getApiConfig, 
-  makeApiRequest, 
+  apiConfig, 
+  customFetch,
   SupportTicketRequest, 
   SupportTicketResponse 
 } from '../config/api';
@@ -13,8 +13,8 @@ class SupportService {
    */
   async createTicket(ticketData: SupportTicketRequest): Promise<SupportTicketResponse> {
     try {
-      const response = await makeApiRequest<SupportTicketResponse>(
-        getApiConfig().endpoints.support.createTicket,
+      const response = await customFetch<SupportTicketResponse>(
+        apiConfig.endpoints.support.createTicket,
         {
           method: 'POST',
           body: JSON.stringify(ticketData),

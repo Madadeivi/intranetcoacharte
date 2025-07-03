@@ -126,6 +126,26 @@ export interface UnifiedAuthResponse {
   timestamp?: string;
 }
 
+// Interfaces para tickets de soporte
+export interface SupportTicketRequest {
+  userEmail: string;
+  userName: string;
+  subject: string;
+  message: string;
+  priority?: 'Low' | 'Medium' | 'High' | 'Urgent';
+  category?: string;
+  source?: string;
+  department?: string;
+  collaboratorId?: string;
+}
+
+export interface SupportTicketResponse {
+  success: boolean;
+  message: string;
+  ticketId?: string;
+  reference?: string;
+}
+
 // Funciones utilitarias para hacer requests
 export const customFetch = async <T>(
   url: string,
