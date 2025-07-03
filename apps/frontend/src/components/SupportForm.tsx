@@ -56,12 +56,10 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
       // Crear el ticket
       const response = await supportService.createTicket(ticketData);
 
-      if (response.success && response.ticketNumber) {
+      if (response.success && response.ticketId) {
         setSubmitStatus({
           type: 'success',
-          message: response.message || `Ticket ${response.ticketNumber} creado exitosamente.`,
-          ticketNumber: response.ticketNumber,
-          webUrl: response.webUrl,
+          message: response.message || `Ticket ${response.ticketId} creado exitosamente.`,
         });
 
         setFormData({

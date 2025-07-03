@@ -1,136 +1,52 @@
 'use client';
 import './Home.css';
 
-import React, { useState, useEffect, useRef, RefObject } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import 'react-calendar/dist/Calendar.css';
+import Image from 'next/image';
+import Link from 'next/link';
 import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
-// Iconos existentes en el archivo actual de Next.js
+// Store
+import { useAuthStore } from '../../store/authStore';
+
+// Components
+import SupportForm from '../../components/SupportForm';
+import NoticeDetailModal from '../../components/NoticeDetailModal/NoticeDetailModal';
+
+// Icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DescriptionIcon from '@mui/icons-material/Description';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import EventIcon from '@mui/icons-material/Event';
 import InfoIcon from '@mui/icons-material/Info';
-import GppGoodIcon from '@mui/icons-material/GppGood';
-import SchoolIcon from '@mui/icons-material/School';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CloseIcon from '@mui/icons-material/Close';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import MenuIcon from '@mui/icons-material/Menu';
 
-import { useAuthStore } from '../../store/authStore'; 
-import SupportForm from '../../components/SupportForm';
+import {
+  getCurrentMonthYear,
+  checkCarouselScrollability,
+  scrollCarousel,
+  debounce,
+} from '../../utils/functions';
 
-// Constantes de client_backup (adaptadas)
-const DISABLED_CARDS: string[] = [
-  'Recursos Humanos', 
-  'Procesos y Documentación', 
-  'Soporte y Comunicación', 
-  'Calendario y Eventos', 
-  'Conoce Coacharte'
-]; 
-const CALENDAR_EVENTS: { date: Date; title: string }[] = [
-  { date: new Date(2025, 5, 2), title: 'Lanzamiento Intranet' }, // Meses son 0-indexados, Junio es 5
-  { date: new Date(2025, 5, 13), title: 'Pago de Nómina' },
-  { date: new Date(2025, 5, 15), title: 'Día del Padre' },
-  { date: new Date(2025, 5, 30), title: 'Pago de Nómina' },
-  { date: new Date(2025, 6, 1), title: 'Evento de Integración' }, // Julio es 6
-];
-const CAROUSEL_SCROLL_OFFSET = 300;
-const CARD_CAROUSEL_SCROLL_OFFSET = 320; // Offset específico para carrusel de tarjetas 
-
-// Funciones de utilidad (combinadas y adaptadas)
-const parseBoldAndBreaks = (text: string): string => {
-  const boldProcessed = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  const breakProcessed = boldProcessed.replace(/\n/g, '<br />');
-  return breakProcessed;
-};
-
-const getCurrentMonthYear = () => {
-  const now = new Date();
-  return now.toLocaleString('es-MX', { month: 'long', year: 'numeric' }).replace(/^\w/, (c) => c.toUpperCase());
-};
-
-const checkCarouselScrollability = (el: HTMLElement | null) => {
-  if (!el) return { canScrollLeft: false, canScrollRight: false };
-  
-  const scrollLeft = Math.round(el.scrollLeft);
-  const scrollWidth = el.scrollWidth;
-  const clientWidth = el.clientWidth;
-  const maxScrollLeft = scrollWidth - clientWidth;
-  
-  // Usar un umbral más grande para mayor precisión
-  const threshold = 5;
-  
-  const canScrollLeft = scrollLeft > threshold;
-  const canScrollRight = scrollLeft < (maxScrollLeft - threshold);
-  
-  return { canScrollLeft, canScrollRight };
-};
-
-const scrollCarousel = (elRef: RefObject<HTMLElement | null>, offset: number) => {
-  if (elRef.current) {
-    elRef.current.scrollBy({ left: offset, behavior: 'smooth' });
-  }
-};
-
-// Función de debounce para mejorar el rendimiento
-const debounce = <T extends (...args: unknown[]) => void>(func: T, wait: number): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: Parameters<T>) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
-const navItems = [
-  { label: 'Inicio', href: '/home' },
-  { label: 'Mi Cuenta', href: '/profile' },
-  { label: 'Recursos Humanos', href: '#' },
-  { label: 'Procesos', href: '#' },
-];
-
-const NoticeDetailModal: React.FC<{ open: boolean; onClose: () => void; title: string; detail: string; }> = ({ open, onClose, title, detail }) => {
-  const modalRef = useRef<HTMLDivElement>(null); // Renombrar para evitar colisión si es necesario
-  useEffect(() => {
-    if (!open) return;
-    function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  return (
-    <div className="modal-overlay"> {/* Usar clases CSS de Home.css */}
-      <div className="modal" ref={modalRef}> {/* Usar clases CSS de Home.css */}
-        <button className="modal-close-button" onClick={onClose} aria-label="Cerrar"> {/* Estilo de client_backup */}
-          ×
-        </button>
-        <h2>{title}</h2>
-        <p className="notice-detail-text" dangerouslySetInnerHTML={{ __html: parseBoldAndBreaks(detail) }}></p>
-        <div className="button-group"> {/* Estilo de client_backup si es necesario, o quitar si no hay botones */}
-          {/* <button onClick={onClose}>Cerrar</button> // Quitar si el close button superior es suficiente */}
-        </div>
-      </div>
-    </div>
-  );
-};
+import {
+  Notice, //eslint-disable-line
+  notices,
+  DISABLED_CARDS,
+  CALENDAR_EVENTS,
+  CAROUSEL_SCROLL_OFFSET,
+  CARD_CAROUSEL_SCROLL_OFFSET,
+  navItems,
+} from '../../utils/constants';
 
 // SupportModal (adaptado, usando forwardRef para el ref)
 interface SupportModalProps {
@@ -179,87 +95,31 @@ const HomePage: React.FC = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  const [noticeModal, setNoticeModal] = useState<{ open: boolean; title: string; detail: string }>({ open: false, title: '', detail: '' });
+  const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const supportModalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const noticeCarouselRef = useRef<HTMLDivElement>(null);
-  const cardCarouselRef = useRef<HTMLDivElement>(null); // Nueva ref para carrusel de tarjetas
-  const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Nueva ref para carrusel de enlaces rápidos
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true); 
-  const [cardCanScrollLeft, setCardCanScrollLeft] = useState(false); // Estados para carrusel de tarjetas
+  const cardCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de tarjetas
+  const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de enlaces rápidos
+  const noticeCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de avisos
+  
+  const [cardCanScrollLeft, setCardCanScrollLeft] = useState(false);
   const [cardCanScrollRight, setCardCanScrollRight] = useState(true);
-  const [quicklinkCanScrollLeft, setQuicklinkCanScrollLeft] = useState(false); // Estados para carrusel de enlaces rápidos
+  const [quicklinkCanScrollLeft, setQuicklinkCanScrollLeft] = useState(false);
   const [quicklinkCanScrollRight, setQuicklinkCanScrollRight] = useState(true); 
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
   
   const mobileMenuRef = useRef<HTMLDivElement>(null); 
   const hamburgerMenuRef = useRef<HTMLDivElement>(null); 
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    }
-    if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen]);
-
-  // Manejo de click fuera para modal de soporte (adaptado)
-   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      // Usar supportModalRef que es el ref que se pasa al componente SupportModal
-      // El componente SupportModal internamente maneja el click outside con su propio modalContentRef
-      // Esta lógica aquí podría ser redundante si SupportModal ya lo hace bien.
-      // Si SupportModal no cierra al hacer clic afuera, esta lógica podría necesitar ajustarse
-      // o asegurar que el ref se propaga correctamente al div del modal.
-      // Por ahora, asumimos que SupportModal maneja su propio cierre o que el ref es el overlay.
-      if (supportModalRef.current && !supportModalRef.current.contains(event.target as Node) && isSupportModalOpen) {
-        // Esta condición es compleja. Si supportModalRef es el overlay, no funcionará.
-        // Es mejor que SupportModal maneje su propio cierre.
-        // setIsSupportModalOpen(false); // Comentado para evitar doble lógica
-      }
-    }
-    if (isSupportModalOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isSupportModalOpen, supportModalRef]);
-
-
-  // Manejo de click fuera para menú móvil (ya debería estar)
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (hamburgerMenuRef.current && hamburgerMenuRef.current.contains(event.target as Node)) {
-        return;
-      }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
-        setIsMobileMenuOpen(false);
-      }
-    }
-    if (isMobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobileMenuOpen]);
-
-
-  const handleLogout = async () => {
-    await logout(); // Usa la función logout del store
-    // localStorage.removeItem('coacharteUserInfo'); // El store debería manejar esto
-    // setUserInfo(null); // El store maneja el estado del usuario
-    setDropdownOpen(false);
-    router.push('/'); // Redirige al login
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
-  const currentMonthYearText = getCurrentMonthYear(); // Asegúrate que esta función esté definida
+  const currentMonthYearText = getCurrentMonthYear();
 
   const tileClassName = ({ date, view }: { date: Date; view: string }) => { // react-calendar pasa view
     if (view === 'month' && CALENDAR_EVENTS.some(eventDate => 
@@ -272,16 +132,6 @@ const HomePage: React.FC = () => {
     return null;
   };
   
-  // Lógica de scroll para el carrusel de noticias (adaptada)
-  const handleNoticeScroll = debounce(() => {
-    const el = noticeCarouselRef.current;
-    if (el) {
-      const { canScrollLeft: newCanScrollLeft, canScrollRight: newCanScrollRight } = checkCarouselScrollability(el);
-      setCanScrollLeft(newCanScrollLeft);
-      setCanScrollRight(newCanScrollRight);
-    }
-  }, 50);
-
   // Lógica de scroll para el carrusel de tarjetas principales
   const handleCardScroll = debounce(() => {
     const el = cardCarouselRef.current;
@@ -289,6 +139,16 @@ const HomePage: React.FC = () => {
       const { canScrollLeft: newCanScrollLeft, canScrollRight: newCanScrollRight } = checkCarouselScrollability(el);
       setCardCanScrollLeft(newCanScrollLeft);
       setCardCanScrollRight(newCanScrollRight);
+    }
+  }, 50);
+
+  // Lógica de scroll para el carrusel de avisos
+  const handleNoticeScroll = debounce(() => {
+    const el = noticeCarouselRef.current;
+    if (el) {
+      const { canScrollLeft: newCanScrollLeft, canScrollRight: newCanScrollRight } = checkCarouselScrollability(el);
+      setCanScrollLeft(newCanScrollLeft);
+      setCanScrollRight(newCanScrollRight);
     }
   }, 50);
 
@@ -302,16 +162,15 @@ const HomePage: React.FC = () => {
     }
   }, 50);
 
-  const scrollNoticeCarouselBy = (offset: number) => {
-    scrollCarousel(noticeCarouselRef, offset);
-    // Actualizar estado inmediatamente para mejor UX
-    setTimeout(() => handleNoticeScroll(), 100);
-  };
-
   const scrollCardCarouselBy = (offset: number) => {
     scrollCarousel(cardCarouselRef, offset);
     // Actualizar estado inmediatamente para mejor UX
     setTimeout(() => handleCardScroll(), 100);
+  };
+
+  const scrollNoticeCarouselBy = (offset: number) => {
+    scrollCarousel(noticeCarouselRef, offset);
+    setTimeout(() => handleNoticeScroll(), 100);
   };
 
   const scrollQuicklinkCarouselBy = (offset: number) => {
@@ -320,30 +179,6 @@ const HomePage: React.FC = () => {
     setTimeout(() => handleQuicklinkScroll(), 100);
   };
 
-  const handlePasswordChange = () => {
-    router.push('/set-new-password?voluntary=true');
-  };
-
-  useEffect(() => {
-    const el = noticeCarouselRef.current;
-    if (!el) return;
-    
-    el.addEventListener('scroll', handleNoticeScroll);
-    
-    // Comprobar estado inicial con un pequeño delay para asegurar que el DOM esté listo
-    const checkInitialState = () => {
-      handleNoticeScroll();
-    };
-    
-    checkInitialState();
-    setTimeout(checkInitialState, 100);
-    
-    return () => {
-      el.removeEventListener('scroll', handleNoticeScroll);
-    };
-  }, [handleNoticeScroll]);
-
-  // useEffect para el carrusel de tarjetas principales
   useEffect(() => {
     const el = cardCarouselRef.current;
     if (!el) return;
@@ -362,6 +197,25 @@ const HomePage: React.FC = () => {
       el.removeEventListener('scroll', handleCardScroll);
     };
   }, [handleCardScroll]);
+
+  // useEffect para el carrusel de avisos
+  useEffect(() => {
+    const el = noticeCarouselRef.current;
+    if (!el) return;
+
+    el.addEventListener('scroll', handleNoticeScroll);
+
+    const checkInitialState = () => {
+      handleNoticeScroll();
+    };
+
+    checkInitialState();
+    setTimeout(checkInitialState, 100);
+
+    return () => {
+      el.removeEventListener('scroll', handleNoticeScroll);
+    };
+  }, [handleNoticeScroll]);
 
   // useEffect para el carrusel de enlaces rápidos
   useEffect(() => {
@@ -433,7 +287,7 @@ const HomePage: React.FC = () => {
       {/* Header y barra de navegación */}
       <header className="home-header">
         <div className="logo">
-          <img src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="home-logo-img" />
+          <Image src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="home-logo-img" width={150} height={40} />
         </div>
         <nav className="home-nav">
           {navItems.map(item => (
@@ -497,16 +351,6 @@ const HomePage: React.FC = () => {
           
           {/* Enlaces rápidos adicionales */}
           <div className="mobile-menu-divider"></div>
-          <button 
-            onClick={(e) => {
-              e.preventDefault(); 
-              handlePasswordChange();
-              setIsMobileMenuOpen(false);
-            }}
-            className="mobile-menu-item"
-          >
-            Cambio de Contraseña
-          </button>
           <button 
             onClick={(e) => {
               e.preventDefault(); 
@@ -647,58 +491,32 @@ const HomePage: React.FC = () => {
             <ArrowBackIosNewIcon />
           </button>
           <div className="notice-carousel" ref={noticeCarouselRef}>
-            <div className="notice-card" onClick={() => setNoticeModal({
-              open: true, 
-              title: "Modelo de Cultura Integral", 
-              detail: "Coacharte presenta su nuevo **Modelo de Cultura Integral** que fortalecerá nuestros valores organizacionales.\n\nEste modelo integra prácticas de bienestar, desarrollo profesional y compromiso social para crear un ambiente de trabajo más inclusivo y colaborativo."
-            })}>
-              <img src="/assets/banner_modelo.png" alt="Modelo de Cultura Integral" className="notice-card-img" />
-              <div className="notice-card-content">
-                <div className="notice-date">5 Jun 2025</div>
-                <h4>Modelo de Cultura Integral</h4>
-                <p>Conoce nuestro nuevo modelo organizacional.</p>
-                <a href="#" onClick={(e) => e.preventDefault()}>Leer más →</a>
+            {notices.map(notice => (
+              <div 
+                key={notice.id} 
+                className="notice-card" 
+                onClick={() => setNoticeModal({
+                  open: true, 
+                  title: notice.title, 
+                  detail: notice.detail
+                })}
+              >
+                <Image 
+                  src={notice.imageUrl} 
+                  alt={notice.title} 
+                  className="notice-card-img"
+                  width={300} // Ancho de la imagen
+                  height={180} // Alto de la imagen
+                  style={{ objectFit: 'cover' }} // Para asegurar que la imagen cubra el área designada
+                />
+                <div className="notice-card-content">
+                  <div className="notice-date">{notice.date}</div>
+                  <h4>{notice.title}</h4>
+                  <p>{notice.summary}</p>
+                  <a href="#" onClick={(e) => e.preventDefault()}>Leer más →</a>
+                </div>
               </div>
-            </div>
-            <div className="notice-card" onClick={() => setNoticeModal({
-              open: true, 
-              title: "Ajuste Salarial 2024", 
-              detail: "Se ha implementado el **ajuste salarial anual correspondiente al 2024**.\n\nEl incremento se verá reflejado en la nómina de este mes. Consulta tu nuevo salario en el portal de recursos humanos."
-            })}>
-              <img src="/assets/banner_ajuste.png" alt="Ajuste Salarial 2024" className="notice-card-img" />
-              <div className="notice-card-content">
-                <div className="notice-date">10 Jun 2025</div>
-                <h4>Ajuste Salarial 2024</h4>
-                <p>Revisa tu nuevo salario actualizado.</p>
-                <a href="#" onClick={(e) => e.preventDefault()}>Leer más →</a>
-              </div>
-            </div>
-            <div className="notice-card" onClick={() => setNoticeModal({
-              open: true, 
-              title: "Bono 2024", 
-              detail: "¡Excelentes noticias! Se ha aprobado el **bono de productividad 2024** para todos los colaboradores.\n\nEl bono se pagará junto con la nómina del próximo mes. ¡Gracias por su excelente desempeño durante este año!"
-            })}>
-              <img src="/assets/banner_bono.png" alt="Bono 2024" className="notice-card-img" />
-              <div className="notice-card-content">
-                <div className="notice-date">8 Jun 2025</div>
-                <h4>Bono 2024</h4>
-                <p>Recibe tu bono de productividad anual.</p>
-                <a href="#" onClick={(e) => e.preventDefault()}>Leer más →</a>
-              </div>
-            </div>
-            <div className="notice-card" onClick={() => setNoticeModal({
-              open: true, 
-              title: "Día del Padre", 
-              detail: "Este **15 de Junio** celebramos el Día del Padre en Coacharte.\n\n¡Todos los papás de nuestra empresa tendrán un día especial con actividades, sorpresas y un reconocimiento especial por ser padres ejemplares!"
-            })}>
-              <img src="/assets/banner_padre.png" alt="Día del Padre" className="notice-card-img" />
-              <div className="notice-card-content">
-                <div className="notice-date">3 Jun 2025</div>
-                <h4>Día del Padre</h4>
-                <p>Celebración especial para todos los papás.</p>
-                <a href="#" onClick={(e) => e.preventDefault()}>Leer más →</a>
-              </div>
-            </div>
+            ))}
           </div>
           <button 
             onClick={() => scrollNoticeCarouselBy(CAROUSEL_SCROLL_OFFSET)} 
@@ -735,18 +553,6 @@ const HomePage: React.FC = () => {
             <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
               <DescriptionIcon className="quicklink-icon" />
               <h3>Solicitud de Vacaciones</h3>
-            </a>
-            <a href="#" onClick={(e) => {e.preventDefault(); handlePasswordChange();}} className="quicklink">
-              <GppGoodIcon className="quicklink-icon" />
-              <h3>Cambio de Contraseña</h3>
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
-              <SchoolIcon className="quicklink-icon" />
-              <h3>Portal de Capacitación</h3>
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
-              <GroupsIcon className="quicklink-icon" />
-              <h3>Directorio Empresarial</h3>
             </a>
             <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}} className="quicklink">
               <HeadsetMicIcon className="quicklink-icon" />
@@ -809,7 +615,7 @@ const HomePage: React.FC = () => {
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-brand-section">
-            <img src="/assets/coacharte-bco@4x.png" alt="Coacharte Blanco" className="footer-logo" />
+            <Image src="/assets/coacharte-bco@4x.png" alt="Coacharte Blanco" className="footer-logo" width={180} height={45} />
             <p className="footer-slogan">Transformando vidas a través del coaching empresarial</p>
           </div>
           <div className="footer-links-section">

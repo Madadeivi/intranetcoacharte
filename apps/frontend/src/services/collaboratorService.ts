@@ -1,3 +1,5 @@
+import { apiConfig, customFetch } from '../config/api';
+
 // Servicio para manejar datos del perfil del colaborador desde Zoho CRM
 
 // Interfaz extendida para datos del usuario desde el authStore
@@ -48,43 +50,23 @@ export interface CollaboratorProfile {
 }
 
 export class CollaboratorService {
-  private static baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://zljualvricugqvcvaeht.supabase.co/functions/v1' 
-    : 'http://localhost:54321/functions/v1';
-
   static async getCollaboratorProfile(collaboratorId: string, userInfo?: UserInfo): Promise<CollaboratorProfile> {
     try {
-      // Intentar obtener datos de la base de datos primero
-      const dbResponse = await fetch(`${this.baseUrl}/collaborator-db/${collaboratorId}`, {
+      const url = `${apiConfig.endpoints.collaborator.getProfile}?id=${collaboratorId}`;
+      const response = await customFetch<CollaboratorProfile>(url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
-      if (dbResponse.ok) {
-        const data = await dbResponse.json();
-        return data;
+      if (response.success && response.data) {
+        return response.data;
       }
 
-      // Si falla la base de datos, intentar Zoho CRM
-      const response = await fetch(`${this.baseUrl}/collaborator-profile/profile/${collaboratorId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(`API failed with status ${response.status}, using fallback data`);
-        if (userInfo) {
-          return this.getMockCollaboratorProfile(collaboratorId, userInfo);
-        }
-        throw new Error('No se pudo obtener la información del colaborador');
+      // Si la API falla, usar datos de fallback si están disponibles
+      console.warn(`API failed to get profile, using fallback data`);
+      if (userInfo) {
+        return this.getMockCollaboratorProfile(collaboratorId, userInfo);
       }
-
-      const data = await response.json();
-      return data;
+      throw new Error(response.message || 'No se pudo obtener la información del colaborador');
     } catch (error) {
       console.error('Error fetching collaborator profile:', error);
       if (userInfo) {
@@ -94,58 +76,51 @@ export class CollaboratorService {
     }
   }
 
-  static async getCollaboratorDocuments(collaboratorId: string, userInfo?: UserInfo): Promise<CollaboratorDocument[]> {
+  static async getCollaboratorDocuments(collaboratorId: string): Promise<CollaboratorDocument[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/collaborator-profile/documents/${collaboratorId}`, {
+      const url = `${apiConfig.endpoints.collaborator.getDocuments}?id=${collaboratorId}`;
+      const response = await customFetch<CollaboratorDocument[]>(url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
-      if (!response.ok) {
-        console.warn(`API failed with status ${response.status}, using fallback data`);
-        if (userInfo) {
-          const mockProfile = await this.getMockCollaboratorProfile(collaboratorId, userInfo);
-          return mockProfile.documents;
-        }
-        return [];
+      if (response.success && response.data) {
+        return response.data;
       }
 
-      const data = await response.json();
-      return data.documents || [];
+      console.warn(`API failed to get documents, returning empty array`);
+      return []; // Devolver un array vacío como fallback
     } catch (error) {
       console.error('Error fetching collaborator documents:', error);
-      if (userInfo) {
-        const mockProfile = await this.getMockCollaboratorProfile(collaboratorId, userInfo);
-        return mockProfile.documents;
-      }
-      return [];
+      return []; // Devolver un array vacío en caso de error
     }
   }
 
   static async downloadDocument(documentId: string, documentName: string): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/collaborator/document/download/${documentId}`, {
+      const url = `${apiConfig.baseUrl}/document-manager/download/${documentId}`;
+      const response = await fetch(url, {
         method: 'GET',
+        headers: {
+          // Aquí podrías necesitar cabeceras de autenticación si el endpoint es protegido
+        },
       });
 
       if (!response.ok) {
-        throw new Error(`Error downloading document: ${response.status}`);
+        throw new Error('No se pudo descargar el documento');
       }
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
-      link.download = documentName;
+      link.href = downloadUrl;
+      link.setAttribute('download', documentName);
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error('Error downloading document:', error);
-      throw error;
+      throw new Error('No se pudo descargar el documento');
     }
   }
 

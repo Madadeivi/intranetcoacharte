@@ -13,7 +13,7 @@
 
 import { 
   apiConfig, 
-  makeApiRequest, 
+  customFetch, 
   UnifiedAuthRequest, 
   UnifiedAuthResponse
 } from '../config/api';
@@ -97,8 +97,8 @@ class UnifiedAuthService {
         password: credentials.password
       };
 
-      const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.login,
+      const response = await customFetch<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.execute,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -149,8 +149,8 @@ class UnifiedAuthService {
         email: email
       };
 
-      const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.resetPassword,
+      const response = await customFetch<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.execute,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -188,8 +188,8 @@ class UnifiedAuthService {
         newPassword: newPassword
       };
 
-      const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.resetPassword,
+      const response = await customFetch<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.execute,
         {
           method: 'POST',
           body: JSON.stringify(request),
@@ -230,8 +230,8 @@ class UnifiedAuthService {
         action: 'validate-token'
       };
 
-      const response = await makeApiRequest<UnifiedAuthResponse>(
-        apiConfig.endpoints.unifiedAuth.validate,
+      const response = await customFetch<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.execute,
         {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
@@ -277,8 +277,8 @@ class UnifiedAuthService {
           action: 'logout'
         };
 
-        await makeApiRequest<UnifiedAuthResponse>(
-          apiConfig.endpoints.unifiedAuth.logout,
+        await customFetch<UnifiedAuthResponse>(
+          apiConfig.endpoints.unifiedAuth.execute,
           {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
