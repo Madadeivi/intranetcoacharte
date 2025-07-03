@@ -13,8 +13,6 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import EventIcon from '@mui/icons-material/Event';
 import InfoIcon from '@mui/icons-material/Info';
-import GppGoodIcon from '@mui/icons-material/GppGood';
-import SchoolIcon from '@mui/icons-material/School';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CloseIcon from '@mui/icons-material/Close';
@@ -198,65 +196,9 @@ const HomePage: React.FC = () => {
   const mobileMenuRef = useRef<HTMLDivElement>(null); 
   const hamburgerMenuRef = useRef<HTMLDivElement>(null); 
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    }
-    if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen]);
-
-  // Manejo de click fuera para modal de soporte (adaptado)
-   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      // Usar supportModalRef que es el ref que se pasa al componente SupportModal
-      // El componente SupportModal internamente maneja el click outside con su propio modalContentRef
-      // Esta lógica aquí podría ser redundante si SupportModal ya lo hace bien.
-      // Si SupportModal no cierra al hacer clic afuera, esta lógica podría necesitar ajustarse
-      // o asegurar que el ref se propaga correctamente al div del modal.
-      // Por ahora, asumimos que SupportModal maneja su propio cierre o que el ref es el overlay.
-      if (supportModalRef.current && !supportModalRef.current.contains(event.target as Node) && isSupportModalOpen) {
-        // Esta condición es compleja. Si supportModalRef es el overlay, no funcionará.
-        // Es mejor que SupportModal maneje su propio cierre.
-        // setIsSupportModalOpen(false); // Comentado para evitar doble lógica
-      }
-    }
-    if (isSupportModalOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isSupportModalOpen, supportModalRef]);
-
-
-  // Manejo de click fuera para menú móvil (ya debería estar)
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (hamburgerMenuRef.current && hamburgerMenuRef.current.contains(event.target as Node)) {
-        return;
-      }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
-        setIsMobileMenuOpen(false);
-      }
-    }
-    if (isMobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobileMenuOpen]);
-
-
-  const handleLogout = async () => {
-    await logout(); // Usa la función logout del store
-    // localStorage.removeItem('coacharteUserInfo'); // El store debería manejar esto
-    // setUserInfo(null); // El store maneja el estado del usuario
-    setDropdownOpen(false);
-    router.push('/'); // Redirige al login
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
   const currentMonthYearText = getCurrentMonthYear(); // Asegúrate que esta función esté definida
@@ -318,10 +260,6 @@ const HomePage: React.FC = () => {
     scrollCarousel(quicklinkCarouselRef, offset);
     // Actualizar estado inmediatamente para mejor UX
     setTimeout(() => handleQuicklinkScroll(), 100);
-  };
-
-  const handlePasswordChange = () => {
-    router.push('/set-new-password?voluntary=true');
   };
 
   useEffect(() => {
@@ -497,16 +435,6 @@ const HomePage: React.FC = () => {
           
           {/* Enlaces rápidos adicionales */}
           <div className="mobile-menu-divider"></div>
-          <button 
-            onClick={(e) => {
-              e.preventDefault(); 
-              handlePasswordChange();
-              setIsMobileMenuOpen(false);
-            }}
-            className="mobile-menu-item"
-          >
-            Cambio de Contraseña
-          </button>
           <button 
             onClick={(e) => {
               e.preventDefault(); 
@@ -735,18 +663,6 @@ const HomePage: React.FC = () => {
             <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
               <DescriptionIcon className="quicklink-icon" />
               <h3>Solicitud de Vacaciones</h3>
-            </a>
-            <a href="#" onClick={(e) => {e.preventDefault(); handlePasswordChange();}} className="quicklink">
-              <GppGoodIcon className="quicklink-icon" />
-              <h3>Cambio de Contraseña</h3>
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
-              <SchoolIcon className="quicklink-icon" />
-              <h3>Portal de Capacitación</h3>
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
-              <GroupsIcon className="quicklink-icon" />
-              <h3>Directorio Empresarial</h3>
             </a>
             <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}} className="quicklink">
               <HeadsetMicIcon className="quicklink-icon" />

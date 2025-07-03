@@ -1,34 +1,9 @@
-// Configuración de API para las Edge Functions de Supabase
-// Este archivo centraliza las URLs y configuraciones de las APIs
-
+import { User, Session } from '@supabase/supabase-js';
 interface ApiConfig {
   baseUrl: string;
   endpoints: {
-    // Nueva función unificada de autenticación
     unifiedAuth: {
-      login: string;
-      collaboratorLogin: string;
-      regularLogin: string;
-      register: string;
-      changePassword: string;
-      updateProfile: string;
-      resetPassword: string;
-      validate: string;
-      logout: string;
-      getStats: string;
-    };
-    // DEPRECATED: Mantener para compatibilidad temporal
-    auth: {
-      login: string;
-      logout: string;
-      validate: string;
-      resetPassword: string;
-      updatePassword: string;
-    };
-    collaboratorAuth: {
-      login: string;
-      changePassword: string;
-      getStats: string;
+      execute: string;
     };
     email: {
       send: string;
@@ -37,105 +12,26 @@ interface ApiConfig {
       createTicket: string;
     };
     zoho: {
-      contacts: {
-        list: string;
-        create: string;
-      };
-      leads: {
-        list: string;
-        create: string;
-      };
+      sync: string;
     };
-  };
-  headers: {
-    common: Record<string, string>;
+    collaborator: {
+      getProfile: string;
+      getDocuments: string;
+    };
   };
 }
 
 // Configuración para diferentes entornos
-const createApiConfig = (): ApiConfig => {
-  let baseUrl: string;
-  let anonKey: string;
-  
-  // Detectar si estamos en el cliente o servidor
-  const isClient = typeof window !== 'undefined';
-  
-  if (isClient) {
-    // EN EL CLIENTE: Solo usar variables públicas, nunca variables privadas
-    if (process.env.NODE_ENV === 'development') {
-      // Desarrollo: usar variables locales si existen, sino usar las públicas por defecto
-      baseUrl = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-      anonKey = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    } else {
-      // Producción/Staging: solo usar variables públicas
-      baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-      anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    }
-  } else {
-    // EN EL SERVIDOR: Usar variables privadas con fallback seguro
-    if (process.env.NODE_ENV === 'development') {
-      // Desarrollo: preferir variables locales, fallback a las normales
-      baseUrl = process.env.SUPABASE_LOCAL_URL || process.env.SUPABASE_URL || '';
-      anonKey = process.env.SUPABASE_LOCAL_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
-    } else {
-      // Producción/Staging: solo variables privadas, sin fallback a públicas
-      baseUrl = process.env.SUPABASE_URL || '';
-      anonKey = process.env.SUPABASE_ANON_KEY || '';
-    }
-  }
-
-  // Validar que las variables requeridas estén configuradas
-  if (!baseUrl) {
-    const context = isClient ? 'cliente' : 'servidor';
-    const prefix = isClient ? 'NEXT_PUBLIC_' : '';
-    throw new Error(`${prefix}SUPABASE_URL no está configurado en ${context}. Verificar variables de entorno.`);
-  }
-  
-  if (!anonKey) {
-    const context = isClient ? 'cliente' : 'servidor';
-    const prefix = isClient ? 'NEXT_PUBLIC_' : '';
-    throw new Error(`${prefix}SUPABASE_ANON_KEY no está configurado en ${context}. Verificar variables de entorno.`);
-  }
-
-  const functionsBaseUrl = `${baseUrl}/functions/v1`;
+export const apiConfig: ApiConfig = (() => {
+  const functionsBaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
+    : 'http://localhost:54321/functions/v1';
 
   return {
     baseUrl: functionsBaseUrl,
     endpoints: {
-      // Nueva función unificada para toda la autenticación
       unifiedAuth: {
-        // Login de colaboradores (principal)
-        login: `${functionsBaseUrl}/unified-auth`,
-        collaboratorLogin: `${functionsBaseUrl}/unified-auth`,
-        // Login regular (Supabase Auth)
-        regularLogin: `${functionsBaseUrl}/unified-auth`,
-        // Registro
-        register: `${functionsBaseUrl}/unified-auth`,
-        // Cambio de contraseña
-        changePassword: `${functionsBaseUrl}/unified-auth`,
-        // Actualizar perfil
-        updateProfile: `${functionsBaseUrl}/unified-auth`,
-        // Reset de contraseña
-        resetPassword: `${functionsBaseUrl}/unified-auth`,
-        // Validar token
-        validate: `${functionsBaseUrl}/unified-auth`,
-        // Logout
-        logout: `${functionsBaseUrl}/unified-auth`,
-        // Estadísticas (admin)
-        getStats: `${functionsBaseUrl}/unified-auth`,
-      },
-      // DEPRECATED: Mantener para compatibilidad temporal
-      auth: {
-        login: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.regularLogin
-        logout: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.logout
-        validate: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.validate
-        resetPassword: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.resetPassword
-        updatePassword: `${functionsBaseUrl}/user-auth`, // DEPRECATED - usar unifiedAuth.changePassword
-      },
-      collaboratorAuth: {
-        login: `${functionsBaseUrl}/collaborator-auth`, // DEPRECATED - usar unifiedAuth.login
-        changePassword: `${functionsBaseUrl}/collaborator-auth`, // DEPRECATED - usar unifiedAuth.changePassword
-        getStats: `${functionsBaseUrl}/collaborator-auth`, // DEPRECATED - usar unifiedAuth.getStats
+        execute: `${functionsBaseUrl}/unified-auth`,
       },
       email: {
         send: `${functionsBaseUrl}/email-service`,
@@ -144,45 +40,15 @@ const createApiConfig = (): ApiConfig => {
         createTicket: `${functionsBaseUrl}/support-ticket`,
       },
       zoho: {
-        contacts: {
-          list: `${functionsBaseUrl}/zoho-crm`,
-          create: `${functionsBaseUrl}/zoho-crm`,
-        },
-        leads: {
-          list: `${functionsBaseUrl}/zoho-crm`,
-          create: `${functionsBaseUrl}/zoho-crm`,
-        },
+        sync: `${functionsBaseUrl}/zoho-crm`,
       },
-    },
-    headers: {
-      common: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${anonKey}`,
-        'apikey': anonKey,
+      collaborator: {
+        getProfile: `${functionsBaseUrl}/collaborator-db`,
+        getDocuments: `${functionsBaseUrl}/document-manager`,
       },
     },
   };
-};
-
-// Variable para cachear la configuración
-let cachedApiConfig: ApiConfig | null = null;
-
-// Función lazy para obtener la configuración
-export const getApiConfig = (): ApiConfig => {
-  if (!cachedApiConfig) {
-    cachedApiConfig = createApiConfig();
-  }
-  return cachedApiConfig;
-};
-
-// Export adicional para compatibilidad (deprecated)
-// @deprecated Use getApiConfig() instead
-export const apiConfig = new Proxy({} as ApiConfig, {
-  get(target, prop) {
-    const config = getApiConfig();
-    return (config as unknown as Record<string, unknown>)[prop as string];
-  }
-});
+})();
 
 // Tipos para las respuestas de la API
 export interface ApiResponse<T = unknown> {
@@ -201,97 +67,24 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   success: boolean;
-  message: string;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-    role?: string;
-    avatar?: string;
-  };
-  session: {
-    access_token: string;
-    refresh_token: string;
-    expires_at: number;
-  };
+  message?: string;
+  user?: User;
+  session?: Session;
+  requiresPasswordChange?: boolean;
+  usingDefaultPassword?: boolean;
+  code?: string;
 }
 
-export interface CollaboratorLoginRequest {
-  email: string;
-  password: string;
-}
+// DEPRECATED: Interfaces eliminadas que ya no son válidas
+// export interface CollaboratorLoginResponse { ... }
+// export interface ChangePasswordRequest { ... }
+// export interface ChangePasswordResponse { ... }
+// export interface UpdateProfileRequest { ... }
+// export interface UpdateProfileResponse { ... }
 
-export interface CollaboratorLoginResponse {
+export interface ResetPasswordResponse {
   success: boolean;
   message: string;
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    department: string;
-  };
-  password_change_required?: boolean;
-  first_login?: boolean;
-  using_default_password?: boolean;
-  session_id?: string;
-  error?: string;
-  error_code?: string;
-}
-
-export interface ChangePasswordRequest {
-  email: string;
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface ChangePasswordResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface SupportTicketRequest {
-  userEmail: string;
-  userName: string;
-  subject: string;
-  message: string;
-  priority?: 'Low' | 'Medium' | 'High' | 'Urgent';
-  category?: string;
-}
-
-export interface SupportTicketResponse {
-  success: boolean;
-  message: string;
-  ticketId: string;
-  ticketNumber: string;
-  webUrl: string;
-  categoryReceived?: string;
-}
-
-export interface EmailRequest {
-  to: string | string[];
-  subject: string;
-  html?: string;
-  text?: string;
-}
-
-export interface ContactRequest {
-  First_Name?: string;
-  Last_Name: string;
-  Email: string;
-  Phone?: string;
-  Department?: string;
-  Account_Name?: string;
-}
-
-export interface LeadRequest {
-  First_Name?: string;
-  Last_Name: string;
-  Email: string;
-  Phone?: string;
-  Company?: string;
-  Lead_Source?: string;
-  Lead_Status?: string;
 }
 
 // Nuevas interfaces para la función unificada de autenticación
@@ -334,16 +127,15 @@ export interface UnifiedAuthResponse {
 }
 
 // Funciones utilitarias para hacer requests
-export const makeApiRequest = async <T = unknown>(
+export const customFetch = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
-    const config = getApiConfig();
     const response = await fetch(url, {
       ...options,
       headers: {
-        ...config.headers.common,
+        'Content-Type': 'application/json',
         ...options.headers,
       },
     });
@@ -396,4 +188,4 @@ export const makeApiRequest = async <T = unknown>(
   }
 };
 
-export default getApiConfig;
+export default apiConfig;
