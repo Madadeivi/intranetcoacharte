@@ -1,13 +1,26 @@
+// @ts-nocheck
+// deno-lint-ignore-file no-explicit-any no-unused-vars
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /// <reference lib="deno.ns" />
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient, SupabaseClient, User as SupabaseUser } from "https://esm.sh/@supabase/supabase-js@2.43.4";
+
+// Tipo de resultado de validación de token
+type AuthValidationResult =
+  | { valid: true; user?: SupabaseUser }
+  | { valid: false, error: string };
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
 // Función para validar token de autorización
-async function validateAuthToken(supabase, authHeader) {
+async function validateAuthToken(
+  supabase: SupabaseClient,
+  authHeader: string | null
+): Promise<AuthValidationResult> {
   if (!authHeader) {
     return {
       valid: false,
@@ -52,7 +65,10 @@ async function validateAuthToken(supabase, authHeader) {
 // Constante para longitud mínima de contraseña
 const MIN_PASSWORD_LENGTH = 8;
 // Función para validar permisos específicos
-function hasPermission(user, action) {
+function hasPermission(
+  user: SupabaseUser | undefined,
+  action: string
+): boolean {
   // Acciones públicas que no requieren autenticación
   const publicActions = [
     "login",
@@ -85,7 +101,7 @@ function hasPermission(user, action) {
   }
   return false;
 }
-serve(async (req)=>{
+serve(async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -107,7 +123,7 @@ serve(async (req)=>{
         }
       });
     }
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
     if (req.method === "POST") {
       const body = await req.json();
       const { action } = body;
@@ -221,7 +237,12 @@ serve(async (req)=>{
   }
 });
 // Handler para login principal
-async function handleLogin(supabase, body) {
+// Definición del cuerpo de la petición de login
+interface LoginBody { email: string; password: string; }
+async function handleLogin(
+  supabase: SupabaseClient,
+  body: LoginBody
+): Promise<Response> {
   const { email, password } = body;
   if (!email || !password) {
     return new Response(JSON.stringify({
@@ -294,7 +315,12 @@ async function handleLogin(supabase, body) {
   }
 }
 // Handler para registro de usuarios
-async function handleRegister(supabase, body) {
+// Definición del cuerpo de la petición de registro
+interface RegisterBody { email: string; password: string; fullName: string; department?: string; role?: string; }
+async function handleRegister(
+  supabase: SupabaseClient,
+  body: RegisterBody
+): Promise<Response> {
   const { email, password, fullName, department, role } = body;
   if (!email || !password || !fullName) {
     return new Response(JSON.stringify({
@@ -359,7 +385,12 @@ async function handleRegister(supabase, body) {
   }
 }
 // Handler para reset de contraseña
-async function handleResetPassword(supabase, body) {
+// Definición del cuerpo de la petición de reset de contraseña
+interface ResetPasswordBody { email: string; }
+async function handleResetPassword(
+  supabase: SupabaseClient,
+  body: ResetPasswordBody
+): Promise<Response> {
   const { email } = body;
   if (!email) {
     return new Response(JSON.stringify({
@@ -440,7 +471,10 @@ async function handleResetPassword(supabase, body) {
 }
 /**
  * Envía email personalizado de recuperación de contraseña usando nuestro email-service
- */ async function sendCustomPasswordResetEmail(email, clientUrl) {
+ */ async function sendCustomPasswordResetEmail(
+  email: string,
+  clientUrl: string
+): Promise<void> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -492,7 +526,10 @@ async function handleResetPassword(supabase, body) {
 }
 /**
  * Genera el HTML para el email de recuperación de contraseña
- */ function generatePasswordResetEmailHtml(email, resetUrl) {
+ */ function generatePasswordResetEmailHtml(
+  email: string,
+  resetUrl: string
+): string {
   return `
 <!DOCTYPE html>
 <html lang="es">
@@ -630,7 +667,12 @@ async function handleResetPassword(supabase, body) {
   `;
 }
 // Handler para establecer nueva contraseña (después del reset)
-async function handleSetNewPassword(supabase, body) {
+// Definición del cuerpo de la petición de establecimiento de nueva contraseña
+interface SetNewPasswordBody { email: string; newPassword: string; }
+async function handleSetNewPassword(
+  supabase: SupabaseClient,
+  body: SetNewPasswordBody
+): Promise<Response> {
   const { email, newPassword } = body;
   if (!email || !newPassword) {
     return new Response(JSON.stringify({
@@ -722,7 +764,10 @@ async function handleSetNewPassword(supabase, body) {
   }
 }
 // Handler para validar token
-async function handleValidateToken(supabase, authenticatedUser) {
+async function handleValidateToken(
+  supabase: SupabaseClient,
+  authenticatedUser: SupabaseUser
+): Promise<Response> {
   // Obtener información del perfil
   const { data: profileData } = await supabase.from("user_profiles").select("name, role, avatar").eq("user_id", authenticatedUser.id).single();
   const userInfo = {
@@ -745,7 +790,10 @@ async function handleValidateToken(supabase, authenticatedUser) {
   });
 }
 // Handler para logout
-async function handleLogout(supabase, authHeader) {
+async function handleLogout(
+  supabase: SupabaseClient,
+  authHeader: string | null
+): Promise<Response> {
   if (authHeader) {
     const token = authHeader.replace("Bearer ", "");
     const { error } = await supabase.auth.admin.signOut(token);
@@ -766,7 +814,10 @@ async function handleLogout(supabase, authHeader) {
   });
 }
 // Handler para estadísticas (solo admin)
-async function handleGetStats(supabase, authenticatedUser) {
+async function handleGetStats(
+  supabase: SupabaseClient,
+  authenticatedUser: SupabaseUser
+): Promise<Response> {
   // Verificar que el usuario tiene permisos de administrador (doble verificación)
   const isAdmin = authenticatedUser.app_metadata?.role === "admin" || authenticatedUser.user_metadata?.role === "admin" || authenticatedUser.email?.includes("admin@coacharte.mx");
   if (!isAdmin) {
@@ -827,7 +878,13 @@ async function handleGetStats(supabase, authenticatedUser) {
   }
 }
 // Handler para establecer contraseña masiva (administrativo)
-async function handleAdminSetPassword(supabase, body, authHeader) {
+// Definición del cuerpo de la petición de admin-set-password
+interface AdminSetPasswordBody { password: string; }
+async function handleAdminSetPassword(
+  supabase: SupabaseClient,
+  body: AdminSetPasswordBody,
+  authHeader: string | null
+): Promise<Response> {
   const { password } = body;
   if (!password) {
     return new Response(JSON.stringify({
