@@ -25,6 +25,7 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
 }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { user } = useAuthStore();
 
   const internalHandleSubmit = async (e: React.FormEvent) => {
@@ -52,6 +53,12 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
   const currentUser = user;
   const backLinkHref = currentUser ? '/home' : '/login';
 
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const passwordVisibilityButtonText = showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña';
+
   return (
     <div className="set-password-page-container">
       <div className="set-password-form-card">
@@ -69,15 +76,24 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
         <form onSubmit={internalHandleSubmit} className="set-password-form">
           <div className="form-group">
             <label htmlFor="newPassword">Nueva Contraseña:</label>
-            <input
-              type="password"
-              id="newPassword"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Ingresa tu nueva contraseña"
-              autoComplete="new-password"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Ingresa tu nueva contraseña"
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                className="toggle-password-visibility"
+                onClick={handleTogglePasswordVisibility}
+              >
+                {passwordVisibilityButtonText}
+              </button>
+            </div>
           </div>
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirmar Nueva Contraseña:</label>

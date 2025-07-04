@@ -490,3 +490,34 @@ body:has(.login-container) {
     font-size: 16px; /* Previene el zoom en iOS */
   }
 }
+
+/* Estilos para el botón de visibilidad de contraseña */
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.toggle-password-visibility {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--color-primary-100);
+}
+
+.toggle-password-visibility:hover {
+  color: var(--color-primary-70);
+}
+
+.toggle-password-visibility:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
+}
