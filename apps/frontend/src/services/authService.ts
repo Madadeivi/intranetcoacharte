@@ -223,11 +223,11 @@ class UnifiedAuthService {
   /**
    * Establecer nueva contraseña (después del reset)
    */
-  async setNewPassword(email: string, newPassword: string): Promise<AuthResult> {
+  async setNewPassword(token: string, newPassword: string): Promise<AuthResult> {
     try {
       const request: UnifiedAuthRequest = {
         action: 'set-new-password',
-        email: email,
+        token: token,
         newPassword: newPassword
       };
 

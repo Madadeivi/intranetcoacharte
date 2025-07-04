@@ -42,7 +42,7 @@ interface ResetPasswordBody {
 }
 
 interface SetNewPasswordBody {
-  email: string;
+  token: string;
   newPassword: string;
 }
 
@@ -164,490 +164,778 @@ async function updateLastLogin(supabase: SupabaseClient, userId: string): Promis
   }
 }
 
-// ===== HANDLERS =====
+/**
+ * Generar token temporal para reset de contraseña
+ */
+async function generatePasswordResetToken(userId: string, email: string): Promise<string> {
+  const jwtSecret = Deno.env.get("JWT_SECRET");
+  if (!jwtSecret) {
+    throw new Error("JWT_SECRET no está configurado");
+  }
+
+  // Convertir el secret string a CryptoKey
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(jwtSecret);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-512" },
+    false,
+    ["sign", "verify"]
+  );
+
+  const payload = {
+    iss: "coacharte-intranet",
+    sub: userId,
+    email: email,
+    type: "password_reset",
+    exp: getNumericDate(60 * 30), // Expira en 30 minutos
+    iat: getNumericDate(0), // Issued at now
+  };
+
+  return await create({ alg: "HS512", typ: "JWT" }, payload, key);
+}
 
 /**
- * Handler para login
+ * Verificar token de reset de contraseña
+ */
+async function verifyPasswordResetToken(token: string): Promise<{ valid: boolean; userId?: string; email?: string; error?: string }> {
+  try {
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) {
+      return { valid: false, error: "JWT_SECRET no configurado" };
+    }
+
+    // Convertir el secret string a CryptoKey
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecret);
+    const key = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+
+    const payload = await verify(token, key);
+    
+    // Verificar que sea un token de reset de contraseña
+    if (payload.type !== "password_reset") {
+      return { valid: false, error: "Token no es de reset de contraseña" };
+    }
+
+    return { 
+      valid: true, 
+      userId: payload.sub as string, 
+      email: payload.email as string 
+    };
+  } catch (error) {
+    console.error('Password reset token verification error:', error);
+    return { valid: false, error: error instanceof Error ? error.message : 'Token inválido' };
+  }
+}
+
+/**
+ * Enviar email de recuperación de contraseña
+ */
+async function sendPasswordResetEmail(
+  _supabase: SupabaseClient,
+  email: string,
+  fullName: string,
+  resetToken: string
+): Promise<boolean> {
+  try {
+    // Generar URL de reset
+    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://intranet.coacharte.mx";
+    const resetUrl = `${frontendUrl}/set-new-password?token=${resetToken}`;
+
+    // Obtener la URL del servicio de email
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const emailServiceUrl = `${supabaseUrl}/functions/v1/email-service`;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!serviceRoleKey) {
+      console.error("SUPABASE_SERVICE_ROLE_KEY no configurado");
+      return false;
+    }
+
+    // Preparar el contenido del email
+    const emailContent = {
+      to: email,
+      subject: "Recuperación de contraseña - Intranet Coacharte",
+      html: `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Recuperación de contraseña</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background-color: #ffffff; padding: 30px; border: 1px solid #e9ecef; }
+            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px; color: #6c757d; }
+            .button { display: inline-block; padding: 12px 30px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .button:hover { background-color: #0056b3; }
+            .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Recuperación de contraseña</h1>
+            </div>
+            <div class="content">
+              <p>Hola <strong>${fullName}</strong>,</p>
+              
+              <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en la Intranet Coacharte.</p>
+              
+              <p>Para crear una nueva contraseña, haz clic en el siguiente enlace:</p>
+              
+              <div style="text-align: center;">
+                <a href="${resetUrl}" class="button">Restablecer contraseña</a>
+              </div>
+              
+              <p>O copia y pega este enlace en tu navegador:</p>
+              <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 4px;">
+                ${resetUrl}
+              </p>
+              
+              <div class="warning">
+                <strong>⏰ Importante:</strong> Este enlace expirará en 30 minutos por seguridad.
+              </div>
+              
+              <p>Si no solicitaste este cambio, puedes ignorar este email. Tu contraseña actual permanecerá sin cambios.</p>
+              
+              <p>Si tienes problemas o necesitas ayuda, contacta al administrador del sistema.</p>
+              
+              <p>Saludos,<br>
+              <strong>Equipo Coacharte</strong></p>
+            </div>
+            <div class="footer">
+              <p>Este es un email automático, por favor no respondas a este mensaje.</p>
+              <p>© 2025 Coacharte. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+Hola ${fullName},
+
+Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en la Intranet Coacharte.
+
+Para crear una nueva contraseña, visita este enlace:
+${resetUrl}
+
+IMPORTANTE: Este enlace expirará en 30 minutos por seguridad.
+
+Si no solicitaste este cambio, puedes ignorar este email. Tu contraseña actual permanecerá sin cambios.
+
+Si tienes problemas o necesitas ayuda, contacta al administrador del sistema.
+
+Saludos,
+Equipo Coacharte
+
+---
+Este es un email automático, por favor no respondas a este mensaje.
+© 2025 Coacharte. Todos los derechos reservados.
+      `,
+      userId: null, // No tenemos userId para este caso
+      notificationType: "password_reset",
+      from: Deno.env.get("DEFAULT_FROM_EMAIL") || "noreply@coacharte.mx"
+    };
+
+    // Llamar al servicio de email
+    const response = await fetch(emailServiceUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+        "apikey": serviceRoleKey
+      },
+      body: JSON.stringify(emailContent)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error calling email service:", response.status, errorText);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log("Password reset email sent successfully:", result);
+    return result.success === true;
+
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    return false;
+  }
+}
+
+// ===== FUNCIONES DE MANEJO DE REQUESTS =====
+
+/**
+ * Manejar login
  */
 async function handleLogin(
   supabase: SupabaseClient,
-  body: LoginBody
+  request: Request
 ): Promise<Response> {
-  const { email, password } = body;
-
-  if (!email || !password) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Email y contraseña son requeridos"
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
   try {
-    // 1. Buscar usuario en la tabla profiles
-    const { data: profile, error: profileError } = await supabase
+    const { email, password } = await request.json();
+
+    if (!email || !password) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Email y contraseña son requeridos" 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Buscar usuario por email
+    const { data: user, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('email', email.toLowerCase().trim())
       .single();
 
-    if (profileError || !profile) {
-      console.warn('Login attempt for non-existent user:', { email });
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Credenciales incorrectas"
-      }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    if (error || !user) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Credenciales incorrectas" 
+        }),
+        { status: 401, headers: corsHeaders }
+      );
     }
 
-    // 2. Verificar estado del usuario
-    if (profile.status !== 'active') {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "La cuenta no está activa",
-        details: `Estado de la cuenta: ${profile.status}`
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    // Verificar si el usuario está bloqueado
+    if (user.locked) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "La cuenta está bloqueada. Contacta al administrador." 
+        }),
+        { status: 403, headers: corsHeaders }
+      );
     }
 
-    if (profile.locked) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "La cuenta está bloqueada",
-        details: "Contacte al administrador para desbloquear la cuenta"
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    // 3. Verificar contraseña
-    const passwordMatch = await comparePasswords(supabase, password, profile.password);
+    // Verificar contraseña usando bcrypt
+    const passwordValid = await comparePasswords(supabase, password, user.password);
     
-    if (!passwordMatch) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Credenciales incorrectas"
-      }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    if (!passwordValid) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Credenciales incorrectas" 
+        }),
+        { status: 401, headers: corsHeaders }
+      );
     }
 
-    // 4. Generar JWT
-    const token = await generateJWT(profile);
+    // Generar JWT
+    const token = await generateJWT(user);
 
-    // 5. Actualizar último login
-    await updateLastLogin(supabase, profile.id);
+    // Actualizar último login
+    await updateLastLogin(supabase, user.id);
 
-    // 6. Excluir datos sensibles
-    const { password: _, ...safeUser } = profile;
+    // Preparar respuesta
+    const responseUser = {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      role: user.role,
+      title: user.title || '',
+      avatar_url: user.avatar_url || '',
+      department_id: user.department_id || '',
+      status: user.status
+    };
 
-    return new Response(JSON.stringify({
-      success: true,
-      message: "Login exitoso",
-      user: safeUser,
-      session: {
-        access_token: token,
-        token_type: "Bearer",
-        expires_in: 60 * 60 * 24, // 24 horas
-      }
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Login exitoso",
+        user: responseUser,
+        token: token
+      }),
+      { status: 200, headers: corsHeaders }
+    );
 
   } catch (error) {
-    console.error("Error en login:", error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Error interno del servidor",
-      details: error instanceof Error ? error.message : String(error)
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    console.error('Login error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: "Error interno del servidor" 
+      }),
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
 /**
- * Handler para logout
- */
-function handleLogout(): Response {
-  // Con JWT, el logout es simplemente eliminar el token del cliente
-  // No necesitamos invalidar nada en el servidor
-  return new Response(JSON.stringify({
-    success: true,
-    message: "Logout exitoso"
-  }), {
-    status: 200,
-    headers: { ...corsHeaders, "Content-Type": "application/json" }
-  });
-}
-
-/**
- * Handler para validar token
+ * Manejar validación de token
  */
 async function handleValidateToken(
   supabase: SupabaseClient,
-  body: { token?: string }
+  request: Request
 ): Promise<Response> {
-  const { token } = body;
-  
-  if (!token) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Token requerido en el body"
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
-  const { valid, payload, error } = await verifyJWT(token);
-
-  if (!valid) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Token inválido",
-      details: error
-    }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
   try {
-    // Obtener datos actuales del usuario
-    const { data: profile, error: profileError } = await supabase
+    const { token } = await request.json();
+
+    if (!token) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Token es requerido" 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Verificar JWT
+    const { valid, payload } = await verifyJWT(token);
+    
+    if (!valid || !payload) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Token inválido" 
+        }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    // Buscar usuario actual
+    const { data: user, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, last_name, title, avatar_url, role, status, department_id')
-      .eq('id', payload?.sub)
+      .select('*')
+      .eq('id', payload.sub)
       .single();
 
-    if (profileError || !profile) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Usuario no encontrado"
-      }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    if (error || !user) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Usuario no encontrado" 
+        }),
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    if (profile.status !== 'active') {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "La cuenta no está activa"
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    // Verificar si el usuario está bloqueado
+    if (user.locked) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "La cuenta está bloqueada" 
+        }),
+        { status: 403, headers: corsHeaders }
+      );
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      user: profile,
-      valid: true
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    // Preparar respuesta
+    const responseUser = {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      role: user.role,
+      title: user.title || '',
+      avatar_url: user.avatar_url || '',
+      department_id: user.department_id || '',
+      status: user.status
+    };
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Token válido",
+        user: responseUser
+      }),
+      { status: 200, headers: corsHeaders }
+    );
 
   } catch (error) {
-    console.error("Error validando token:", error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Error interno del servidor"
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    console.error('Token validation error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: "Error interno del servidor" 
+      }),
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
 /**
- * Handler para reset de contraseña
+ * Manejar logout
+ */
+function handleLogout(): Response {
+  // Para el logout solo necesitamos confirmar que se procesó
+  // El frontend maneja la limpieza de tokens
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: "Logout exitoso"
+    }),
+    { status: 200, headers: corsHeaders }
+  );
+}
+
+/**
+ * Manejar solicitud de reset de contraseña
  */
 async function handleResetPassword(
   supabase: SupabaseClient,
-  body: ResetPasswordBody
+  request: Request
 ): Promise<Response> {
-  const { email } = body;
-
-  if (!email) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Email es requerido"
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
   try {
-    // Verificar que el usuario existe
-    const { data: profile, error: profileError } = await supabase
+    const { email } = await request.json();
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Email es requerido" 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Buscar usuario por email
+    const { data: user, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name')
+      .select('id, email, full_name, first_name, last_name')
       .eq('email', email.toLowerCase().trim())
       .single();
 
-    if (profileError || !profile) {
-      // Por seguridad, no revelar si el email existe o no
-      return new Response(JSON.stringify({
-        success: true,
-        message: "Si el email existe, se enviará un enlace de recuperación"
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    if (error || !user) {
+      // Por seguridad, siempre devolvemos éxito aunque el usuario no exista
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Si el email existe, se enviará un enlace de recuperación" 
+        }),
+        { status: 200, headers: corsHeaders }
+      );
     }
 
-    // TODO: Implementar envío de email de recuperación
-    // Por ahora, solo simulamos el éxito
-    console.log(`Password reset requested for: ${email}`);
+    // Generar token de reset
+    const resetToken = await generatePasswordResetToken(user.id, user.email);
+    
+    // Enviar email de recuperación
+    const fullName = user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+    const emailSent = await sendPasswordResetEmail(
+      supabase,
+      user.email,
+      fullName,
+      resetToken
+    );
 
-    return new Response(JSON.stringify({
-      success: true,
-      message: "Email de recuperación enviado exitosamente"
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    if (!emailSent) {
+      console.error(`Failed to send password reset email to: ${user.email}`);
+      // Aún devolvemos éxito por seguridad, pero loggeamos el error
+    }
+
+    console.log(`Password reset requested for user: ${user.email}, email sent: ${emailSent}`);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: "Si el email existe, se enviará un enlace de recuperación" 
+      }),
+      { status: 200, headers: corsHeaders }
+    );
 
   } catch (error) {
-    console.error("Error en reset de contraseña:", error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Error interno del servidor"
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    console.error('Reset password error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: "Error interno del servidor" 
+      }),
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
 /**
- * Handler para establecer nueva contraseña
+ * Manejar establecimiento de nueva contraseña
  */
 async function handleSetNewPassword(
   supabase: SupabaseClient,
-  body: SetNewPasswordBody
+  request: Request
 ): Promise<Response> {
-  const { email, newPassword } = body;
-
-  if (!email || !newPassword) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Email y nueva contraseña son requeridos"
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
-  if (newPassword.length < MIN_PASSWORD_LENGTH) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
   try {
-    // Generar hash de la nueva contraseña
+    const { token, newPassword } = await request.json();
+
+    if (!token || !newPassword) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Token y nueva contraseña son requeridos" 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres` 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Verificar token de reset
+    const { valid, userId, error: tokenError } = await verifyPasswordResetToken(token);
+    
+    if (!valid || !userId) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: tokenError || "Token inválido o expirado" 
+        }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    // Hash de la nueva contraseña usando bcrypt
     const { data: hashedPassword, error: hashError } = await supabase.rpc('hash_password_bcrypt', {
       plain_password: newPassword
     });
 
     if (hashError || !hashedPassword) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Error al procesar la nueva contraseña"
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      console.error('Error hashing password:', hashError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Error al procesar la contraseña" 
+        }),
+        { status: 500, headers: corsHeaders }
+      );
     }
 
     // Actualizar contraseña en la base de datos
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({
+      .update({ 
         password: hashedPassword,
-        password_changed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('email', email.toLowerCase().trim());
+      .eq('id', userId);
 
     if (updateError) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Error al actualizar la contraseña"
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      console.error('Error updating password:', updateError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Error al actualizar la contraseña" 
+        }),
+        { status: 500, headers: corsHeaders }
+      );
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      message: "Contraseña actualizada exitosamente"
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    console.log(`Password updated successfully for user: ${userId}`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Contraseña actualizada exitosamente"
+      }),
+      { status: 200, headers: corsHeaders }
+    );
 
   } catch (error) {
-    console.error("Error estableciendo nueva contraseña:", error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Error interno del servidor"
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    console.error('Set new password error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: "Error interno del servidor" 
+      }),
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
 /**
- * Handler para test de contraseña (debug)
+ * Manejar test de contraseña (para debugging)
  */
 async function handleTestPassword(
   supabase: SupabaseClient,
-  body: { email: string; password: string; }
+  request: Request
 ): Promise<Response> {
-  const { email, password } = body;
-  
   try {
-    // Obtener el perfil del usuario
-    const { data: profile, error: profileError } = await supabase
+    const { email, password } = await request.json();
+
+    if (!email || !password) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Email y contraseña son requeridos" 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Buscar usuario
+    const { data: user, error } = await supabase
       .from('profiles')
-      .select('email, password, status, locked')
+      .select('id, email, password')
       .eq('email', email.toLowerCase().trim())
       .single();
 
-    if (profileError || !profile) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Usuario no encontrado",
-        details: profileError?.message
-      }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    if (error || !user) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Usuario no encontrado",
+          details: { userFound: false }
+        }),
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    // Probar la verificación de contraseña
-    const passwordMatch = await comparePasswords(supabase, password, profile.password);
+    // Verificar contraseña
+    const passwordValid = await comparePasswords(supabase, password, user.password);
 
-    return new Response(JSON.stringify({
-      success: true,
-      debug_info: {
-        user_found: true,
-        user_email: profile.email,
-        user_status: profile.status,
-        user_locked: profile.locked,
-        hash_length: profile.password?.length || 0,
-        hash_prefix: profile.password?.substring(0, 20) || '',
-        password_verification_result: passwordMatch,
-        password_length: password.length
-      }
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    // Test directo de bcrypt
+    const { data: testResult, error: testError } = await supabase.rpc('test_password_verification', {
+      test_password: password,
+      stored_hash: user.password
     });
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        user: { id: user.id, email: user.email },
+        passwordCheck: {
+          comparePasswords: passwordValid,
+          sqlFunction: testResult,
+          sqlError: testError ? testError.message : null
+        },
+        hashedPassword: user.password
+      }),
+      { status: 200, headers: corsHeaders }
+    );
 
   } catch (error) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Error en test de contraseña",
-      details: error instanceof Error ? error.message : String(error)
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    console.error('Test password error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Error interno del servidor" 
+      }),
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
-// ===== SERVIDOR PRINCIPAL =====
+/**
+ * Manejar test simple (para debugging rápido)
+ */
+function handleSimpleTest(): Response {
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: "Endpoint funcionando correctamente",
+      timestamp: new Date().toISOString(),
+      environment: {
+        supabaseUrl: Deno.env.get("SUPABASE_URL") ? "✅ Configurado" : "❌ Falta",
+        serviceKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ? "✅ Configurado" : "❌ Falta",
+        jwtSecret: Deno.env.get("JWT_SECRET") ? "✅ Configurado" : "❌ Falta",
+        frontendUrl: Deno.env.get("FRONTEND_URL") || "https://intranet.coacharte.mx (default)"
+      }
+    }),
+    { status: 200, headers: corsHeaders }
+  );
+}
 
-serve(async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+// ===== FUNCIÓN PRINCIPAL =====
+
+serve(async (request: Request) => {
+  // Manejar CORS preflight
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  // Solo permitir POST
+  if (request.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Método no permitido' }),
+      { status: 405, headers: corsHeaders }
+    );
   }
 
   try {
-    // Inicializar cliente de Supabase
+    // Inicializar Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Variables de entorno de Supabase faltantes");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({ error: 'Configuración del servidor incompleta' }),
+        { status: 500, headers: corsHeaders }
+      );
     }
 
-    const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    if (req.method === "POST") {
-      const { action, ...body } = await req.json();
+    // Parsear body de la request
+    const body = await request.json();
+    const { action } = body;
 
-      switch (action) {
-        case "login":
-          return await handleLogin(supabase, body as LoginBody);
-        
-        case "logout":
-          return handleLogout();
-        
-        case "validate-token":
-          return await handleValidateToken(supabase, body as { token?: string });
-        
-        case "reset-password":
-          return await handleResetPassword(supabase, body as ResetPasswordBody);
-        
-        case "set-new-password":
-          return await handleSetNewPassword(supabase, body as SetNewPasswordBody);
-        
-        case "test-password":
-          return await handleTestPassword(supabase, body as { email: string; password: string; });
-        
-        default:
-          return new Response(JSON.stringify({
-            success: false,
-            error: "Acción no válida"
-          }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" }
-          });
-      }
+    // Enrutar según la acción
+    switch (action) {
+      case 'login':
+        return await handleLogin(supabase, request);
+      
+      case 'validate-token':
+        return await handleValidateToken(supabase, request);
+      
+      case 'logout':
+        return handleLogout();
+      
+      case 'reset-password':
+        return await handleResetPassword(supabase, request);
+      
+      case 'set-new-password':
+        return await handleSetNewPassword(supabase, request);
+      
+      case 'test-password':
+        return await handleTestPassword(supabase, request);
+      
+      case 'simple-test':
+        return handleSimpleTest();
+      
+      default:
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Acción no reconocida: ${action}` 
+          }),
+          { status: 400, headers: corsHeaders }
+        );
     }
-
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Método no permitido"
-    }), {
-      status: 405,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
 
   } catch (error) {
-    console.error("Error en unified-auth:", error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Error interno del servidor",
-      details: error instanceof Error ? error.message : String(error)
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    console.error('Unified auth error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Error interno del servidor' 
+      }),
+      { status: 500, headers: corsHeaders }
+    );
   }
 });

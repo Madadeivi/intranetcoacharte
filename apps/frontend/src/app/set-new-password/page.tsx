@@ -11,8 +11,8 @@ function SetNewPasswordContent() {
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Obtener email del query string para el caso de reset
-  const resetEmail = searchParams.get('email') || '';
+  // Obtener token del query string para el caso de reset
+  const resetToken = searchParams.get('token') || '';
   
   // Store unificado
   const {
@@ -25,9 +25,14 @@ function SetNewPasswordContent() {
   }, [router]);
 
   const handlePasswordSubmit = async (newPasswordValue: string) => {
+    if (!resetToken) {
+      toast.error('Token de reset no válido');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      const result = await setNewPassword(resetEmail, newPasswordValue);
+      const result = await setNewPassword(resetToken, newPasswordValue);
       if (result.success) {
         toast.success('Contraseña actualizada exitosamente');
         router.push('/login');
