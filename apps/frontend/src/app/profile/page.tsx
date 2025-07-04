@@ -20,15 +20,93 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../../components/Avatar';
-import { CollaboratorService, CollaboratorProfile, CollaboratorDocument } from '../../services/collaboratorService';
+
+// Interfaces locales para el perfil (ya no dependemos de collaboratorService)
+interface ProfileDocument {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  uploadDate: string;
+  size?: string;
+}
+
+interface UserProfile {
+  id: string;
+  fullName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  position: string;
+  department: string;
+  joinDate: string;
+  avatarUrl?: string;
+  initials: string;
+  documents: ProfileDocument[];
+  phone?: string;
+  internalRecord?: string;
+  status: 'Activo' | 'Inactivo' | 'Vacaciones';
+}
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingDocs, setDownloadingDocs] = useState<Set<string>>(new Set());
+
+  // Función auxiliar para generar iniciales
+  const generateInitials = (fullName: string): string => {
+    if (!fullName || fullName.trim() === '') return 'UC';
+    const names = fullName.trim().split(' ').filter(name => name.length > 0);
+    if (names.length === 0) return 'UC';
+    if (names.length === 1) {
+      return names[0].charAt(0).toUpperCase();
+    }
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
+
+  // Función auxiliar para formatear fechas
+  const formatJoinDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const years = now.getFullYear() - date.getFullYear();
+    const months = now.getMonth() - date.getMonth();
+    
+    let totalMonths = years * 12 + months;
+    if (now.getDate() < date.getDate()) {
+      totalMonths--;
+    }
+
+    const yearsWorked = Math.floor(totalMonths / 12);
+    const monthsWorked = totalMonths % 12;
+
+    const parts: string[] = [];
+    if (yearsWorked > 0) {
+      parts.push(`${yearsWorked} año${yearsWorked !== 1 ? 's' : ''}`);
+    }
+    if (monthsWorked > 0) {
+      parts.push(`${monthsWorked} mes${monthsWorked !== 1 ? 'es' : ''}`);
+    }
+
+    return parts.length > 0 ? parts.join(' y ') : 'Menos de un mes';
+  };
+
+  // Función auxiliar para iconos de documentos
+  const getDocumentIcon = (type: string): string => {
+    const iconMap: Record<string, string> = {
+      'Contrato': '📋',
+      'CV': '👤',
+      'Certificación': '🏆',
+      'Evaluación': '📊',
+      'Referencia': '💌',
+      'Foto': '📷',
+      'Identificación': '🆔',
+      'default': '📄'
+    };
+    return iconMap[type] || iconMap.default;
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -43,16 +121,23 @@ export default function ProfilePage() {
         setLoading(true);
         setError(null);
         
-        // Por ahora usamos datos mock, luego se conectará con la API real
-        // Pasamos la información del usuario logueado para generar datos mock más realistas
-        const userInfo = {
+        // Crear el perfil directamente desde los datos del usuario autenticado
+        const profileData: UserProfile = {
           id: user.id,
-          name: user.name,
+          fullName: user.name,
+          firstName: user.name.split(' ')[0] || '',
+          lastName: user.name.split(' ').slice(1).join(' ') || '',
           email: user.email,
-          department: user.department,
-          avatarUrl: user.avatar,
+          position: user.role || 'Colaborador',
+          department: user.department || 'General',
+          joinDate: '2023-03-15', // Valor por defecto
+          avatarUrl: user.avatar || '',
+          initials: generateInitials(user.name),
+          internalRecord: `COA-${user.id.slice(-4)}`,
+          phone: '+52 55 0000-0000', // Valor por defecto
+          status: 'Activo',
+          documents: [], // Sin documentos por ahora
         };
-        const profileData = await CollaboratorService.getCollaboratorProfile(user.id, userInfo);
         setProfile(profileData);
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -72,14 +157,23 @@ export default function ProfilePage() {
       setLoading(true);
       setError(null);
       
-      const userInfo = {
+      // Crear el perfil directamente desde los datos del usuario autenticado
+      const profileData: UserProfile = {
         id: user.id,
-        name: user.name,
+        fullName: user.name,
+        firstName: user.name.split(' ')[0] || '',
+        lastName: user.name.split(' ').slice(1).join(' ') || '',
         email: user.email,
-        department: user.department,
-        avatarUrl: user.avatar,
+        position: user.role || 'Colaborador',
+        department: user.department || 'General',
+        joinDate: '2023-03-15', // Valor por defecto
+        avatarUrl: user.avatar || '',
+        initials: generateInitials(user.name),
+        internalRecord: `COA-${user.id.slice(-4)}`,
+        phone: '+52 55 0000-0000', // Valor por defecto
+        status: 'Activo',
+        documents: [], // Sin documentos por ahora
       };
-      const profileData = await CollaboratorService.getCollaboratorProfile(user.id, userInfo);
       setProfile(profileData);
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -89,7 +183,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleDownloadDocument = async (doc: CollaboratorDocument) => {
+  const handleDownloadDocument = async (doc: ProfileDocument) => {
     if (downloadingDocs.has(doc.id)) return;
 
     try {
@@ -245,7 +339,7 @@ export default function ProfilePage() {
               <span className="detail-value">
                 {formatDate(profile.joinDate)}
                 <small className="join-duration">
-                  ({CollaboratorService.formatJoinDate(profile.joinDate)} en la empresa)
+                  ({formatJoinDate(profile.joinDate)} en la empresa)
                 </small>
               </span>
             </div>
@@ -273,10 +367,10 @@ export default function ProfilePage() {
 
         {profile.documents.length > 0 ? (
           <div className="documents-list">
-            {profile.documents.map((doc: CollaboratorDocument) => (
+            {profile.documents.map((doc: ProfileDocument) => (
               <div key={doc.id} className="document-item">
                 <div className="document-icon">
-                  {CollaboratorService.getDocumentIcon(doc.type)}
+                  {getDocumentIcon(doc.type)}
                 </div>
                 <div className="document-info">
                   <h4>{doc.name}</h4>

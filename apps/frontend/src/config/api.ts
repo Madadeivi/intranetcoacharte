@@ -33,7 +33,7 @@ interface ApiConfig {
       sync: string;
     };
     collaborator: {
-      getProfile: string;
+      // Nota: getProfile eliminado - ahora se usa directamente la tabla 'profiles'
       getDocuments: string;
     };
   };
@@ -61,7 +61,8 @@ export const apiConfig: ApiConfig = (() => {
         sync: `${functionsBaseUrl}/zoho-crm`,
       },
       collaborator: {
-        getProfile: `${functionsBaseUrl}/collaborator-db`,
+        // Nota: getProfile ahora se maneja directamente con queries a la tabla 'profiles'
+        // ya no se usa la función Edge collaborator-db
         getDocuments: `${functionsBaseUrl}/document-manager`,
       },
     },

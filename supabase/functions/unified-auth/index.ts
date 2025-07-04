@@ -385,10 +385,10 @@ Este es un email automático, por favor no respondas a este mensaje.
  */
 async function handleLogin(
   supabase: SupabaseClient,
-  request: Request
+  body: LoginBody & { action: string }
 ): Promise<Response> {
   try {
-    const { email, password } = await request.json();
+    const { email, password } = body;
 
     if (!email || !password) {
       return new Response(
@@ -488,10 +488,10 @@ async function handleLogin(
  */
 async function handleValidateToken(
   supabase: SupabaseClient,
-  request: Request
+  body: { token: string; action: string }
 ): Promise<Response> {
   try {
-    const { token } = await request.json();
+    const { token } = body;
 
     if (!token) {
       return new Response(
@@ -599,10 +599,10 @@ function handleLogout(): Response {
  */
 async function handleResetPassword(
   supabase: SupabaseClient,
-  request: Request
+  body: ResetPasswordBody & { action: string }
 ): Promise<Response> {
   try {
-    const { email } = await request.json();
+    const { email } = body;
 
     if (!email) {
       return new Response(
@@ -676,10 +676,10 @@ async function handleResetPassword(
  */
 async function handleSetNewPassword(
   supabase: SupabaseClient,
-  request: Request
+  body: SetNewPasswordBody & { action: string }
 ): Promise<Response> {
   try {
-    const { token, newPassword } = await request.json();
+    const { token, newPassword } = body;
 
     if (!token || !newPassword) {
       return new Response(
@@ -777,10 +777,10 @@ async function handleSetNewPassword(
  */
 async function handleTestPassword(
   supabase: SupabaseClient,
-  request: Request
+  body: { email: string; password: string; action: string }
 ): Promise<Response> {
   try {
-    const { email, password } = await request.json();
+    const { email, password } = body;
 
     if (!email || !password) {
       return new Response(
@@ -975,22 +975,22 @@ serve(async (request: Request) => {
     // Enrutar según la acción
     switch (action) {
       case 'login':
-        return await handleLogin(supabase, request);
+        return await handleLogin(supabase, body);
       
       case 'validate-token':
-        return await handleValidateToken(supabase, request);
+        return await handleValidateToken(supabase, body);
       
       case 'logout':
         return handleLogout();
       
       case 'reset-password':
-        return await handleResetPassword(supabase, request);
+        return await handleResetPassword(supabase, body);
       
       case 'set-new-password':
-        return await handleSetNewPassword(supabase, request);
+        return await handleSetNewPassword(supabase, body);
       
       case 'test-password':
-        return await handleTestPassword(supabase, request);
+        return await handleTestPassword(supabase, body);
       
       case 'simple-test':
         return handleSimpleTest();
