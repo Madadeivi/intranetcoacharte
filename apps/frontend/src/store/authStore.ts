@@ -29,7 +29,7 @@ interface AuthState {
   
   // Acciones de contraseña
   resetPassword: (email: string) => Promise<AuthResult>;
-  setNewPassword: (email: string, newPassword: string) => Promise<AuthResult>;
+  setNewPassword: (token: string, newPassword: string) => Promise<AuthResult>;
   
   // Acciones de sesión
   validateSession: () => Promise<void>;
@@ -174,11 +174,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   /**
    * Establecer nueva contraseña (después del reset)
    */
-  setNewPassword: async (email: string, newPassword: string): Promise<AuthResult> => {
+  setNewPassword: async (token: string, newPassword: string): Promise<AuthResult> => {
     set({ isLoading: true, error: null });
     
     try {
-      const result = await authService.setNewPassword(email, newPassword);
+      const result = await authService.setNewPassword(token, newPassword);
       
       set({ isLoading: false });
       

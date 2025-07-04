@@ -11,8 +11,8 @@ function SetNewPasswordContent() {
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Obtener email del query string para el caso de reset
-  const resetEmail = searchParams.get('email') || '';
+  // Obtener token del query string para el caso de reset
+  const resetToken = searchParams.get('token') || '';
   
   // Store unificado
   const {
@@ -20,14 +20,34 @@ function SetNewPasswordContent() {
   } = useAuthStore();
 
   useEffect(() => {
+    // Verificar que tenemos un token válido
+    if (!resetToken) {
+      toast.error('Token de reset no válido o faltante');
+      router.push('/request-password-reset');
+      return;
+    }
+
+    // Validar formato básico del token (debe ser un JWT)
+    const tokenParts = resetToken.split('.');
+    if (tokenParts.length !== 3) {
+      toast.error('Token de reset inválido');
+      router.push('/request-password-reset');
+      return;
+    }
+
     // Intenta solucionar el problema de caché en la navegación del lado del cliente
     router.refresh();
-  }, [router]);
+  }, [router, resetToken]);
 
   const handlePasswordSubmit = async (newPasswordValue: string) => {
+    if (!resetToken) {
+      toast.error('Token de reset no válido');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      const result = await setNewPassword(resetEmail, newPasswordValue);
+      const result = await setNewPassword(resetToken, newPasswordValue);
       if (result.success) {
         toast.success('Contraseña actualizada exitosamente');
         router.push('/login');

@@ -1,4 +1,22 @@
-import { User, Session } from '@supabase/supabase-js';
+// Tipos personalizados para usuario y sesión (independiente de Supabase Auth)
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  department?: string;
+  avatar?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Session {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  user?: User;
+}
+
 interface ApiConfig {
   baseUrl: string;
   endpoints: {
@@ -15,7 +33,7 @@ interface ApiConfig {
       sync: string;
     };
     collaborator: {
-      getProfile: string;
+      // Nota: getProfile eliminado - ahora se usa directamente la tabla 'profiles'
       getDocuments: string;
     };
   };
@@ -43,7 +61,8 @@ export const apiConfig: ApiConfig = (() => {
         sync: `${functionsBaseUrl}/zoho-crm`,
       },
       collaborator: {
-        getProfile: `${functionsBaseUrl}/collaborator-db`,
+        // Nota: getProfile ahora se maneja directamente con queries a la tabla 'profiles'
+        // ya no se usa la función Edge collaborator-db
         getDocuments: `${functionsBaseUrl}/document-manager`,
       },
     },
@@ -153,10 +172,23 @@ export const customFetch = async <T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
+    // Obtener la clave anónima de Supabase para las Edge Functions
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    const defaultHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Añadir cabeceras de autorización para Supabase Edge Functions
+    if (supabaseAnonKey) {
+      defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
+      defaultHeaders['apikey'] = supabaseAnonKey;
+    }
+
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         ...options.headers,
       },
     });
