@@ -12,7 +12,6 @@
 -- ----------------------------------------
 -- Eliminar vistas dependientes primero
 DROP VIEW IF EXISTS public.profile_view;
-
 -- Eliminar tablas. CASCADE elimina objetos dependientes (índices, claves foráneas, etc.)
 DROP TABLE IF EXISTS public.announcements CASCADE;
 DROP TABLE IF EXISTS public.requests CASCADE;
@@ -20,7 +19,6 @@ DROP TABLE IF EXISTS public.notifications CASCADE;
 DROP TABLE IF EXISTS public.documents CASCADE;
 DROP TABLE IF EXISTS public.profiles CASCADE;
 DROP TABLE IF EXISTS public.departments CASCADE;
-
 -- Eliminar funciones
 DROP FUNCTION IF EXISTS public.update_updated_at_column() CASCADE;
 DROP FUNCTION IF EXISTS public.generate_initials(TEXT) CASCADE;
@@ -30,7 +28,6 @@ DROP FUNCTION IF EXISTS public.verify_password(TEXT, TEXT) CASCADE;
 DROP FUNCTION IF EXISTS public.validate_login(TEXT, TEXT) CASCADE;
 DROP FUNCTION IF EXISTS public.change_password(UUID, TEXT, TEXT) CASCADE;
 DROP FUNCTION IF EXISTS public.reset_password(TEXT, TEXT) CASCADE;
-
 -- Eliminar tipos (ENUMS). CASCADE elimina su uso en columnas de tablas.
 DROP TYPE IF EXISTS public.user_role CASCADE;
 DROP TYPE IF EXISTS public.user_status CASCADE;
@@ -38,13 +35,11 @@ DROP TYPE IF EXISTS public.notification_type CASCADE;
 DROP TYPE IF EXISTS public.request_type CASCADE;
 DROP TYPE IF EXISTS public.request_status CASCADE;
 DROP TYPE IF EXISTS public.resource_priority CASCADE;
-
 -- ----------------------------------------
 -- 1. EXTENSIONES
 -- ----------------------------------------
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA extensions;
-
 -- ----------------------------------------
 -- 2. TIPOS DE DATOS (ENUMS)
 -- ----------------------------------------
@@ -54,7 +49,6 @@ CREATE TYPE public.notification_type AS ENUM ('info', 'warning', 'success', 'err
 CREATE TYPE public.request_type AS ENUM ('vacation', 'sick_leave', 'personal_leave', 'remote_work');
 CREATE TYPE public.request_status AS ENUM ('pending', 'approved', 'rejected', 'cancelled');
 CREATE TYPE public.resource_priority AS ENUM ('low', 'medium', 'high');
-
 -- ----------------------------------------
 -- 3. TABLAS PRINCIPALES
 -- ----------------------------------------
@@ -68,7 +62,6 @@ CREATE TABLE public.departments (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 COMMENT ON TABLE public.departments IS 'Almacena los departamentos de la organización.';
-
 -- Tabla de Perfiles de Usuario (consolidada)
 CREATE TABLE public.profiles (
     id UUID DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
@@ -124,7 +117,6 @@ CREATE TABLE public.profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 COMMENT ON TABLE public.profiles IS 'Tabla central de usuarios (colaboradores) con datos de perfil y credenciales.';
-
 -- Tabla de Documentos
 CREATE TABLE public.documents (
   id UUID DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
@@ -139,7 +131,6 @@ CREATE TABLE public.documents (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 COMMENT ON TABLE public.documents IS 'Repositorio de documentos corporativos.';
-
 -- Tabla de Notificaciones
 CREATE TABLE public.notifications (
   id UUID DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
@@ -154,7 +145,6 @@ CREATE TABLE public.notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 COMMENT ON TABLE public.notifications IS 'Notificaciones para usuarios dentro de la intranet.';
-
 -- Tabla de Solicitudes (vacaciones, permisos, etc.)
 CREATE TABLE public.requests (
   id UUID DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
@@ -171,7 +161,6 @@ CREATE TABLE public.requests (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 COMMENT ON TABLE public.requests IS 'Solicitudes de RRHH como vacaciones o permisos.';
-
 -- Tabla de Anuncios
 CREATE TABLE public.announcements (
   id UUID DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
@@ -186,7 +175,6 @@ CREATE TABLE public.announcements (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 COMMENT ON TABLE public.announcements IS 'Anuncios generales o departamentales.';
-
 -- ----------------------------------------
 -- 4. FUNCIONES AUXILIARES Y DE AUTENTICACIÓN
 -- ----------------------------------------
@@ -199,7 +187,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 -- Función para generar iniciales a partir de un nombre completo
 CREATE OR REPLACE FUNCTION public.generate_initials(full_name TEXT)
 RETURNS TEXT AS $$
@@ -207,7 +194,6 @@ BEGIN
     RETURN UPPER(LEFT(SPLIT_PART(full_name, ' ', 1), 1) || LEFT(SPLIT_PART(full_name, ' ', -1), 1));
 END;
 $$ LANGUAGE plpgsql;
-
 -- Función para establecer las iniciales antes de insertar o actualizar un perfil
 CREATE OR REPLACE FUNCTION public.set_profile_initials()
 RETURNS TRIGGER AS $$
@@ -218,7 +204,6 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 -- Función para hashear contraseñas con bcrypt
 CREATE OR REPLACE FUNCTION public.hash_password(plain_password TEXT)
 RETURNS TEXT AS $$
@@ -226,7 +211,6 @@ BEGIN
     RETURN extensions.crypt(plain_password, extensions.gen_salt('bf', 12));
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Función para verificar una contraseña contra su hash
 CREATE OR REPLACE FUNCTION public.verify_password(plain_password TEXT, hashed_password TEXT)
 RETURNS BOOLEAN AS $$
@@ -234,7 +218,6 @@ BEGIN
     RETURN extensions.crypt(plain_password, hashed_password) = hashed_password;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Función para validar el login de un usuario
 CREATE OR REPLACE FUNCTION public.validate_login(user_email TEXT, plain_password TEXT)
 RETURNS JSON AS $$
@@ -270,7 +253,6 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Función para cambiar la contraseña de un usuario
 CREATE OR REPLACE FUNCTION public.change_password(user_id UUID, current_password TEXT, new_password TEXT)
 RETURNS JSON AS $$
@@ -303,7 +285,6 @@ BEGIN
     RETURN json_build_object('success', true, 'message', 'Password updated successfully.');
 END;
 $$ LANGUAGE plpgsql;
-
 -- Función para resetear la contraseña de un usuario (sin requerir la actual)
 CREATE OR REPLACE FUNCTION public.reset_password(user_email TEXT, new_password TEXT)
 RETURNS JSON AS $$
@@ -330,7 +311,6 @@ BEGIN
     RETURN json_build_object('success', true, 'message', 'Password reset successfully.');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- ----------------------------------------
 -- 5. ÍNDICES Y TRIGGERS
 -- ----------------------------------------
@@ -343,19 +323,16 @@ CREATE INDEX IF NOT EXISTS idx_documents_department ON public.documents(departme
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON public.notifications(recipient_id);
 CREATE INDEX IF NOT EXISTS idx_requests_user ON public.requests(user_id);
 CREATE INDEX IF NOT EXISTS idx_announcements_department ON public.announcements(department_id);
-
 -- Triggers para `updated_at`
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 CREATE TRIGGER update_departments_updated_at BEFORE UPDATE ON public.departments FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 CREATE TRIGGER update_documents_updated_at BEFORE UPDATE ON public.documents FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 CREATE TRIGGER update_requests_updated_at BEFORE UPDATE ON public.requests FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 CREATE TRIGGER update_announcements_updated_at BEFORE UPDATE ON public.announcements FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
 -- Trigger para iniciales de perfil
 CREATE TRIGGER set_initials_on_profile_change
 BEFORE INSERT OR UPDATE ON public.profiles
 FOR EACH ROW EXECUTE FUNCTION public.set_profile_initials();
-
 -- ----------------------------------------
 -- 6. POLÍTICAS DE SEGURIDAD (RLS)
 -- ----------------------------------------
@@ -370,7 +347,6 @@ ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
-
 -- Políticas (Ejemplo - Requiere adaptación)
 -- Por defecto, denegar todo
 CREATE POLICY "Deny all" ON public.profiles FOR ALL USING (false);
@@ -379,10 +355,10 @@ CREATE POLICY "Deny all" ON public.documents FOR ALL USING (false);
 CREATE POLICY "Deny all" ON public.notifications FOR ALL USING (false);
 CREATE POLICY "Deny all" ON public.requests FOR ALL USING (false);
 CREATE POLICY "Deny all" ON public.announcements FOR ALL USING (false);
-
 -- Permitir acceso público a funciones de login
 GRANT EXECUTE ON FUNCTION public.validate_login(TEXT, TEXT) TO anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.reset_password(TEXT, TEXT) TO service_role; -- Permitir a un rol de servicio resetear contraseñas
+GRANT EXECUTE ON FUNCTION public.reset_password(TEXT, TEXT) TO service_role;
+-- Permitir a un rol de servicio resetear contraseñas
 
 -- ----------------------------------------
 -- 7. VISTAS
@@ -401,21 +377,19 @@ SELECT
   phone,
   status
 FROM public.profiles p;
-
 -- Permisos para la vista
 GRANT SELECT ON public.profile_view TO anon, authenticated;
-
 -- ----------------------------------------
 -- 8. STORAGE
 -- ----------------------------------------
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) 
 VALUES ('intranet-documents', 'intranet-documents', false, 10485760, ARRAY['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
 ON CONFLICT (id) DO NOTHING;
-
 -- Políticas de Storage (Ejemplo - Requiere adaptación)
 CREATE POLICY "Allow authenticated uploads" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'intranet-documents');
-CREATE POLICY "Allow individual read access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'intranet-documents'); -- Se necesita una lógica más granular
+CREATE POLICY "Allow individual read access" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'intranet-documents');
+-- Se necesita una lógica más granular
 
 -- =================================================================
 -- FIN DE LA MIGRACIÓN CONSOLIDADA
--- =================================================================
+-- =================================================================;

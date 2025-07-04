@@ -97,6 +97,7 @@ export interface UnifiedAuthRequest {
   fullName?: string;
   department?: string;
   role?: string;
+  token?: string; // Para validate-token
 }
 
 export interface UnifiedAuthResponse {

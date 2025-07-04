@@ -59,6 +59,45 @@ export interface AuthResult {
 
 // ===== SERVICIO PRINCIPAL =====
 
+/**
+ * Mapear datos de usuario del backend al formato del frontend
+ */
+function mapBackendUserToFrontend(backendUser: {
+  id: string;
+  email: string;
+  full_name?: string;
+  name?: string;
+  role: string;
+  department_id?: string;
+  avatar_url?: string;
+}): User {
+  return {
+    id: backendUser.id,
+    email: backendUser.email,
+    name: backendUser.full_name || backendUser.name || '',
+    role: backendUser.role,
+    department: backendUser.department_id,
+    avatar: backendUser.avatar_url
+  };
+}
+
+/**
+ * Mapear datos de sesión del backend al formato del frontend
+ */
+function mapBackendSessionToFrontend(backendSession: {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+}): AuthSession {
+  return {
+    access_token: backendSession.access_token,
+    refresh_token: backendSession.refresh_token || '',
+    expires_at: backendSession.expires_in ? 
+      Math.floor(Date.now() / 1000) + backendSession.expires_in : 
+      undefined
+  };
+}
+
 class UnifiedAuthService {
   private static instance: UnifiedAuthService;
   private readonly STORAGE_PREFIX = 'coacharte_auth_';
@@ -109,14 +148,18 @@ class UnifiedAuthService {
         const result = response.data;
         
         if (result.success && result.user) {
+          // Mapear datos del backend al formato del frontend
+          const mappedUser = mapBackendUserToFrontend(result.user);
+          const mappedSession = result.session ? mapBackendSessionToFrontend(result.session) : undefined;
+          
           // Guardar sesión
-          this.setSession(result.user, result.session);
+          this.setSession(mappedUser, mappedSession);
           
           return {
             success: true,
             message: result.message,
-            user: result.user,
-            session: result.session,
+            user: mappedUser,
+            session: mappedSession,
             requiresPasswordChange: result.password_change_required,
             usingDefaultPassword: result.using_default_password,
             passwordMigrated: result.password_migrated
@@ -227,24 +270,25 @@ class UnifiedAuthService {
 
     try {
       const request: UnifiedAuthRequest = {
-        action: 'validate-token'
+        action: 'validate-token',
+        token: token // Ahora enviamos el token en el body
       };
 
       const response = await customFetch<UnifiedAuthResponse>(
         apiConfig.endpoints.unifiedAuth.execute,
         {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(request),
         }
       );
 
       if (response.success && response.data?.success && response.data.user) {
-        this.updateUser(response.data.user);
+        const mappedUser = mapBackendUserToFrontend(response.data.user);
+        this.updateUser(mappedUser);
         
         return {
           success: true,
-          user: response.data.user,
+          user: mappedUser,
           session: this.currentSession || undefined
         };
       }
@@ -269,23 +313,18 @@ class UnifiedAuthService {
    * Cerrar sesión
    */
   async logout(): Promise<void> {
-    const token = this.getToken();
-    
     try {
-      if (token) {
-        const request: UnifiedAuthRequest = {
-          action: 'logout'
-        };
+      const request: UnifiedAuthRequest = {
+        action: 'logout'
+      };
 
-        await customFetch<UnifiedAuthResponse>(
-          apiConfig.endpoints.unifiedAuth.execute,
-          {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(request),
-          }
-        );
-      }
+      await customFetch<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.execute,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
     } catch (error) {
       console.error('Error en logout remoto:', error);
       // Continuar con logout local aunque falle el remoto
