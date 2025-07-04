@@ -20,6 +20,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../../components/Avatar';
+import { generateInitials } from '../../utils/helpers';
 
 // Interfaces locales para el perfil (ya no dependemos de collaboratorService)
 interface ProfileDocument {
@@ -55,17 +56,6 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingDocs, setDownloadingDocs] = useState<Set<string>>(new Set());
-
-  // Función auxiliar para generar iniciales
-  const generateInitials = (fullName: string): string => {
-    if (!fullName || fullName.trim() === '') return 'UC';
-    const names = fullName.trim().split(' ').filter(name => name.length > 0);
-    if (names.length === 0) return 'UC';
-    if (names.length === 1) {
-      return names[0].charAt(0).toUpperCase();
-    }
-    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
-  };
 
   // Función auxiliar para formatear fechas
   const formatJoinDate = (dateString: string): string => {
@@ -132,7 +122,7 @@ export default function ProfilePage() {
           department: user.department || 'General',
           joinDate: '2023-03-15', // Valor por defecto
           avatarUrl: user.avatar || '',
-          initials: generateInitials(user.name),
+          initials: generateInitials(user.email),
           internalRecord: `COA-${user.id.slice(-4)}`,
           phone: '+52 55 0000-0000', // Valor por defecto
           status: 'Activo',
@@ -168,7 +158,7 @@ export default function ProfilePage() {
         department: user.department || 'General',
         joinDate: '2023-03-15', // Valor por defecto
         avatarUrl: user.avatar || '',
-        initials: generateInitials(user.name),
+        initials: generateInitials(user.email),
         internalRecord: `COA-${user.id.slice(-4)}`,
         phone: '+52 55 0000-0000', // Valor por defecto
         status: 'Activo',

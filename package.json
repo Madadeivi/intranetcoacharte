@@ -16,7 +16,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "supabase:start": "cd supabase && supabase start",
     "supabase:stop": "cd supabase && supabase stop",
-    "supabase:deploy": "cd supabase && supabase deploy"
+    "supabase:deploy": "cd supabase && supabase deploy",
+    "supabase:deploy-functions": "cd supabase && supabase functions deploy",
+    "supabase:deploy-auth": "cd supabase && supabase functions deploy unified-auth",
+    "supabase:link": "cd supabase && supabase link",
+    "supabase:status": "cd supabase && supabase status"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

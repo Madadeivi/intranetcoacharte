@@ -254,10 +254,6 @@ async function sendPasswordResetEmail(
     const emailServiceUrl = `${supabaseUrl}/functions/v1/email-service`;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    console.log(`Sending password reset email to: ${email}`);
-    console.log(`Reset URL: ${resetUrl}`);
-    console.log(`Email service URL: ${emailServiceUrl}`);
-
     if (!serviceRoleKey) {
       console.error("SUPABASE_SERVICE_ROLE_KEY no configurado");
       return false;
