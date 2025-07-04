@@ -291,17 +291,17 @@ const HomePage: React.FC = () => {
         </div>
         <nav className="home-nav">
           {navItems.map(item => (
-            <a 
-              key={item.label} 
-              href={item.href} 
-              onClick={e => { 
+            <Link key={item.label} href={item.href} legacyBehavior>
+              <a onClick={e => {
                 if (item.href === '#') {
                   e.preventDefault();
+                } else {
+                  router.push(item.href);
                 }
-              }}
-            >
-              {item.label}
-            </a>
+              }}>
+                {item.label}
+              </a>
+            </Link>
           ))}
         </nav>
         <div className="home-user" ref={dropdownRef}>
@@ -432,7 +432,12 @@ const HomePage: React.FC = () => {
               <AccountCircleIcon className="main-card-icon" />
               <h3>Mi Cuenta</h3>
               <p>Gestiona tu perfil, documentos y accesos</p>
-              <Link href="/profile">Acceder</Link>
+              <Link href="/profile" legacyBehavior>
+                <a onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/profile');
+                }}>Mi Cuenta</a>
+              </Link>
             </div>
             <div className={`main-card ${DISABLED_CARDS.includes('Recursos Humanos') ? 'disabled' : ''}`}>
               <GroupsIcon className="main-card-icon" />
