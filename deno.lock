@@ -19,6 +19,8 @@
     "https://esm.sh/ws@^8.18.2?target=denonext": "https://esm.sh/ws@8.18.2?target=denonext"
   },
   "remote": {
+    "https://deno.land/std@0.161.0/encoding/base64.ts": "c57868ca7fa2fbe919f57f88a623ad34e3d970d675bdc1ff3a9d02bba7409db2",
+    "https://deno.land/std@0.161.0/encoding/base64url.ts": "a5f82a9fa703bd85a5eb8e7c1296bc6529e601ebd9642cc2b5eaa6b38fa9e05a",
     "https://deno.land/std@0.168.0/async/abortable.ts": "80b2ac399f142cc528f95a037a7d0e653296352d95c681e284533765961de409",
     "https://deno.land/std@0.168.0/async/deadline.ts": "2c2deb53c7c28ca1dda7a3ad81e70508b1ebc25db52559de6b8636c9278fd41f",
     "https://deno.land/std@0.168.0/async/debounce.ts": "60301ffb37e730cd2d6f9dadfd0ecb2a38857681bd7aaf6b0a106b06e5210a98",
@@ -37,6 +39,11 @@
     "https://deno.land/std@0.81.0/encoding/utf8.ts": "1b7e77db9a12363c67872f8a208886ca1329f160c1ca9133b13d2ed399688b99",
     "https://deno.land/std@0.81.0/io/bufio.ts": "3cbbe1f761c1c636d1e7128ed4e7fdca6bf21d9199aa3cae71e69972a6ae8f93",
     "https://deno.land/std@0.81.0/textproto/mod.ts": "4c378eda3cb6216608bb4c3a34201761c65f6980c4669455ca224c330cd5b790",
+    "https://deno.land/x/djwt@v2.8/algorithm.ts": "fa4c7354ab9f4808d38104fdc6f21c8270f65f109ed84136d4fe31a4504426d4",
+    "https://deno.land/x/djwt@v2.8/deps.ts": "261b7b6bfe2602329d8f9de2938c2a898cd6dfa746b3454ae415df2c53e6ae4d",
+    "https://deno.land/x/djwt@v2.8/mod.ts": "7abba8518688e88648882a95161b42391ac6043c142b1ab491b36f712189e1e1",
+    "https://deno.land/x/djwt@v2.8/signature.ts": "a5649368a4b433b2810e7d47f53661fe3b0f7fe1778cb49234ceae3d6e861185",
+    "https://deno.land/x/djwt@v2.8/util.ts": "0d78272bd23a4656ceabe137d496fcca37cf3de36212477642aa5d85a880d87a",
     "https://deno.land/x/smtp@v0.7.0/code.ts": "f388fae4995b4d35d99fb6b8bfded522f5a3e7e7d63babdf318a059d6db43baf",
     "https://deno.land/x/smtp@v0.7.0/config.ts": "683a6fa684e5ef3705e809b203abea7804a90afde7b534d66c182ea3d17902d3",
     "https://deno.land/x/smtp@v0.7.0/deps.ts": "5e2a437e3ae35f0e83719fd2e707858dcb750c1111ff5bebc729522a1380b53d",
