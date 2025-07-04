@@ -12,6 +12,7 @@ export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   
   // Usar el store unificado
@@ -73,6 +74,12 @@ export const LoginForm: React.FC = () => {
     }
   };
   
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const passwordVisibilityButtonText = showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña';
+
   return (
     <>
       <Image src="/assets/coacharte-logo.png" alt="Logo Coacharte" className="login-logo" width={150} height={50} priority />
@@ -93,15 +100,24 @@ export const LoginForm: React.FC = () => {
         </div>
         <div className="form-group">
           <label htmlFor="password">Contraseña:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Ingresa tu contraseña"
-            autoComplete="current-password"
-            required
-          />
+          <div className="password-input-wrapper">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Ingresa tu contraseña"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              className="toggle-password-visibility"
+              onClick={handleTogglePasswordVisibility}
+            >
+              {passwordVisibilityButtonText}
+            </button>
+          </div>
         </div>
         <button 
           type="submit" 

@@ -8,6 +8,7 @@ export const RequestPasswordResetForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { isAuthenticated, resetPassword } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +51,24 @@ export const RequestPasswordResetForm: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Nueva Contraseña</label>
+          <div className="password-input-container">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="toggle-password-visibility"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
         </div>
         <button type="submit" className="submit-button">Enviar Enlace de Restablecimiento</button>
       </form>
