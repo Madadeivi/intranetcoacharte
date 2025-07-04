@@ -20,9 +20,24 @@ function SetNewPasswordContent() {
   } = useAuthStore();
 
   useEffect(() => {
+    // Verificar que tenemos un token válido
+    if (!resetToken) {
+      toast.error('Token de reset no válido o faltante');
+      router.push('/request-password-reset');
+      return;
+    }
+
+    // Validar formato básico del token (debe ser un JWT)
+    const tokenParts = resetToken.split('.');
+    if (tokenParts.length !== 3) {
+      toast.error('Token de reset inválido');
+      router.push('/request-password-reset');
+      return;
+    }
+
     // Intenta solucionar el problema de caché en la navegación del lado del cliente
     router.refresh();
-  }, [router]);
+  }, [router, resetToken]);
 
   const handlePasswordSubmit = async (newPasswordValue: string) => {
     if (!resetToken) {

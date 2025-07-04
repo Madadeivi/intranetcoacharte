@@ -29,7 +29,7 @@ interface AuthState {
   
   // Acciones de contraseña
   resetPassword: (email: string) => Promise<AuthResult>;
-  setNewPassword: (email: string, newPassword: string) => Promise<AuthResult>;
+  setNewPassword: (token: string, newPassword: string) => Promise<AuthResult>;
   
   // Acciones de sesión
   validateSession: () => Promise<void>;

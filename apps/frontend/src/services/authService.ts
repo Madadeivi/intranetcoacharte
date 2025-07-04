@@ -66,15 +66,21 @@ function mapBackendUserToFrontend(backendUser: {
   id: string;
   email: string;
   full_name?: string;
-  name?: string;
+  last_name?: string;
   role: string;
   department_id?: string;
   avatar_url?: string;
 }): User {
+  // Para el nombre, usar full_name si existe, sino usar name, sino usar email como fallback
+  let displayName = `${backendUser.full_name} ${backendUser.last_name}` || '';
+  if (!displayName) {
+    displayName = backendUser.email.split('@')[0]; // Fallback al email
+  }
+
   return {
     id: backendUser.id,
     email: backendUser.email,
-    name: backendUser.full_name || backendUser.name || '',
+    name: displayName,
     role: backendUser.role,
     department: backendUser.department_id,
     avatar: backendUser.avatar_url
@@ -200,10 +206,14 @@ class UnifiedAuthService {
         }
       );
 
-      if (response.success && response.data?.success) {
+      // La respuesta viene envuelta por customFetch en { success, data }
+      // donde data contiene la respuesta real de la función
+      if (response.success && response.data) {
+        const result = response.data;
+        
         return {
-          success: true,
-          message: response.data.message || 'Enlace de recuperación enviado'
+          success: result.success || false,
+          message: result.message || 'Enlace de recuperación procesado'
         };
       }
 
@@ -239,10 +249,14 @@ class UnifiedAuthService {
         }
       );
 
-      if (response.success && response.data?.success) {
+      // La respuesta viene envuelta por customFetch en { success, data }
+      // donde data contiene la respuesta real de la función  
+      if (response.success && response.data) {
+        const result = response.data;
+        
         return {
-          success: true,
-          message: response.data.message || 'Contraseña actualizada exitosamente'
+          success: result.success || false,
+          message: result.message || 'Contraseña procesada'
         };
       }
 

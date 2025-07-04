@@ -452,7 +452,6 @@ async function handleLogin(
       id: user.id,
       email: user.email,
       full_name: user.full_name,
-      first_name: user.first_name || '',
       last_name: user.last_name || '',
       role: user.role,
       title: user.title || '',
@@ -461,12 +460,19 @@ async function handleLogin(
       status: user.status
     };
 
+    const responseSession = {
+      access_token: token,
+      refresh_token: '', // Por ahora no implementamos refresh tokens
+      expires_in: 86400 // 24 horas en segundos
+    };
+
     return new Response(
       JSON.stringify({
         success: true,
         message: "Login exitoso",
         user: responseUser,
-        token: token
+        session: responseSession,
+        token: token // Mantener para compatibilidad
       }),
       { status: 200, headers: corsHeaders }
     );
@@ -549,8 +555,6 @@ async function handleValidateToken(
       id: user.id,
       email: user.email,
       full_name: user.full_name,
-      first_name: user.first_name || '',
-      last_name: user.last_name || '',
       role: user.role,
       title: user.title || '',
       avatar_url: user.avatar_url || '',
@@ -617,7 +621,7 @@ async function handleResetPassword(
     // Buscar usuario por email
     const { data: user, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, first_name, last_name')
+      .select('id, email, full_name')
       .eq('email', email.toLowerCase().trim())
       .single();
 
@@ -636,7 +640,7 @@ async function handleResetPassword(
     const resetToken = await generatePasswordResetToken(user.id, user.email);
     
     // Enviar email de recuperación
-    const fullName = user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+    const fullName = user.full_name || user.email.split('@')[0];
     const emailSent = await sendPasswordResetEmail(
       supabase,
       user.email,
@@ -955,13 +959,32 @@ serve(async (request: Request) => {
   }
 
   try {
-    // Inicializar Supabase
+    // Validar variables de entorno críticas
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const jwtSecret = Deno.env.get("JWT_SECRET");
 
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase configuration:', { 
+        hasUrl: !!supabaseUrl, 
+        hasServiceKey: !!supabaseServiceKey 
+      });
       return new Response(
-        JSON.stringify({ error: 'Configuración del servidor incompleta' }),
+        JSON.stringify({ 
+          success: false,
+          error: 'Configuración del servidor incompleta' 
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    if (!jwtSecret) {
+      console.error('Missing JWT_SECRET environment variable');
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Configuración de seguridad incompleta' 
+        }),
         { status: 500, headers: corsHeaders }
       );
     }

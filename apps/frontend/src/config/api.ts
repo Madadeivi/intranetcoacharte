@@ -172,10 +172,23 @@ export const customFetch = async <T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
+    // Obtener la clave anónima de Supabase para las Edge Functions
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    const defaultHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Añadir cabeceras de autorización para Supabase Edge Functions
+    if (supabaseAnonKey) {
+      defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
+      defaultHeaders['apikey'] = supabaseAnonKey;
+    }
+
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         ...options.headers,
       },
     });
