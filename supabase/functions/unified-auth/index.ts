@@ -246,13 +246,17 @@ async function sendPasswordResetEmail(
 ): Promise<boolean> {
   try {
     // Generar URL de reset
-    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://intranet.coacharte.mx";
+    const frontendUrl = Deno.env.get("FRONTEND_URL") || Deno.env.get("NEXT_PUBLIC_APP_URL") || "https://intranetcoacharte.com";
     const resetUrl = `${frontendUrl}/set-new-password?token=${resetToken}`;
 
     // Obtener la URL del servicio de email
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const emailServiceUrl = `${supabaseUrl}/functions/v1/email-service`;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    console.log(`Sending password reset email to: ${email}`);
+    console.log(`Reset URL: ${resetUrl}`);
+    console.log(`Email service URL: ${emailServiceUrl}`);
 
     if (!serviceRoleKey) {
       console.error("SUPABASE_SERVICE_ROLE_KEY no configurado");
@@ -861,6 +865,79 @@ function handleSimpleTest(): Response {
   );
 }
 
+/**
+ * Manejar debug completo (para identificar problemas)
+ */
+async function handleDebugTest(supabase: SupabaseClient): Promise<Response> {
+  const debug = {
+    success: true,
+    message: "Debug completo del sistema",
+    timestamp: new Date().toISOString(),
+    environment: {
+      supabaseUrl: Deno.env.get("SUPABASE_URL") ? "✅ Configurado" : "❌ Falta",
+      serviceKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ? "✅ Configurado" : "❌ Falta",
+      jwtSecret: Deno.env.get("JWT_SECRET") ? "✅ Configurado" : "❌ Falta",
+      frontendUrl: Deno.env.get("FRONTEND_URL") || "https://intranet.coacharte.mx (default)",
+      defaultFromEmail: Deno.env.get("DEFAULT_FROM_EMAIL") || "noreply@coacharte.mx (default)"
+    },
+    database: {
+      connected: false,
+      profilesTable: false,
+      bcryptFunctions: false
+    },
+    emailService: {
+      available: false,
+      error: null as string | null
+    }
+  };
+
+  // Test conexión a base de datos
+  try {
+    const { data, error } = await supabase.from('profiles').select('count').limit(1);
+    debug.database.connected = !error;
+    debug.database.profilesTable = !error && data !== null;
+  } catch (_error) {
+    debug.database.connected = false;
+    debug.database.profilesTable = false;
+  }
+
+  // Test funciones bcrypt
+  try {
+    const { data, error } = await supabase.rpc('hash_password_bcrypt', {
+      plain_password: 'test'
+    });
+    debug.database.bcryptFunctions = !error && data;
+  } catch (_error) {
+    debug.database.bcryptFunctions = false;
+  }
+
+  // Test servicio de email
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const emailServiceUrl = `${supabaseUrl}/functions/v1/email-service`;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (serviceRoleKey) {
+      const response = await fetch(emailServiceUrl, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "apikey": serviceRoleKey
+        }
+      });
+      debug.emailService.available = response.status !== 404;
+    }
+  } catch (error) {
+    debug.emailService.available = false;
+    debug.emailService.error = error instanceof Error ? error.message : String(error);
+  }
+
+  return new Response(
+    JSON.stringify(debug, null, 2),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
+
 // ===== FUNCIÓN PRINCIPAL =====
 
 serve(async (request: Request) => {
@@ -917,6 +994,9 @@ serve(async (request: Request) => {
       
       case 'simple-test':
         return handleSimpleTest();
+      
+      case 'debug-test':
+        return handleDebugTest(supabase);
       
       default:
         return new Response(

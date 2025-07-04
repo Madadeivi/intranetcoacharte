@@ -1,4 +1,22 @@
-import { User, Session } from '@supabase/supabase-js';
+// Tipos personalizados para usuario y sesión (independiente de Supabase Auth)
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  department?: string;
+  avatar?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Session {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  user?: User;
+}
+
 interface ApiConfig {
   baseUrl: string;
   endpoints: {

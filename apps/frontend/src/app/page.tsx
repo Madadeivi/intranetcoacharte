@@ -11,7 +11,7 @@ export default function RootPage() {
   const isLoading = useAuthStore((state) => state.isLoading);
 
   useEffect(() => {
-    // El listener onAuthStateChange en authStore maneja la actualización de la sesión.
+    // El sistema de auth unificado maneja automáticamente la verificación de sesión.
     // No es necesario llamar a checkSession() aquí explícitamente en cada render,
     // a menos que haya un caso específico donde se necesite forzar una re-verificación.
     // La lógica inicial de isLoading y la redirección se manejan en el siguiente useEffect.
