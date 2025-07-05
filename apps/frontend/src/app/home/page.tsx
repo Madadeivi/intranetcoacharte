@@ -305,85 +305,24 @@ const HomePage: React.FC = () => {
           ))}
         </nav>
         <div className="home-user" ref={dropdownRef}>
-          <span className="notification-bell" aria-label="Notificaciones">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11 20c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6V9c0-3.07-1.63-5.64-5-6.32V2a1 1 0 1 0-2 0v.68C6.63 3.36 5 5.92 5 9v5l-1.29 1.29A1 1 0 0 0 5 17h12a1 1 0 0 0 .71-1.71L17 14zM17 15H5v-1.17l1.41-1.41C6.79 12.21 7 11.7 7 11.17V9c0-2.76 1.12-5 4-5s4 2.24 4 5v2.17c0 .53.21 1.04.59 1.42L17 13.83V15z" fill="currentColor" />
-            </svg>
-          </span>
-          <span className="user-avatar">{userInitials}</span>
-          <span className="user-name">{firstName} {lastName}</span>
-          {/* Dropdown solo visible en desktop */}
-          <span className="user-dropdown-arrow desktop-only" aria-label="Más opciones" onClick={() => setDropdownOpen(v => !v)} title="Opciones de usuario">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <span className="user-avatar" onClick={() => setDropdownOpen(v => !v)} title="Opciones de usuario">
+            {userInitials}
           </span>
           {dropdownOpen && (
-            <div className="user-dropdown-menu desktop-only">
+            <div className="user-dropdown-menu">
+              <span className="user-name">{firstName} {lastName}</span>
+              <span className="user-email">{userEmail}</span>
+              <div className="user-dropdown-divider"></div>
+              {navItems.map(item => (
+                <Link key={item.label} href={item.href} legacyBehavior>
+                  <a>{item.label}</a>
+                </Link>
+              ))}
               <button className="user-dropdown-item" onClick={handleLogout}>Cerrar sesión</button>
             </div>
           )}
-          {/* Menú de hamburguesa para mobile */}
-          <div className="hamburger-menu" ref={hamburgerMenuRef} onClick={() => setIsMobileMenuOpen(v => !v)}>
-            <MenuIcon />
-          </div>
         </div>
       </header>
-
-      {/* Menú de navegación móvil */}
-      {isMobileMenuOpen && (
-        <div className="mobile-nav-menu" ref={mobileMenuRef}>
-          {/* Información del usuario */}
-          <div className="mobile-user-info">
-            <span className="mobile-user-avatar">{userInitials}</span>
-            <div className="mobile-user-details">
-              <span className="mobile-user-name">{firstName} {lastName}</span>
-              <span className="mobile-user-email">{userEmail}</span>
-            </div>
-          </div>
-          
-          {/* Enlaces de navegación principales */}
-          {navItems.map(item => (
-            <Link key={item.label} href={item.href} legacyBehavior>
-              <a onClick={() => setIsMobileMenuOpen(false)}>{item.label}</a>
-            </Link>
-          ))}
-          
-          {/* Enlaces rápidos adicionales */}
-          <div className="mobile-menu-divider"></div>
-          <button 
-            onClick={(e) => {
-              e.preventDefault(); 
-              setIsSupportModalOpen(true);
-              setIsMobileMenuOpen(false);
-            }}
-            className="mobile-menu-item"
-          >
-            Soporte Técnico
-          </button>
-          <a 
-            href={`https://nomina.coacharte.mx/user.php?email=${userEmail}`} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="mobile-menu-item"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Consulta Nómina
-          </a>
-          
-          {/* Botón de cerrar sesión */}
-          <div className="mobile-menu-divider"></div>
-          <button 
-            className="mobile-logout-button"
-            onClick={() => {
-              handleLogout();
-              setIsMobileMenuOpen(false);
-            }}
-          >
-            Cerrar Sesión
-          </button>
-        </div>
-      )}
 
       {/* Bienvenida y buscador */}
       <section className="home-welcome">
