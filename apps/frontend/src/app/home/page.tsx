@@ -21,13 +21,14 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import EventIcon from '@mui/icons-material/Event';
 import InfoIcon from '@mui/icons-material/Info';
+import GppGoodIcon from '@mui/icons-material/GppGood';
+import SchoolIcon from '@mui/icons-material/School';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CloseIcon from '@mui/icons-material/Close';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -39,13 +40,17 @@ import {
 } from '../../utils/functions';
 
 import {
-  Notice, //eslint-disable-line
+  generateInitials
+} from '../../utils/helpers';
+
+import {
   notices,
   DISABLED_CARDS,
   CALENDAR_EVENTS,
   CAROUSEL_SCROLL_OFFSET,
   CARD_CAROUSEL_SCROLL_OFFSET,
   navItems,
+  NOMINA_BASE_URL,
 } from '../../utils/constants';
 
 // SupportModal (adaptado, usando forwardRef para el ref)
@@ -94,7 +99,6 @@ const HomePage: React.FC = () => {
   const { user, logout, isLoading, error, clearError, isAuthenticated } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -110,9 +114,7 @@ const HomePage: React.FC = () => {
   const [quicklinkCanScrollRight, setQuicklinkCanScrollRight] = useState(true); 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  
-  const mobileMenuRef = useRef<HTMLDivElement>(null); 
-  const hamburgerMenuRef = useRef<HTMLDivElement>(null); 
+
 
   const handleLogout = () => {
     logout();
@@ -272,12 +274,10 @@ const HomePage: React.FC = () => {
   }
 
   // Derivaciones de las propiedades del usuario
-  const userInitials = user?.name && user.name.trim().length > 0
-    ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0,2).toUpperCase()
-    : (user?.email?.[0]?.toUpperCase() || 'U');
+  const userInitials = generateInitials(user?.email || '');
   const nameParts = user?.name?.split(' ') || [];
-  const firstName = nameParts[0] || user?.email || '';
-  const lastName = nameParts.slice(1).join(' ') || '';
+  const firstName = user?.name && user.name.trim().length > 0 ? nameParts[0] : '';
+  const lastName = user?.name && user.name.trim().length > 0 ? nameParts.slice(1).join(' ') : '';
   const userEmail = user?.email || '';
 
 
@@ -291,99 +291,45 @@ const HomePage: React.FC = () => {
         </div>
         <nav className="home-nav">
           {navItems.map(item => (
-            <a 
-              key={item.label} 
-              href={item.href} 
-              onClick={e => { 
+            <Link key={item.label} href={item.href} legacyBehavior>
+              <a onClick={e => {
                 if (item.href === '#') {
                   e.preventDefault();
+                } else {
+                  router.push(item.href);
                 }
-              }}
-            >
-              {item.label}
-            </a>
+              }}>
+                {item.label}
+              </a>
+            </Link>
           ))}
         </nav>
         <div className="home-user" ref={dropdownRef}>
-          <span className="notification-bell" aria-label="Notificaciones">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11 20c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6V9c0-3.07-1.63-5.64-5-6.32V2a1 1 0 1 0-2 0v.68C6.63 3.36 5 5.92 5 9v5l-1.29 1.29A1 1 0 0 0 5 17h12a1 1 0 0 0 .71-1.71L17 14zM17 15H5v-1.17l1.41-1.41C6.79 12.21 7 11.7 7 11.17V9c0-2.76 1.12-5 4-5s4 2.24 4 5v2.17c0 .53.21 1.04.59 1.42L17 13.83V15z" fill="currentColor" />
-            </svg>
-          </span>
-          <span className="user-avatar">{userInitials}</span>
-          <span className="user-name">{firstName} {lastName}</span>
-          {/* Dropdown solo visible en desktop */}
-          <span className="user-dropdown-arrow desktop-only" aria-label="Más opciones" onClick={() => setDropdownOpen(v => !v)} title="Opciones de usuario">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <span className="user-avatar" onClick={() => setDropdownOpen(v => !v)} title="Opciones de usuario">
+            {userInitials}
           </span>
           {dropdownOpen && (
-            <div className="user-dropdown-menu desktop-only">
+            <div className="user-dropdown-menu">
+              <span className="user-name">{firstName} {lastName}</span>
+              <span className="user-email">{userEmail}</span>
+              <div className="user-dropdown-divider"></div>
+              {navItems.map(item => (
+                <Link key={item.label} href={item.href} legacyBehavior>
+                  <a onClick={e => {
+                    if (item.href === '#') {
+                      e.preventDefault();
+                    }
+                    setDropdownOpen(false);
+                  }}>
+                    {item.label}
+                  </a>
+                </Link>
+              ))}
               <button className="user-dropdown-item" onClick={handleLogout}>Cerrar sesión</button>
             </div>
           )}
-          {/* Menú de hamburguesa para mobile */}
-          <div className="hamburger-menu" ref={hamburgerMenuRef} onClick={() => setIsMobileMenuOpen(v => !v)}>
-            <MenuIcon />
-          </div>
         </div>
       </header>
-
-      {/* Menú de navegación móvil */}
-      {isMobileMenuOpen && (
-        <div className="mobile-nav-menu" ref={mobileMenuRef}>
-          {/* Información del usuario */}
-          <div className="mobile-user-info">
-            <span className="mobile-user-avatar">{userInitials}</span>
-            <div className="mobile-user-details">
-              <span className="mobile-user-name">{firstName} {lastName}</span>
-              <span className="mobile-user-email">{userEmail}</span>
-            </div>
-          </div>
-          
-          {/* Enlaces de navegación principales */}
-          {navItems.map(item => (
-            <Link key={item.label} href={item.href} legacyBehavior>
-              <a onClick={() => setIsMobileMenuOpen(false)}>{item.label}</a>
-            </Link>
-          ))}
-          
-          {/* Enlaces rápidos adicionales */}
-          <div className="mobile-menu-divider"></div>
-          <button 
-            onClick={(e) => {
-              e.preventDefault(); 
-              setIsSupportModalOpen(true);
-              setIsMobileMenuOpen(false);
-            }}
-            className="mobile-menu-item"
-          >
-            Soporte Técnico
-          </button>
-          <a 
-            href={`https://nomina.coacharte.mx/user.php?email=${userEmail}`} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="mobile-menu-item"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Consulta Nómina
-          </a>
-          
-          {/* Botón de cerrar sesión */}
-          <div className="mobile-menu-divider"></div>
-          <button 
-            className="mobile-logout-button"
-            onClick={() => {
-              handleLogout();
-              setIsMobileMenuOpen(false);
-            }}
-          >
-            Cerrar Sesión
-          </button>
-        </div>
-      )}
 
       {/* Bienvenida y buscador */}
       <section className="home-welcome">
@@ -432,7 +378,12 @@ const HomePage: React.FC = () => {
               <AccountCircleIcon className="main-card-icon" />
               <h3>Mi Cuenta</h3>
               <p>Gestiona tu perfil, documentos y accesos</p>
-              <Link href="/profile">Acceder</Link>
+              <Link href="/profile" legacyBehavior>
+                <a onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/profile');
+                }}>Mi Cuenta</a>
+              </Link>
             </div>
             <div className={`main-card ${DISABLED_CARDS.includes('Recursos Humanos') ? 'disabled' : ''}`}>
               <GroupsIcon className="main-card-icon" />
@@ -550,6 +501,14 @@ const HomePage: React.FC = () => {
             <ArrowBackIosNewIcon />
           </button>
           <div className="quicklinks-grid" ref={quicklinkCarouselRef}>
+            <Link href="/profile" className="quicklink">
+              <AccountCircleIcon className="quicklink-icon" />
+              <h3>Mi Perfil</h3>
+            </Link>
+            <a href="/set-new-password" className="quicklink">
+              <GppGoodIcon className="quicklink-icon" />
+              <h3>Cambio de Contraseña</h3>
+            </a>
             <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
               <DescriptionIcon className="quicklink-icon" />
               <h3>Solicitud de Vacaciones</h3>
@@ -558,7 +517,7 @@ const HomePage: React.FC = () => {
               <HeadsetMicIcon className="quicklink-icon" />
               <h3>Soporte Técnico</h3>
             </a>
-            <a href={`https://nomina.coacharte.mx/user.php?email=${userEmail}`} target="_blank" rel="noopener noreferrer" className="quicklink">
+            <a href={`${NOMINA_BASE_URL}?email=${userEmail}`} target="_blank" rel="noopener noreferrer" className="quicklink">
               <SettingsIcon className="quicklink-icon" />
               <h3>Consulta Nómina</h3>
             </a>
@@ -566,10 +525,14 @@ const HomePage: React.FC = () => {
               <EventIcon className="quicklink-icon" />
               <h3>Calendario de Eventos</h3>
             </a>
-            <Link href="/profile" className="quicklink">
-              <AccountCircleIcon className="quicklink-icon" />
-              <h3>Mi Perfil</h3>
-            </Link>
+            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+              <SchoolIcon fontSize="inherit" />
+              <h3>Portal de Capacitación</h3>
+            </a>
+            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+              <GroupsIcon fontSize="inherit" />
+              <h3>Directorio Empresarial</h3>
+            </a>
           </div>
           <button 
             onClick={() => scrollQuicklinkCarouselBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
@@ -622,7 +585,7 @@ const HomePage: React.FC = () => {
             <div className="footer-col">
               <h4>Enlaces Rápidos</h4>
               <div className="footer-links-list">
-                <Link href="/nomina" legacyBehavior><a>Portal de Nómina</a></Link>
+                <Link href={`${NOMINA_BASE_URL}?email=${userEmail}`} legacyBehavior><a>Portal de Nómina</a></Link>
                 <Link href="/directorio" legacyBehavior><a>Directorio</a></Link>
                 <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}}>Soporte</a>
               </div>
@@ -638,13 +601,13 @@ const HomePage: React.FC = () => {
             <div className="footer-col">
               <h4>Síguenos</h4>
               <div className="footer-social-icons">
-                <a href="https://facebook.com/coacharte" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Facebook de Coacharte">
+                <a href="https://www.facebook.com/CoacharteMX" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Facebook de Coacharte">
                   <FacebookIcon />
                 </a>
-                <a href="https://instagram.com/coacharte" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Instagram de Coacharte">
+                <a href="https://www.instagram.com/coachartemx/" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Instagram de Coacharte">
                   <InstagramIcon />
                 </a>
-                <a href="https://linkedin.com/company/coacharte" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="LinkedIn de Coacharte">
+                <a href="https://www.linkedin.com/company/40876970" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="LinkedIn de Coacharte">
                   <LinkedInIcon />
                 </a>
               </div>

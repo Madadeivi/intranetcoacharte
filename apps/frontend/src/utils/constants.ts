@@ -11,34 +11,34 @@ export interface Notice {
     {
       id: 1,
       title: "Modelo de Cultura Integral",
-      detail: "Coacharte presenta su nuevo **Modelo de Cultura Integral** que fortalecerá nuestros valores organizacionales.\n\nEste modelo integra prácticas de bienestar, desarrollo profesional y compromiso social para crear un ambiente de trabajo más inclusivo y colaborativo.",
+      detail: '**Nuestro propósito organizacional** es "Transformar cualquier reto en logro"\n**Nuestros valores** son los barandales que guían nuestras acciones y tienen un significado muy preciso:\n**PERSONAS:** lo más importante son las relaciones sanas con nuestros colegas y clientes.\n**INSPIRAMOS CONFIANZA:** actuando con honestidad, comunicándonos asertivamente y cumpliendo los acuerdos establecidos.\n**VOCACIÓN DE SERVICIO:** disponibilidad para escuchar, leer, atender y proponer siempre desde la empatía.\n\n**Los comportamientos** son las acciones precisas que están asociadas a cada valor para asegurar que tod@s los coachartean@s contribuyamos al logro de los objetivos organizacionales en cada momento clave.',
       imageUrl: "/assets/banner_modelo.png",
       date: "5 Jun 2025",
-      summary: "Conoce nuestro nuevo modelo organizacional."
+      summary: "La cultura organizacional en Coacharte la hacemos todos y todas."
     },
     {
       id: 2,
-      title: "Ajuste Salarial 2024",
-      detail: "Se ha implementado el **ajuste salarial anual correspondiente al 2024**.\n\nEl incremento se verá reflejado en la nómina de este mes. Consulta tu nuevo salario en el portal de recursos humanos.",
+      title: "Ajuste Salarial",
+      detail: 'En reconocimiento a su compromiso y esfuerzo, les informamos que, **a partir de la segunda quincena del mes de MAYO 2025**, se realizará un ajuste salarial del **3.5%** derivado de la inflación correspondiente al año **2024** y al incremento recibido por nuestros clientes en el mismo mes.\n\nEste ajuste aplicará a todos los colaboradores que se han mantenido activos en nuestra nómina desde el **2024**.',
       imageUrl: "/assets/banner_ajuste.png",
       date: "10 Jun 2025",
-      summary: "Revisa tu nuevo salario actualizado."
+      summary: "Ajuste salarial derivado de la inflación 2024."
     },
     {
       id: 3,
       title: "Bono 2024",
-      detail: "¡Excelentes noticias! Se ha aprobado el **bono de productividad 2024** para todos los colaboradores.\n\nEl bono se pagará junto con la nómina del próximo mes. ¡Gracias por su excelente desempeño durante este año!",
+      detail: 'A partir de junio de 2025, todos los colaboradores **evaluados durante el período 2024** que hayan obtenido una calificación satisfactoria, según las insignias establecidas, recibirán el depósito por concepto de BONO correspondiente al ejercicio fiscal 2024.',
       imageUrl: "/assets/banner_bono.png",
-      date: "8 Jun 2025",
-      summary: "Recibe tu bono de productividad anual."
+      date: "30 Jun 2025",
+      summary: "Bono 2024 derivado de los resultados de la evaluación."
     },
     {
       id: 4,
       title: "Día del Padre",
-      detail: "Este **15 de Junio** celebramos el Día del Padre en Coacharte.\n\n¡Todos los papás de nuestra empresa tendrán un día especial con actividades, sorpresas y un reconocimiento especial por ser padres ejemplares!",
+      detail: 'Hoy celebramos a los papás que forman parte de nuestra organización.\nA ustedes, que equilibran reuniones, proyectos y responsabilidades con su papel más importante: ser guías, protectores y ejemplo de dedicación para sus familias.\n\n**¡Feliz Día del Padre!** De todos los que hacemos Coacharte.',
       imageUrl: "/assets/banner_padre.png",
       date: "3 Jun 2025",
-      summary: "Celebración especial para todos los papás."
+      summary: "Féliz día a los papás Coacharteanos!!!."
     }
   ];
 
