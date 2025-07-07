@@ -29,7 +29,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -41,7 +40,6 @@ import {
 } from '../../utils/functions';
 
 import {
-  Notice, //eslint-disable-line
   notices,
   DISABLED_CARDS,
   CALENDAR_EVENTS,
@@ -97,7 +95,6 @@ const HomePage: React.FC = () => {
   const { user, logout, isLoading, error, clearError, isAuthenticated } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -113,9 +110,7 @@ const HomePage: React.FC = () => {
   const [quicklinkCanScrollRight, setQuicklinkCanScrollRight] = useState(true); 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  
-  const mobileMenuRef = useRef<HTMLDivElement>(null); 
-  const hamburgerMenuRef = useRef<HTMLDivElement>(null); 
+
 
   const handleLogout = () => {
     logout();
