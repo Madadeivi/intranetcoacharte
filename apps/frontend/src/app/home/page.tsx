@@ -40,6 +40,10 @@ import {
 } from '../../utils/functions';
 
 import {
+  generateInitials
+} from '../../utils/helpers';
+
+import {
   notices,
   DISABLED_CARDS,
   CALENDAR_EVENTS,
@@ -270,12 +274,10 @@ const HomePage: React.FC = () => {
   }
 
   // Derivaciones de las propiedades del usuario
-  const userInitials = user?.name && user.name.trim().length > 0
-    ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0,2).toUpperCase()
-    : (user?.email?.[0]?.toUpperCase() || 'U');
+  const userInitials = generateInitials(user?.email || '');
   const nameParts = user?.name?.split(' ') || [];
-  const firstName = nameParts[0] || user?.email || '';
-  const lastName = nameParts.slice(1).join(' ') || '';
+  const firstName = user?.name && user.name.trim().length > 0 ? nameParts[0] : '';
+  const lastName = user?.name && user.name.trim().length > 0 ? nameParts.slice(1).join(' ') : '';
   const userEmail = user?.email || '';
 
 
@@ -313,7 +315,14 @@ const HomePage: React.FC = () => {
               <div className="user-dropdown-divider"></div>
               {navItems.map(item => (
                 <Link key={item.label} href={item.href} legacyBehavior>
-                  <a>{item.label}</a>
+                  <a onClick={e => {
+                    if (item.href === '#') {
+                      e.preventDefault();
+                    }
+                    setDropdownOpen(false);
+                  }}>
+                    {item.label}
+                  </a>
                 </Link>
               ))}
               <button className="user-dropdown-item" onClick={handleLogout}>Cerrar sesión</button>
