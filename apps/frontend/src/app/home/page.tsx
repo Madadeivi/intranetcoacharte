@@ -21,6 +21,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import EventIcon from '@mui/icons-material/Event';
 import InfoIcon from '@mui/icons-material/Info';
+import GppGoodIcon from '@mui/icons-material/GppGood';
+import SchoolIcon from '@mui/icons-material/School';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CloseIcon from '@mui/icons-material/Close';
@@ -46,6 +48,7 @@ import {
   CAROUSEL_SCROLL_OFFSET,
   CARD_CAROUSEL_SCROLL_OFFSET,
   navItems,
+  NOMINA_BASE_URL,
 } from '../../utils/constants';
 
 // SupportModal (adaptado, usando forwardRef para el ref)
@@ -494,6 +497,14 @@ const HomePage: React.FC = () => {
             <ArrowBackIosNewIcon />
           </button>
           <div className="quicklinks-grid" ref={quicklinkCarouselRef}>
+            <Link href="/profile" className="quicklink">
+              <AccountCircleIcon className="quicklink-icon" />
+              <h3>Mi Perfil</h3>
+            </Link>
+            <a href="/set-new-password" className="quicklink">
+              <GppGoodIcon className="quicklink-icon" />
+              <h3>Cambio de Contraseña</h3>
+            </a>
             <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
               <DescriptionIcon className="quicklink-icon" />
               <h3>Solicitud de Vacaciones</h3>
@@ -502,7 +513,7 @@ const HomePage: React.FC = () => {
               <HeadsetMicIcon className="quicklink-icon" />
               <h3>Soporte Técnico</h3>
             </a>
-            <a href={`https://nomina.coacharte.mx/user.php?email=${userEmail}`} target="_blank" rel="noopener noreferrer" className="quicklink">
+            <a href={`${NOMINA_BASE_URL}?email=${userEmail}`} target="_blank" rel="noopener noreferrer" className="quicklink">
               <SettingsIcon className="quicklink-icon" />
               <h3>Consulta Nómina</h3>
             </a>
@@ -510,10 +521,14 @@ const HomePage: React.FC = () => {
               <EventIcon className="quicklink-icon" />
               <h3>Calendario de Eventos</h3>
             </a>
-            <Link href="/profile" className="quicklink">
-              <AccountCircleIcon className="quicklink-icon" />
-              <h3>Mi Perfil</h3>
-            </Link>
+            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+              <SchoolIcon fontSize="inherit" />
+              <h3>Portal de Capacitación</h3>
+            </a>
+            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+              <GroupsIcon fontSize="inherit" />
+              <h3>Directorio Empresarial</h3>
+            </a>
           </div>
           <button 
             onClick={() => scrollQuicklinkCarouselBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
@@ -566,7 +581,7 @@ const HomePage: React.FC = () => {
             <div className="footer-col">
               <h4>Enlaces Rápidos</h4>
               <div className="footer-links-list">
-                <Link href="/nomina" legacyBehavior><a>Portal de Nómina</a></Link>
+                <Link href={`${NOMINA_BASE_URL}?email=${userEmail}`} legacyBehavior><a>Portal de Nómina</a></Link>
                 <Link href="/directorio" legacyBehavior><a>Directorio</a></Link>
                 <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}}>Soporte</a>
               </div>
@@ -582,13 +597,13 @@ const HomePage: React.FC = () => {
             <div className="footer-col">
               <h4>Síguenos</h4>
               <div className="footer-social-icons">
-                <a href="https://facebook.com/coacharte" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Facebook de Coacharte">
+                <a href="https://www.facebook.com/CoacharteMX" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Facebook de Coacharte">
                   <FacebookIcon />
                 </a>
-                <a href="https://instagram.com/coacharte" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Instagram de Coacharte">
+                <a href="https://www.instagram.com/coachartemx/" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="Instagram de Coacharte">
                   <InstagramIcon />
                 </a>
-                <a href="https://linkedin.com/company/coacharte" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="LinkedIn de Coacharte">
+                <a href="https://www.linkedin.com/company/40876970" target="_blank" rel="noopener noreferrer" className="footer-social-icon" aria-label="LinkedIn de Coacharte">
                   <LinkedInIcon />
                 </a>
               </div>
