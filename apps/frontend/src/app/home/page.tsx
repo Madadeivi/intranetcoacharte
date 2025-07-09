@@ -21,7 +21,6 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import EventIcon from '@mui/icons-material/Event';
 import InfoIcon from '@mui/icons-material/Info';
-import GppGoodIcon from '@mui/icons-material/GppGood';
 import SchoolIcon from '@mui/icons-material/School';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -325,6 +324,12 @@ const HomePage: React.FC = () => {
                   </a>
                 </Link>
               ))}
+              <div className="user-dropdown-divider"></div>
+              <Link href="/change-password" legacyBehavior>
+                <a className="user-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                  Cambiar Contraseña
+                </a>
+              </Link>
               <button className="user-dropdown-item" onClick={handleLogout}>Cerrar sesión</button>
             </div>
           )}
@@ -505,10 +510,6 @@ const HomePage: React.FC = () => {
               <AccountCircleIcon className="quicklink-icon" />
               <h3>Mi Perfil</h3>
             </Link>
-            <a href="/set-new-password" className="quicklink">
-              <GppGoodIcon className="quicklink-icon" />
-              <h3>Cambio de Contraseña</h3>
-            </a>
             <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
               <DescriptionIcon className="quicklink-icon" />
               <h3>Solicitud de Vacaciones</h3>

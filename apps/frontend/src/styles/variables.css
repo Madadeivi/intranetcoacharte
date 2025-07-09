@@ -46,6 +46,9 @@
   --color-error-text: #c62828;
   --color-error-border: #ef9a9a;
   --color-error-background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+  --color-warning-text: #ef6c00;
+  --color-warning-border: #ffcc80;
+  --color-warning-background: linear-gradient(135deg, #fff8e1 0%, #fffde7 100%);
 
   /* Nuevas variables de la conversación anterior */
   --neutral-background: #f8f9fa;

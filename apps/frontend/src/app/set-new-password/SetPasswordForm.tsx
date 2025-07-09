@@ -11,8 +11,10 @@ interface SetPasswordFormProps {
   infoText?: string; 
   submitButtonText?: string;
   isLoading: boolean; 
-  onSubmit: (password: string) => Promise<void>; 
+  onSubmit: (password: string, currentPassword?: string) => Promise<void>; 
   onCancel?: () => void;
+  authenticatedChange?: boolean; // Nuevo prop para modo cambio autenticado
+  userEmail?: string; // Email del usuario (para mostrar contexto)
 }
 
 const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
@@ -22,17 +24,43 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
   isLoading,
   onSubmit,
   onCancel,
+  authenticatedChange = false,
+  userEmail,
 }) => {
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const { user } = useAuthStore();
+
+  // Función para evaluar la fortaleza de la contraseña
+  const getPasswordStrength = (password: string) => {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    
+    if (score < 3) return { level: 'weak', text: 'Débil', color: '#ef4444' };
+    if (score < 4) return { level: 'medium', text: 'Media', color: '#f97316' };
+    return { level: 'strong', text: 'Fuerte', color: '#22c55e' };
+  };
+
+  const passwordStrength = newPassword ? getPasswordStrength(newPassword) : null;
 
   const internalHandleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (newPassword !== confirmPassword) {
-      toast.error('Las contraseñas no coinciden.');
+    // Validación para modo autenticado
+    if (authenticatedChange && !currentPassword) {
+      toast.error('La contraseña actual es requerida.');
+      return;
+    }
+
+    if (!newPassword) {
+      toast.error('La nueva contraseña es requerida.');
       return;
     }
 
@@ -41,8 +69,25 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
       return;
     }
 
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+      toast.error('La contraseña debe contener al menos una mayúscula, una minúscula y un número.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden.');
+      return;
+    }
+
+    // Validación adicional para modo autenticado: nueva contraseña no debe ser igual a la actual
+    if (authenticatedChange && currentPassword === newPassword) {
+      toast.error('La nueva contraseña debe ser diferente a la actual.');
+      return;
+    }
+
     try {
-      await onSubmit(newPassword);
+      // Pasar la contraseña actual solo si es modo autenticado
+      await onSubmit(newPassword, authenticatedChange ? currentPassword : undefined);
     } catch (error) {
       console.error('Error al establecer contraseña:', error);
       toast.error('Error al establecer la contraseña. Intenta nuevamente.');
@@ -57,7 +102,12 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
     setShowPassword(!showPassword);
   };
 
+  const handleToggleCurrentPasswordVisibility = () => {
+    setShowCurrentPassword(!showCurrentPassword);
+  };
+
   const passwordVisibilityButtonText = showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña';
+  const currentPasswordVisibilityButtonText = showCurrentPassword ? 'Ocultar contraseña' : 'Mostrar contraseña';
 
   return (
     <div className="set-password-page-container">
@@ -72,8 +122,36 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
           />
         </div>
         <h2>{formTitle}</h2>
+        {userEmail && authenticatedChange && (
+          <p className="mb-4 text-sm text-gray-600 text-center">
+            Cambiando contraseña para: <strong>{userEmail}</strong>
+          </p>
+        )}
         {infoText && <p className="mb-6 text-sm text-gray-600 text-center">{infoText}</p>} 
         <form onSubmit={internalHandleSubmit} className="set-password-form">
+          {authenticatedChange && (
+            <div className="form-group">
+              <label htmlFor="currentPassword">Contraseña Actual:</label>
+              <div className="password-input-wrapper">
+                <input
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  id="currentPassword"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Ingresa tu contraseña actual"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="toggle-password-visibility"
+                  onClick={handleToggleCurrentPasswordVisibility}
+                >
+                  {currentPasswordVisibilityButtonText}
+                </button>
+              </div>
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="newPassword">Nueva Contraseña:</label>
             <div className="password-input-wrapper">
@@ -94,6 +172,13 @@ const SetPasswordForm: React.FC<SetPasswordFormProps> = ({
                 {passwordVisibilityButtonText}
               </button>
             </div>
+            {passwordStrength && (
+              <div 
+                className={`password-strength ${passwordStrength.level}`}
+              >
+                {`Contraseña ${passwordStrength.text}`}
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirmar Nueva Contraseña:</label>
