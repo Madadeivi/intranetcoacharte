@@ -46,6 +46,12 @@ interface SetNewPasswordBody {
   newPassword: string;
 }
 
+interface ChangePasswordBody {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
 // ===== CONSTANTES =====
 
 const corsHeaders = {
@@ -773,6 +779,137 @@ async function handleSetNewPassword(
 }
 
 /**
+ * Manejar cambio de contraseña para usuarios autenticados
+ */
+async function handleChangePassword(
+  supabase: SupabaseClient,
+  body: ChangePasswordBody & { action: string }
+): Promise<Response> {
+  try {
+    const { email, currentPassword, newPassword } = body;
+
+    if (!email || !currentPassword || !newPassword) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Email, contraseña actual y nueva contraseña son requeridos" 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres` 
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Buscar usuario por email
+    const { data: user, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (error || !user) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Usuario no encontrado" 
+        }),
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    // Verificar si el usuario está bloqueado
+    if (user.locked) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "La cuenta está bloqueada. Contacta al administrador." 
+        }),
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
+    // Verificar contraseña actual usando bcrypt
+    console.log(`Change password attempt for: ${email}`);
+    const currentPasswordValid = await comparePasswords(supabase, currentPassword, user.password);
+    
+    if (!currentPasswordValid) {
+      console.log(`Change password failed for ${email}: Invalid current password`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "La contraseña actual es incorrecta" 
+        }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    // Hash de la nueva contraseña usando bcrypt
+    const { data: hashedPassword, error: hashError } = await supabase.rpc('hash_password_bcrypt', {
+      plain_password: newPassword
+    });
+
+    if (hashError || !hashedPassword) {
+      console.error('Error hashing new password:', hashError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Error al procesar la nueva contraseña" 
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    // Actualizar contraseña en la base de datos
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
+        password: hashedPassword,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Error updating password:', updateError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Error al actualizar la contraseña" 
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    console.log(`Password changed successfully for user: ${user.id}`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Contraseña cambiada exitosamente"
+      }),
+      { status: 200, headers: corsHeaders }
+    );
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: "Error interno del servidor" 
+      }),
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+/**
  * Manejar test de contraseña (para debugging)
  */
 async function handleTestPassword(
@@ -1016,6 +1153,9 @@ serve(async (request: Request) => {
       
       case 'debug-test':
         return handleDebugTest(supabase);
+      
+      case 'change-password':
+        return await handleChangePassword(supabase, body);
       
       default:
         return new Response(

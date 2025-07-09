@@ -347,6 +347,58 @@ class UnifiedAuthService {
     }
   }
 
+  /**
+   * Cambiar contraseña para usuarios autenticados
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<AuthResult> {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      return {
+        success: false,
+        message: 'Usuario no autenticado'
+      };
+    }
+
+    try {
+      const request: UnifiedAuthRequest = {
+        action: 'change-password',
+        email: currentUser.email,
+        currentPassword: currentPassword,
+        newPassword: newPassword
+      };
+
+      const response = await customFetch<UnifiedAuthResponse>(
+        apiConfig.endpoints.unifiedAuth.execute,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+
+      // La respuesta viene envuelta por customFetch en { success, data }
+      // donde data contiene la respuesta real de la función  
+      if (response.success && response.data) {
+        const result = response.data;
+        
+        return {
+          success: result.success || false,
+          message: result.message || 'Contraseña procesada'
+        };
+      }
+
+      return {
+        success: false,
+        message: response.error || 'Error al cambiar contraseña'
+      };
+    } catch (error) {
+      console.error('Error al cambiar contraseña:', error);
+      return {
+        success: false,
+        message: 'Error de conexión'
+      };
+    }
+  }
+
   // ===== MÉTODOS DE ESTADO =====
 
   /**
