@@ -12,7 +12,7 @@ import 'react-calendar/dist/Calendar.css';
 import { useAuthStore } from '../../store/authStore';
 
 // Hooks
-import { useClickOutside } from '../../hooks/useClickOutside';
+import { useClickOutside } from '../../hooks';
 
 // Components
 import SupportForm from '../../components/SupportForm';
