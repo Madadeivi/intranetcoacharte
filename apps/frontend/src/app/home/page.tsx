@@ -279,11 +279,35 @@ const HomePage: React.FC = () => {
     return <div>Redirigiendo al login...</div>;
   }
 
-  // Derivaciones de las propiedades del usuario
+  // Derivaciones de las propiedades del usuario con manejo mejorado
   const userInitials = generateInitials(user?.email || '');
-  const nameParts = user?.name?.split(' ') || [];
-  const firstName = user?.name && user.name.trim().length > 0 ? nameParts[0] : '';
-  const lastName = user?.name && user.name.trim().length > 0 ? nameParts.slice(1).join(' ') : '';
+  
+  // Manejo robusto del nombre usando campos separados cuando estén disponibles
+  const userFirstName = user?.firstName || '';
+  const userLastName = user?.lastName || '';
+  const userFullName = user?.name || '';
+  
+  // Si tenemos firstName y lastName por separado, usarlos
+  let firstName: string;
+  let lastName: string;
+  let fullName: string;
+  let displayName: string;
+  
+  if (userFirstName || userLastName) {
+    // Usar los campos separados del backend
+    firstName = userFirstName;
+    lastName = userLastName;
+    fullName = `${firstName} ${lastName}`.trim();
+    displayName = fullName || firstName || 'Usuario';
+  } else {
+    // Fallback: parsear el campo name
+    const nameParts = userFullName.split(' ').filter(part => part.trim().length > 0);
+    firstName = nameParts.length > 0 ? nameParts[0] : '';
+    lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    fullName = userFullName.trim() || '';
+    displayName = fullName || firstName || 'Usuario';
+  }
+  
   const userEmail = user?.email || '';
 
 
@@ -311,10 +335,9 @@ const HomePage: React.FC = () => {
           ))}
         </nav>
         <div className="home-user" ref={dropdownRef}>
-          <span 
-            id="user-avatar"
-            className="user-avatar" 
-            onClick={() => setDropdownOpen(v => !v)} 
+          <div 
+            className="user-info-container"
+            onClick={() => setDropdownOpen(v => !v)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -324,18 +347,26 @@ const HomePage: React.FC = () => {
                 setDropdownOpen(false);
               }
             }}
-            title="Opciones de usuario"
             role="button"
             tabIndex={0}
             {...(dropdownOpen ? { 'aria-expanded': 'true' } : { 'aria-expanded': 'false' })}
             aria-haspopup="true"
             aria-label="Menú de opciones de usuario"
+            title="Opciones de usuario"
           >
-            {userInitials}
-          </span>
+            <span 
+              id="user-avatar"
+              className="user-avatar"
+            >
+              {userInitials}
+            </span>
+            <div className="user-name-display">
+              <span className="user-greeting">Hola, {displayName}</span>
+            </div>
+          </div>
           {dropdownOpen && (
             <div className="user-dropdown-menu" role="menu" aria-labelledby="user-avatar">
-              <span className="user-name">{firstName} {lastName}</span>
+              <span className="user-name">{fullName || `${firstName} ${lastName}`.trim()}</span>
               <span className="user-email">{userEmail}</span>
               <div className="user-dropdown-divider"></div>
               {navItems.map(item => (
@@ -662,7 +693,7 @@ const HomePage: React.FC = () => {
       {/* Modal de soporte técnico */}
       {isSupportModalOpen && user && (
         <SupportModal
-          userInfo={{ firstName: firstName, lastName: lastName, email: userEmail }}
+          userInfo={{ firstName: firstName || displayName, lastName: lastName, email: userEmail }}
           onClose={() => setIsSupportModalOpen(false)}
           ref={supportModalRef} // Pasar el ref aquí
         />

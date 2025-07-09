@@ -24,6 +24,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   role: string;
   department?: string;
   avatar?: string;
@@ -71,8 +73,12 @@ function mapBackendUserToFrontend(backendUser: {
   department_id?: string;
   avatar_url?: string;
 }): User {
-  // Para el nombre, usar full_name si existe, sino usar name, sino usar email como fallback
-  let displayName = `${backendUser.full_name} ${backendUser.last_name}` || '';
+  // Obtener los nombres por separado
+  const firstName = backendUser.full_name || '';
+  const lastName = backendUser.last_name || '';
+  
+  // Para el nombre completo, combinar full_name y last_name
+  let displayName = `${firstName} ${lastName}`.trim();
   if (!displayName) {
     displayName = backendUser.email.split('@')[0]; // Fallback al email
   }
@@ -81,6 +87,8 @@ function mapBackendUserToFrontend(backendUser: {
     id: backendUser.id,
     email: backendUser.email,
     name: displayName,
+    firstName: firstName,
+    lastName: lastName,
     role: backendUser.role,
     department: backendUser.department_id,
     avatar: backendUser.avatar_url
