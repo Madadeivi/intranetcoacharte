@@ -1,7 +1,7 @@
 'use client';
 import './Home.css';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, RefObject } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,6 +10,9 @@ import 'react-calendar/dist/Calendar.css';
 
 // Store
 import { useAuthStore } from '../../store/authStore';
+
+// Hooks
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 // Components
 import SupportForm from '../../components/SupportForm';
@@ -105,8 +108,12 @@ const HomePage: React.FC = () => {
   const router = useRouter();
   const cardCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de tarjetas
   const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de enlaces rápidos
-  const noticeCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de avisos
-  
+  const noticeCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de avisos
+
+  // Hook para cerrar el dropdown al hacer clic fuera
+  useClickOutside(dropdownRef as RefObject<HTMLElement>, () => setDropdownOpen(false), dropdownOpen);
+
+  // Estados para controlar los carruseles
   const [cardCanScrollLeft, setCardCanScrollLeft] = useState(false);
   const [cardCanScrollRight, setCardCanScrollRight] = useState(true);
   const [quicklinkCanScrollLeft, setQuicklinkCanScrollLeft] = useState(false);
@@ -304,33 +311,65 @@ const HomePage: React.FC = () => {
           ))}
         </nav>
         <div className="home-user" ref={dropdownRef}>
-          <span className="user-avatar" onClick={() => setDropdownOpen(v => !v)} title="Opciones de usuario">
+          <span 
+            id="user-avatar"
+            className="user-avatar" 
+            onClick={() => setDropdownOpen(v => !v)} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setDropdownOpen(v => !v);
+              }
+              if (e.key === 'Escape') {
+                setDropdownOpen(false);
+              }
+            }}
+            title="Opciones de usuario"
+            role="button"
+            tabIndex={0}
+            {...(dropdownOpen ? { 'aria-expanded': 'true' } : { 'aria-expanded': 'false' })}
+            aria-haspopup="true"
+            aria-label="Menú de opciones de usuario"
+          >
             {userInitials}
           </span>
           {dropdownOpen && (
-            <div className="user-dropdown-menu">
+            <div className="user-dropdown-menu" role="menu" aria-labelledby="user-avatar">
               <span className="user-name">{firstName} {lastName}</span>
               <span className="user-email">{userEmail}</span>
               <div className="user-dropdown-divider"></div>
               {navItems.map(item => (
                 <Link key={item.label} href={item.href} legacyBehavior>
-                  <a onClick={e => {
-                    if (item.href === '#') {
-                      e.preventDefault();
-                    }
-                    setDropdownOpen(false);
-                  }}>
+                  <a 
+                    role="menuitem"
+                    onClick={e => {
+                      if (item.href === '#') {
+                        e.preventDefault();
+                      }
+                      setDropdownOpen(false);
+                    }}
+                  >
                     {item.label}
                   </a>
                 </Link>
               ))}
               <div className="user-dropdown-divider"></div>
               <Link href="/change-password" legacyBehavior>
-                <a className="user-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                <a 
+                  className="user-dropdown-item" 
+                  role="menuitem"
+                  onClick={() => setDropdownOpen(false)}
+                >
                   Cambiar Contraseña
                 </a>
               </Link>
-              <button className="user-dropdown-item" onClick={handleLogout}>Cerrar sesión</button>
+              <button 
+                className="user-dropdown-item" 
+                role="menuitem"
+                onClick={handleLogout}
+              >
+                Cerrar sesión
+              </button>
             </div>
           )}
         </div>

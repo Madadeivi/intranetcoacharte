@@ -66,16 +66,23 @@
 /* Estados interactivos */
 .avatar-clickable {
   cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, filter 0.2s ease-in-out;
 }
 
 .avatar-clickable:hover {
   transform: scale(1.05);
   box-shadow: var(--shadow-md);
+  filter: brightness(1.1);
 }
 
 .avatar-clickable:focus {
   outline: 2px solid var(--color-primary-100);
   outline-offset: 2px;
+}
+
+.avatar-clickable:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Imagen del avatar */

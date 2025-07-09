@@ -76,6 +76,25 @@
   font-weight: 600;
   font-size: var(--text-base);
   flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mobile-user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.1);
+}
+
+.mobile-user-avatar:active {
+  transform: scale(0.98);
+}
+
+.mobile-user-avatar:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
 }
 
 .mobile-user-details {
@@ -245,6 +264,26 @@ code {
   justify-content: center;
   font-weight: 600;
   font-size: var(--text-base);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  -webkit-user-select: none;
+  user-select: none;
+  position: relative;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.1);
+}
+
+.user-avatar:active {
+  transform: scale(0.98);
+}
+
+.user-avatar:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
 }
 
 .user-name {
@@ -275,8 +314,21 @@ code {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: var(--space-2);
-  min-width: 10rem;
+  min-width: 12rem;
   z-index: 110;
+  border: 1px solid var(--color-border);
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .user-dropdown-item {
