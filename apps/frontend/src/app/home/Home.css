@@ -264,26 +264,68 @@ code {
   justify-content: center;
   font-weight: 600;
   font-size: var(--text-base);
-  cursor: pointer;
   transition: all 0.2s ease-in-out;
   -webkit-user-select: none;
   user-select: none;
   position: relative;
+  flex-shrink: 0;
 }
 
-.user-avatar:hover {
+/* Contenedor principal de la información del usuario */
+.user-info-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.user-info-container:hover {
+  background: var(--color-primary-5);
+}
+
+.user-info-container:hover .user-avatar {
   transform: scale(1.05);
   box-shadow: var(--shadow-md);
   filter: brightness(1.1);
 }
 
-.user-avatar:active {
+.user-info-container:active .user-avatar {
   transform: scale(0.98);
 }
 
-.user-avatar:focus {
+.user-info-container:focus {
   outline: 2px solid var(--color-primary-100);
   outline-offset: 2px;
+}
+
+/* Contenedor del nombre del usuario */
+.user-name-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.user-greeting {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-title);
+  white-space: nowrap;
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 768px) {
+  .user-name-display {
+    display: none;
+  }
+  
+  .user-info-container {
+    padding: var(--space-1);
+    gap: 0;
+  }
 }
 
 .user-name {
