@@ -807,8 +807,11 @@ code {
   box-shadow: var(--shadow-sm);
 }
 
-/* Botón de acción dentro de la tarjeta principal */
+/* Botón/enlace de acción dentro de la tarjeta principal */
 .main-card-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--color-primary-100);
   color: var(--color-text-on-primary);
   border: none;
@@ -821,15 +824,24 @@ code {
   transition: all 0.2s ease;
   margin-top: auto;
   align-self: stretch;
+  text-decoration: none;
+  text-align: center;
 }
 
 .main-card-button:hover {
   background: var(--color-primary-110);
   transform: translateY(-1px);
+  color: var(--color-text-on-primary);
+  text-decoration: none;
 }
 
 .main-card-button:active {
   transform: translateY(0);
+}
+
+.main-card-button:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
 }
 
 /* Media queries para diseño responsivo de tarjetas principales */

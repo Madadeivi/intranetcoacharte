@@ -461,13 +461,9 @@ const HomePage: React.FC = () => {
               <AccountCircleIcon className="main-card-icon" />
               <h3>Mi Cuenta</h3>
               <p>Gestiona tu perfil, documentos y accesos</p>
-              <button 
-                className="main-card-button"
-                onClick={() => router.push('/profile')}
-                aria-label="Ir a Mi Cuenta"
-              >
+              <Link href="/profile" className="main-card-button">
                 Mi Cuenta
-              </button>
+              </Link>
             </div>
             <div className={`main-card ${DISABLED_CARDS.includes('Recursos Humanos') ? 'disabled' : ''}`}>
               <GroupsIcon className="main-card-icon" />
