@@ -355,11 +355,66 @@ code {
   background: white;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  padding: var(--space-2);
-  min-width: 12rem;
+  padding: var(--space-4);
+  min-width: 16rem;
   z-index: 110;
   border: 1px solid var(--color-border);
   animation: dropdownFadeIn 0.15s ease-out;
+}
+
+/* Estilos específicos para elementos dentro del dropdown */
+.user-dropdown-menu .user-name {
+  display: block;
+  font-weight: 600;
+  color: var(--color-text-title);
+  font-size: var(--text-base);
+  margin-bottom: var(--space-1);
+  padding: 0;
+}
+
+.user-dropdown-menu .user-email {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  padding: 0;
+}
+
+/* Divisor entre secciones del dropdown */
+.user-dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-3) 0;
+}
+
+/* Enlaces y botones dentro del dropdown */
+.user-dropdown-menu a,
+.user-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--color-text-title);
+  font-size: var(--text-sm);
+  font-family: 'Geometria', Arial, sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-1);
+  text-decoration: none;
+}
+
+.user-dropdown-menu a:hover,
+.user-dropdown-menu button:hover {
+  background-color: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
+.user-dropdown-menu a:last-child,
+.user-dropdown-menu button:last-child {
+  margin-bottom: 0;
 }
 
 @keyframes dropdownFadeIn {
@@ -750,6 +805,31 @@ code {
 .main-card.disabled:hover {
   transform: none;
   box-shadow: var(--shadow-sm);
+}
+
+/* Botón de acción dentro de la tarjeta principal */
+.main-card-button {
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: auto;
+  align-self: stretch;
+}
+
+.main-card-button:hover {
+  background: var(--color-primary-110);
+  transform: translateY(-1px);
+}
+
+.main-card-button:active {
+  transform: translateY(0);
 }
 
 /* Media queries para diseño responsivo de tarjetas principales */
