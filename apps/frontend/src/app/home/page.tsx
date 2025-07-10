@@ -55,11 +55,78 @@ import {
   NOMINA_BASE_URL,
 } from '../../utils/constants';
 
-// SupportModal (adaptado, usando forwardRef para el ref)
+// Interfaces y tipos
 interface SupportModalProps {
   userInfo: { firstName: string; lastName: string; email: string } | null;
   onClose: () => void;
 }
+
+interface UserNameData {
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  displayName: string;
+}
+
+interface UserData {
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
+}
+
+/**
+ * Función utilitaria para extraer y normalizar los nombres del usuario
+ * Maneja diferentes estructuras de datos del backend de manera robusta:
+ * 1. Campos separados (firstName, lastName) - prioridad más alta
+ * 2. Campo único 'name' que requiere parsing - fallback secundario  
+ * 3. Email como nombre - fallback final
+ * 
+ * @param user - Objeto de usuario que puede contener diferentes campos de nombre
+ * @returns Objeto con firstName, lastName, fullName y displayName normalizados
+ */
+const getUserNames = (user: UserData | null | undefined): UserNameData => {
+  const firstName = user?.firstName || '';
+  const lastName = user?.lastName || '';
+  const fullNameField = user?.name || '';
+  const email = user?.email || '';
+
+  // Si tenemos campos separados (firstName, lastName), usarlos directamente
+  if (firstName || lastName) {
+    const fullName = `${firstName} ${lastName}`.trim();
+    return {
+      firstName,
+      lastName,
+      fullName,
+      displayName: fullName || firstName || 'Usuario'
+    };
+  }
+
+  // Si solo tenemos el campo 'name', parsearlo
+  if (fullNameField) {
+    const nameParts = fullNameField.split(' ').filter((part: string) => part.trim().length > 0);
+    const parsedFirstName = nameParts[0] || '';
+    const parsedLastName = nameParts.slice(1).join(' ') || '';
+    
+    return {
+      firstName: parsedFirstName,
+      lastName: parsedLastName,
+      fullName: fullNameField.trim(),
+      displayName: fullNameField.trim() || 'Usuario'
+    };
+  }
+
+  // Fallback final usando email si no hay nombres disponibles
+  const emailName = email.split('@')[0] || 'Usuario';
+  return {
+    firstName: emailName,
+    lastName: '',
+    fullName: emailName,
+    displayName: emailName
+  };
+};
+
+// SupportModal (adaptado, usando forwardRef para el ref)
 
 const SupportModal = React.forwardRef<HTMLDivElement, SupportModalProps>(
   ({ userInfo, onClose }, ref) => {
@@ -279,35 +346,9 @@ const HomePage: React.FC = () => {
     return <div>Redirigiendo al login...</div>;
   }
 
-  // Derivaciones de las propiedades del usuario con manejo mejorado
+  // Derivar datos del usuario de manera simplificada
   const userInitials = generateInitials(user?.email || '');
-  
-  // Manejo robusto del nombre usando campos separados cuando estén disponibles
-  const userFirstName = user?.firstName || '';
-  const userLastName = user?.lastName || '';
-  const userFullName = user?.name || '';
-  
-  // Si tenemos firstName y lastName por separado, usarlos
-  let firstName: string;
-  let lastName: string;
-  let fullName: string;
-  let displayName: string;
-  
-  if (userFirstName || userLastName) {
-    // Usar los campos separados del backend
-    firstName = userFirstName;
-    lastName = userLastName;
-    fullName = `${firstName} ${lastName}`.trim();
-    displayName = fullName || firstName || 'Usuario';
-  } else {
-    // Fallback: parsear el campo name
-    const nameParts = userFullName.split(' ').filter(part => part.trim().length > 0);
-    firstName = nameParts.length > 0 ? nameParts[0] : '';
-    lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-    fullName = userFullName.trim() || '';
-    displayName = fullName || firstName || 'Usuario';
-  }
-  
+  const { firstName, lastName, fullName, displayName } = getUserNames(user);
   const userEmail = user?.email || '';
 
 
