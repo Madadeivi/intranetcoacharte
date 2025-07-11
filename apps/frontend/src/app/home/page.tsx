@@ -832,59 +832,72 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Banner de cumpleañeros del mes */}
+      {/* Slider de cumpleañeros del mes */}
       {!birthdaysLoading && currentMonthBirthdays.length > 0 && (
         <section className="home-birthdays">
           <div className="birthdays-header">
             <div className="birthdays-title">
-              <CakeIcon className="birthdays-icon" />
+              <span className="birthdays-icon">🎂</span>
               <h2>Cumpleañeros de {new Date().toLocaleDateString('es-ES', { month: 'long' })}</h2>
             </div>
-            <p className="birthdays-subtitle">¡Celebremos juntos a nuestros compañeros!</p>
+            <p className="birthdays-subtitle">¡Celebremos juntos a nuestros compañeros que cumplen años este mes!</p>
           </div>
           <div className="birthday-carousel-wrapper">
             <button 
               onClick={() => scrollBirthdayCarouselBy(-CAROUSEL_SCROLL_OFFSET)} 
               disabled={!birthdayCanScrollLeft} 
-              className="carousel-nav-button prev birthday-carousel-nav" 
+              className="birthday-carousel-nav prev" 
               aria-label="Cumpleañeros anteriores"
             >
               <ArrowBackIosNewIcon />
             </button>
             <div className="birthday-carousel" ref={birthdayCarouselRef}>
-              {currentMonthBirthdays.map((birthday: Birthday) => (
-                <div key={birthday.id} className="birthday-card">
-                  <div className="birthday-avatar">
-                    {birthday.avatar ? (
-                      <Image 
-                        src={birthday.avatar} 
-                        alt={birthday.name} 
-                        width={60} 
-                        height={60}
-                        className="birthday-avatar-img"
-                      />
-                    ) : (
-                      <span className="birthday-avatar-initials">
-                        {generateInitials(birthday.name)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="birthday-info">
-                    <h3 className="birthday-name">{birthday.name}</h3>
-                    <p className="birthday-position">{birthday.position}</p>
-                    <p className="birthday-department">{birthday.department}</p>
-                    <div className="birthday-date">
-                      <CakeIcon className="birthday-date-icon" />
-                      <span>{new Date(birthday.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
+              {currentMonthBirthdays.map((birthday: Birthday) => {
+                const birthdayDate = new Date(birthday.date);
+                const today = new Date();
+                const isToday = today.getMonth() === birthdayDate.getMonth() && 
+                               today.getDate() === birthdayDate.getDate();
+                
+                return (
+                  <div key={birthday.id} className={`birthday-card ${isToday ? 'today' : ''}`}>
+                    <div className="birthday-avatar">
+                      {birthday.avatar ? (
+                        <Image 
+                          src={birthday.avatar} 
+                          alt={birthday.name} 
+                          width={64} 
+                          height={64}
+                          className="birthday-avatar-img"
+                        />
+                      ) : (
+                        <span className="birthday-avatar-initials">
+                          {generateInitials(birthday.name)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="birthday-info">
+                      <h3 className="birthday-name">{birthday.name}</h3>
+                      <p className="birthday-position">{birthday.position}</p>
+                      <span className="birthday-department">{birthday.department}</span>
+                      <div className="birthday-date">
+                        <span className="birthday-date-icon">🎂</span>
+                        <span>
+                          {birthdayDate.toLocaleDateString('es-ES', { 
+                            day: 'numeric', 
+                            month: 'long' 
+                          })}
+                          {isToday && ' - ¡Hoy!'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <button 
               onClick={() => scrollBirthdayCarouselBy(CAROUSEL_SCROLL_OFFSET)} 
               disabled={!birthdayCanScrollRight} 
-              className="carousel-nav-button next birthday-carousel-nav" 
+              className="birthday-carousel-nav next" 
               aria-label="Siguientes cumpleañeros"
             >
               <ArrowForwardIosIcon />
@@ -897,9 +910,12 @@ const HomePage: React.FC = () => {
         <section className="home-birthdays">
           <div className="birthdays-header">
             <div className="birthdays-title">
-              <CakeIcon className="birthdays-icon" />
-              <h2>Cargando cumpleañeros...</h2>
+              <span className="birthdays-icon">🎂</span>
+              <h2>Cumpleañeros de {new Date().toLocaleDateString('es-ES', { month: 'long' })}</h2>
             </div>
+          </div>
+          <div className="birthdays-loading">
+            Cargando cumpleañeros...
           </div>
         </section>
       )}
