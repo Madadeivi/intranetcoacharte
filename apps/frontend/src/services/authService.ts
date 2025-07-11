@@ -144,12 +144,17 @@ class UnifiedAuthService {
    */
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     try {
+      // TODO: ELIMINAR ESTOS LOGS DESPUÉS DE DEPURAR
+      console.log('🚀 [DEBUG] Starting login process for:', credentials.email);
+      
       const request: UnifiedAuthRequest = {
         action: 'login',
         email: credentials.email,
         password: credentials.password
       };
 
+      console.log('📤 [DEBUG] Making login request to:', apiConfig.endpoints.unifiedAuth.execute);
+      
       const response = await customFetch<UnifiedAuthResponse>(
         apiConfig.endpoints.unifiedAuth.execute,
         {
@@ -158,6 +163,15 @@ class UnifiedAuthService {
         }
       );
 
+      console.log('📥 [DEBUG] Login response received:', {
+        success: response.success,
+        hasData: !!response.data,
+        dataSuccess: response.data?.success,
+        hasUser: !!response.data?.user,
+        hasSession: !!response.data?.session,
+        error: response.error
+      });
+
       if (response.success && response.data) {
         const result = response.data;
         
@@ -165,6 +179,8 @@ class UnifiedAuthService {
           // Mapear datos del backend al formato del frontend
           const mappedUser = mapBackendUserToFrontend(result.user);
           const mappedSession = result.session ? mapBackendSessionToFrontend(result.session) : undefined;
+          
+          console.log('✅ [DEBUG] Login successful, saving session. Token:', mappedSession?.access_token?.substring(0, 20) + '...');
           
           // Guardar sesión
           this.setSession(mappedUser, mappedSession);
@@ -181,13 +197,15 @@ class UnifiedAuthService {
         }
       }
 
+      console.log('❌ [DEBUG] Login failed:', response.error || 'Unknown error');
+      
       return {
         success: false,
         message: response.error || 'Error de inicio de sesión',
         code: 'LOGIN_FAILED'
       };
     } catch (error) {
-      console.error('Error en login:', error);
+      console.error('💥 [DEBUG] Login error:', error);
       return {
         success: false,
         message: 'Error de conexión',
@@ -428,7 +446,14 @@ class UnifiedAuthService {
    */
   getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    // TODO: ELIMINAR ESTE LOG DESPUÉS DE DEPURAR
+    console.log('🔑 [DEBUG] Getting token from localStorage:', {
+      key: this.TOKEN_KEY,
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : null
+    });
+    return token;
   }
 
   /**
@@ -478,6 +503,15 @@ class UnifiedAuthService {
       if (session) {
         localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
         localStorage.setItem(this.TOKEN_KEY, session.access_token);
+        
+        // TODO: ELIMINAR ESTE LOG DESPUÉS DE DEPURAR
+        console.log('💾 [DEBUG] Saving session to localStorage:', {
+          userKey: this.USER_KEY,
+          sessionKey: this.SESSION_KEY,
+          tokenKey: this.TOKEN_KEY,
+          tokenPreview: session.access_token.substring(0, 20) + '...',
+          hasRefreshToken: !!session.refresh_token
+        });
         
         if (session.refresh_token) {
           localStorage.setItem(this.REFRESH_TOKEN_KEY, session.refresh_token);

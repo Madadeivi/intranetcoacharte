@@ -222,14 +222,34 @@ export const customFetch = async <T>(
     // Determinar si el endpoint requiere token de usuario
     const requiresUserAuth = !noUserAuthFunctions.some(func => url.includes(func));
     
+    // TODO: ELIMINAR ESTOS LOGS DESPUÉS DE DEPURAR
+    console.log('🔍 [DEBUG] customFetch debug info:', {
+      url,
+      requiresUserAuth,
+      functionName: url.split('/').pop(),
+      noUserAuthFunctions,
+      hasSupabaseKey: !!supabaseAnonKey,
+      isClient: typeof window !== 'undefined'
+    });
+    
     // Si requiere autenticación de usuario, agregar el token del usuario
     if (typeof window !== 'undefined' && requiresUserAuth) {
       const userToken = localStorage.getItem('coacharte_auth_token');
       if (userToken && userToken.trim()) {
         // Reemplazar el authorization header con el token del usuario
         defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+        console.log('🔑 [DEBUG] Using user token for', url, 'token:', userToken.substring(0, 20) + '...');
+      } else {
+        console.log('⚠️ [DEBUG] No user token found for', url);
       }
+    } else {
+      console.log('🔧 [DEBUG] Using Supabase anon key for', url);
     }
+    
+    console.log('📋 [DEBUG] Final headers:', {
+      ...defaultHeaders,
+      Authorization: defaultHeaders.Authorization ? defaultHeaders.Authorization.substring(0, 30) + '...' : 'none'
+    });
 
     const response = await fetch(url, {
       ...options,
@@ -241,7 +261,28 @@ export const customFetch = async <T>(
 
     const data = await response.json();
 
+    // TODO: ELIMINAR ESTOS LOGS DESPUÉS DE DEPURAR
+    console.log('📡 [DEBUG] API Response:', {
+      url,
+      status: response.status,
+      ok: response.ok,
+      statusText: response.statusText,
+      dataPreview: {
+        success: data.success,
+        hasData: !!data.data,
+        error: data.error,
+        message: data.message,
+        keys: Object.keys(data)
+      }
+    });
+
     if (!response.ok) {
+      console.error('💥 [DEBUG] API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        url,
+        data
+      });
       throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
     }
 
