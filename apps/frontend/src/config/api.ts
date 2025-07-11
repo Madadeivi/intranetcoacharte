@@ -189,6 +189,20 @@ export const customFetch = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
+  // LISTA DE FUNCIONES QUE NO REQUIEREN AUTHORIZATION HEADER:
+  // - unified-auth: Maneja autenticación internamente via body
+  // - email-service: Servicio interno, no requiere auth de usuario
+  // - support-ticket: Servicio interno, no requiere auth de usuario
+  // - zoho-crm: Servicio interno, no requiere auth de usuario
+  // - debug-variables: Servicio de desarrollo, no requiere auth de usuario
+  const noAuthHeaderFunctions = [
+    'unified-auth',
+    'email-service', 
+    'support-ticket',
+    'zoho-crm',
+    'debug-variables'
+  ];
+
   try {
     // Obtener la clave anónima de Supabase para las Edge Functions
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -204,25 +218,17 @@ export const customFetch = async <T>(
 
     // Para requests que requieren autenticación de usuario, 
     // obtener el token del usuario autenticado
-    // EXCEPCIONES: Funciones que NO requieren Authorization header
-    // unified-auth: maneja auth internamente
-    // email-service: no requiere auth de usuario
-    // support-ticket: no requiere auth de usuario  
-    // zoho-crm: no requiere auth de usuario
-    // debug-variables: no requiere auth de usuario
-    const noAuthHeaderFunctions = [
-      '/unified-auth',
-      '/email-service', 
-      '/support-ticket',
-      '/zoho-crm',
-      '/debug-variables'
-    ];
     
-    const requiresAuth = !noAuthHeaderFunctions.some(func => url.includes(func));
+    // Determinar si el endpoint requiere Authorization header
+    const requiresAuthHeader = !noAuthHeaderFunctions.some(func => url.includes(func));
     
-    if (typeof window !== 'undefined' && requiresAuth) {
+    // Solo agregar Authorization header si:
+    // 1. Estamos en el navegador (no SSR)
+    // 2. El endpoint requiere autenticación
+    // 3. Existe un token válido en localStorage
+    if (typeof window !== 'undefined' && requiresAuthHeader) {
       const userToken = localStorage.getItem('coacharte_auth_token');
-      if (userToken) {
+      if (userToken && userToken.trim()) {
         defaultHeaders['Authorization'] = `Bearer ${userToken}`;
       }
     }
@@ -260,6 +266,21 @@ export const customFetch = async <T>(
           data
         });
       }
+      
+      // Manejo específico de errores de autorización
+      if (response.status === 401 || response.status === 403) {
+        // Si el error es de autorización y la URL no debería tener auth header,
+        // podría ser un problema de configuración
+        const shouldHaveAuth = !noAuthHeaderFunctions.some(func => url.includes(func));
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Authorization error:', {
+            url,
+            shouldHaveAuth,
+            hasAuthHeader: !!defaultHeaders['Authorization']
+          });
+        }
+      }
+      
       throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
     }
 
