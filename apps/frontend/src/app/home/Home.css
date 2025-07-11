@@ -914,131 +914,6 @@ code {
   color: var(--color-text-on-primary);
 }
 
-/* Contenedor del nombre de usuario y flecha (si se usa) */
-.user-details {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer; /* Si todo el bloque es clickeable */
-}
-
-.user-name { /* Estilo para el nombre del usuario al lado del avatar */
-  font-weight: 500; /* Geometria-Medium */
-  color: var(--color-text-title);
-  font-size: var(--text-sm);
-  display: none; /* Oculto por defecto, se muestra en desktop via media query */
-}
-
-/* Menú desplegable del usuario */
-.user-dropdown {
-  position: absolute;
-  top: calc(100% + var(--space-2)); /* Posicionarlo debajo del avatar con un pequeño espacio */
-  right: 0;
-  background-color: var(--color-background-light);
-  border-radius: var(--radius-lg); 
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-2); 
-  z-index: 110; /* Encima de otros elementos como el header */
-  min-width: 200px; /* Ancho mínimo del desplegable */
-  border: 1px solid var(--color-border-light); 
-  opacity: 0; /* Inicialmente oculto para animación */
-  transform: translateY(-10px); /* Posición inicial para animación */
-  animation: fadeInDown 0.2s ease-out forwards; /* Animación de entrada */
-}
-
-@keyframes fadeInDown {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.user-info { /* Sección de información del usuario dentro del desplegable */
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-light);
-  margin-bottom: var(--space-2);
-}
-
-.user-info .user-name { /* Nombre dentro del desplegable */
-  display: block; /* Asegurar que se muestre */
-  font-weight: 600; /* Geometria-Bold o Semibold */
-  color: var(--color-text-title);
-  font-size: var(--text-base);
-  margin-bottom: var(--space-1);
-  padding: 0;
-}
-
-.user-info .user-email { /* Email dentro del desplegable */
-  display: block;
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-}
-
-/* Divisor entre secciones del dropdown */
-.user-dropdown-divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: var(--space-3) 0;
-}
-
-/* Enlaces y botones dentro del dropdown */
-.user-dropdown-menu a,
-.user-dropdown-menu button {
-  display: block;
-  width: 100%;
-  padding: var(--space-3) var(--space-4); 
-  text-align: left;
-  background: transparent; /* Fondo transparente por defecto */
-  border: none;
-  color: var(--color-text-title); 
-  font-size: var(--text-sm);
-  font-family: 'Geometria', Arial, sans-serif; /* Fuente base */
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease; 
-  border-radius: var(--radius-md); 
-  margin-bottom: var(--space-1); /* Espacio entre items */
-}
-
-.user-dropdown a:hover,
-.user-dropdown button:hover {
-  background-color: var(--color-primary-5);
-  color: var(--color-primary-100);
-}
-
-.user-dropdown a:last-child,
-.user-dropdown button:last-child {
-  margin-bottom: 0;
-}
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-0.5rem) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.user-dropdown-item {
-  background: var(--color-primary-10);
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  color: var(--color-text-title);
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.user-dropdown-item:hover {
-  background: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-}
-
 
 /* ==============================================
    FOOTER SECTION
@@ -1195,6 +1070,7 @@ code {
 .calendar-container {
   width: 100%;
   height: 100%;
+  padding: var(--space-2);
 }
 
 .custom-calendar {
@@ -1203,45 +1079,69 @@ code {
   border: none;
   box-shadow: none;
   background-color: transparent;
-  font-family: inherit;
+  font-family: 'Geometria', Arial, sans-serif;
 }
 
 /* Navegación (flechas y título) */
 .custom-calendar .react-calendar__navigation {
   display: flex;
   align-items: center;
-  margin-bottom: 1em;
-  padding: 0.5em 0;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .custom-calendar .react-calendar__navigation button {
-  background: none;
-  border: none;
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-light);
   cursor: pointer;
-  font-size: 1.2rem;
-  color: #333;
-  padding: 0.5em;
-  border-radius: 50%;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease-in-out;
+  transition: all 0.3s ease;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .custom-calendar .react-calendar__navigation button:hover {
-  background-color: #f2f2f2;
+  background: linear-gradient(135deg, var(--color-primary-10) 0%, var(--color-secondary-10) 100%);
+  color: var(--color-primary-100);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-30);
 }
 
 .custom-calendar .react-calendar__navigation button:disabled {
-  opacity: 0.5;
-  cursor: default;
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .custom-calendar .react-calendar__navigation__label {
-  font-weight: bold;
-  font-size: 1.1rem;
+  font-weight: 600;
+  font-size: var(--text-lg);
+  color: var(--color-text-title);
   flex-grow: 1;
   text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+}
+
+.custom-calendar .react-calendar__navigation__label:hover {
+  background: var(--color-primary-5);
+  color: var(--color-primary-100);
 }
 
 /* Vista del mes */
@@ -1251,19 +1151,44 @@ code {
 
 .custom-calendar .react-calendar__month-view {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Días de la semana */
 .custom-calendar .react-calendar__month-view__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  background: var(--color-background-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  box-shadow: var(--shadow-sm);
+}
+
+.custom-calendar .react-calendar__month-view__weekdays__weekday {
   text-align: center;
   font-weight: 600;
-  color: #666;
-  margin-bottom: 0.5em;
+  color: var(--color-text-secondary);
+  padding: var(--space-2);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
 }
 
 .custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
-  text-decoration: none; /* Quita el subrayado */
-  font-size: 0.85em;
+  text-decoration: none;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+}
+
+/* Días del mes */
+.custom-calendar .react-calendar__month-view__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+  flex: 1;
+  align-content: start;
 }
 
 /* Celdas de los días */
@@ -1272,1769 +1197,64 @@ code {
   align-items: center;
   justify-content: center;
   padding: 0;
-  background: none;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  height: 42px; /* Altura fija */
-  width: 42px;  /* Ancho fijo */
-  margin: 0 auto; /* Centra el círculo */
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  min-height: 2.75rem;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-sm);
 }
 
 .custom-calendar .react-calendar__tile:hover {
-  background-color: #e9ecef;
+  background: linear-gradient(135deg, var(--color-primary-10) 0%, var(--color-secondary-10) 100%);
+  color: var(--color-primary-100);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-30);
 }
 
 /* Día actual */
 .custom-calendar .react-calendar__tile--now {
-  background-color: #f0f0f0;
-  font-weight: bold;
+  background: linear-gradient(135deg, var(--color-primary-20) 0%, var(--color-secondary-20) 100%);
+  color: var(--color-primary-100);
+  font-weight: 700;
+  border-color: var(--color-primary-50);
+  box-shadow: var(--shadow-md);
+}
+
+.custom-calendar .react-calendar__tile--now:hover {
+  background: linear-gradient(135deg, var(--color-primary-30) 0%, var(--color-secondary-30) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Día seleccionado */
 .custom-calendar .react-calendar__tile--active {
-  background-color: var(--color-primary-100); /* Color primario de Coacharte */
+  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
   color: white;
-  font-weight: bold;
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-100);
 }
 
 .custom-calendar .react-calendar__tile--active:hover {
-  background-color: var(--color-primary-110);
+  background: linear-gradient(135deg, var(--color-primary-80) 0%, var(--color-secondary-80) 100%);
+  transform: scale(1.02);
 }
 
 /* Días fuera del mes actual */
 .custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
-  color: #b0b0b0;
+  color: var(--color-text-disabled);
+  opacity: 0.5;
 }
 
 /* Indicador de evento */
 .custom-calendar .event-day {
-  position: relative;
-}
-
-.custom-calendar .event-day::after {
-  content: '';
-  position: absolute;
-  bottom: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: var(--color-accent-100); /* Un color de acento */
-}
-
-/* Responsividad */
-@media (max-width: 992px) {
-  .home-calendar-events {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .custom-calendar .react-calendar__tile {
-    height: 38px;
-    width: 38px;
-  }
-}
-
-/* --- Estilos para el Banner de Cumpleañeros --- */
-
-.home-birthdays {
-  margin: var(--space-6) 0;
-  padding: var(--space-6) var(--space-4);
-  background: linear-gradient(135deg, var(--color-primary-5) 0%, var(--color-primary-10) 100%);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.birthdays-header {
-  text-align: center;
-  margin-bottom: var(--space-6);
-}
-
-.birthdays-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-
-.birthdays-icon {
-  font-size: 2rem;
-  color: var(--color-primary-100);
-}
-
-.birthdays-title h2 {
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--color-text-title);
-  margin: 0;
-  text-transform: capitalize;
-}
-
-.birthdays-subtitle {
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
-  margin: 0;
-  font-weight: 500;
-}
-
-.birthday-carousel-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.birthday-carousel {
-  display: flex;
-  gap: var(--space-4);
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  padding: var(--space-2) 0;
-  flex: 1;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-
-.birthday-carousel::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-.birthday-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: var(--color-background-light);
-  border-radius: var(--border-radius-md);
-  padding: var(--space-4);
-  min-width: 200px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  border: 1px solid var(--color-border);
-}
-
-.birthday-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.birthday-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  margin-bottom: var(--space-3);
-  overflow: hidden;
-  border: 3px solid var(--color-primary-100);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary-10);
-}
-
-.birthday-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.birthday-avatar-initials {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--color-primary-100);
-  text-transform: uppercase;
-}
-
-.birthday-info {
-  text-align: center;
-  flex: 1;
-}
-
-.birthday-name {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text-title);
-  margin: 0 0 var(--space-1) 0;
-  line-height: 1.2;
-}
-
-.birthday-position {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-1) 0;
-  font-weight: 500;
-}
-
-.birthday-department {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin: 0 0 var(--space-3) 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.birthday-date {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  background: var(--color-primary-5);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-primary-100);
-}
-
-.birthday-date-icon {
-  font-size: 1rem;
-}
-
-.birthday-carousel-nav {
-  background: var(--color-background-light);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Responsividad para cumpleañeros */
-@media (max-width: 768px) {
-  .home-birthdays {
-    margin: var(--space-4) 0;
-    padding: var(--space-4) var(--space-2);
-  }
-  
-  .birthday-carousel-wrapper {
-    gap: var(--space-2);
-  }
-  
-  .birthday-card {
-    min-width: 160px;
-    padding: var(--space-3);
-  }
-  
-  .birthday-avatar {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .birthdays-title h2 {
-    font-size: var(--text-xl);
-  }
-  
-  .birthday-carousel {
-    gap: var(--space-2);
-  }
-}
-
-@media (max-width: 480px) {
-  .birthdays-title {
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-  
-  .birthday-card {
-    min-width: 140px;
-  }
-  
-  .birthday-name {
-    font-size: var(--text-base);
-  }
-}
-
-/* ==============================================
-   CLASES DE UTILIDAD RESPONSIVE
-   ============================================== */
-
-/* Elementos que solo se muestran en desktop */
-.desktop-only {
-  display: none; /* Oculto en mobile por defecto */
-}
-
-/* ==============================================
-   HOME PAGE SPECIFIC STYLES - CONTINUED
-   ============================================== */
-
-/* ==============================================
-   WELCOME SECTION
-   ============================================== */
-.home-welcome {
-  background: url('/assets/img_banner.jpeg') center/cover no-repeat;
-  padding: var(--space-8) var(--space-4);
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.home-welcome h1 {
-  color: var(--color-text-title);
-}
-
-.home-welcome p {
-  color: var(--color-text-secondary);
-}
-
-.home-search::placeholder {
-  color: var(--color-text-secondary);
-  opacity: 1;
-}
-
-.home-welcome-content {
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: left;
-  position: relative;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0; /* Sin gap ya que cada elemento tiene su propio margin */
-}
-
-.home-welcome-month {
-  margin-bottom: var(--space-4);
-  padding: var(--space-1) var(--space-4);
-  align-self: flex-start; /* Asegurar que se alinee al inicio */
-}
-
-.home-welcome-month span {
-  background: rgba(255, 255, 255, 0.30);
-  color: var(--color-primary-100);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-xl);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  box-shadow: var(--shadow-md);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  display: inline-block;
-}
-
-.home-welcome h1 {
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  font-size: var(--text-2xl);
-  color: var(--color-text-title);
-  margin: 0 0 var(--space-4) 0;
-  padding: var(--space-1) var(--space-4);
-  line-height: 1.2;
-  position: relative;
-  z-index: 3;
-  display: inline-block;
-  box-sizing: border-box;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.20);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  max-width: 100%;
-  align-self: flex-start; /* Asegurar que se alinee al inicio */
-}
-
-.home-welcome p {
-  font-size: var(--text-base);
-  color: var(--color-text-title);
-  margin: 0 0 var(--space-8) 0;
-  line-height: 1.5;
-  position: relative;
-  z-index: 3;
-  display: inline-block;
-  box-sizing: border-box;
-  padding: var(--space-1) var(--space-4);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.20);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  max-width: 100%;
-  align-self: flex-start; /* Asegurar que se alinee al inicio */
-}
-
-.home-search-wrapper {
-  position: relative;
-  max-width: 500px; /* Reducir ancho máximo del buscador */
-  margin: 0;
-  display: block;
-  width: 100%; /* Mantener width 100% pero limitado por max-width */
-  align-self: flex-start; /* Alinear al inicio en lugar de stretch */
-}
-
-.home-search {
-  width: 100%;
-  padding: var(--space-4) var(--space-4) var(--space-4) 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-xl);
-  font-size: var(--text-base);
-  background: rgba(255, 255, 255, 0.50);
-  box-shadow: var(--shadow-md);
-  transition: all 0.2s ease-in-out;
-  box-sizing: border-box;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.home-search:focus {
-  outline: none;
-  border-color: white;
-  box-shadow: var(--shadow-lg);
-  background: rgba(255, 255, 255, 0.70);
-}
-
-.home-search-icon {
-  position: absolute;
-  left: var(--space-6);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-secondary);
-  pointer-events: none;
-}
-
-/* ==============================================
-   MAIN CARDS SECTION
-   ============================================== */
-
-.home-main-cards {
-  padding: var(--space-8) var(--space-4);
-  background-color: var(--neutral-background);
-}
-
-.main-cards-header {
-  text-align: center;
-  margin-bottom: var(--space-6);
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.main-cards-header h2 {
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  font-size: var(--text-xl);
-  color: var(--color-text-title);
-  margin: 0;
-}
-
-.card-carousel-wrapper {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Botones de navegación del carrusel de tarjetas - solo visibles en tablet y móvil */
-.card-carousel-nav {
-  display: none;
-}
-
-.card-grid {
-  /* Desktop: 3 columnas */
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
-  width: 100%;
-}
-
-.main-card {
-  background: var(--color-background-light);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  text-align: center;
-  transition: all 0.3s ease;
-  border: 1px solid var(--color-border-light);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  min-width: 280px;
-}
-
-.main-card:hover:not(.disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary-100);
-}
-
-.main-card:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--color-primary-10);
-}
-
-.main-card .main-card-icon {
-  font-size: 2.5rem;
-  color: var(--color-primary-100);
-  margin-bottom: var(--space-4);
-  transition: color 0.3s ease;
-}
-
-.main-card:hover:not(.disabled) .main-card-icon {
-  color: var(--color-primary-100);
-  transform: scale(1.1);
-}
-
-.main-card h3 {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  margin-bottom: var(--space-2);
-  color: var(--color-text-title);
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
-}
-
-.main-card p {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-
-.main-card.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background-color: var(--neutral-background-disabled);
-}
-
-/* Botón/enlace de acción dentro de la tarjeta principal */
-.main-card-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-  border: none;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: auto;
-  align-self: stretch;
-  text-decoration: none;
-  text-align: center;
-}
-
-.main-card-button:hover {
-  background: var(--color-primary-110);
-  transform: translateY(-1px);
-  color: var(--color-text-on-primary);
-  text-decoration: none;
-}
-
-.main-card-button:active {
-  transform: translateY(0);
-}
-
-.main-card-button:focus {
-  outline: 2px solid var(--color-primary-100);
-  outline-offset: 2px;
-}
-
-/* Media queries para diseño responsivo de tarjetas principales */
-
-/* Tablet: 2 columnas con carrusel */
-@media (max-width: 919px) and (min-width: 768px) {
-  .home-main-cards {
-    padding: var(--space-6) var(--space-4);
-  }
-  
-  .card-carousel-wrapper {
-    position: relative;
-    overflow: hidden; /* Evitar que las cards se desborden */
-  }
-  
-  .card-carousel-nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: white;
-    border: 1px solid var(--color-border-light);
-    box-shadow: var(--shadow-md);
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-
-  /* Sobrescribir display: none de .carousel-nav-button para los cards en tablet */
-  .carousel-nav-button.card-carousel-nav {
-    display: flex !important;
-  }
-  
-  .card-carousel-nav:hover:not(:disabled) {
-    background: var(--color-primary-5);
-    border-color: var(--color-primary-100);
-  }
-  
-  .card-carousel-nav:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-  
-  .card-carousel-nav.prev {
-    left: -20px;
-  }
-  
-  .card-carousel-nav.next {
-    right: -20px;
-  }
-  
-  .card-grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: var(--space-4);
-    padding: 0 var(--space-2);
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-    /* Forzar una sola fila horizontal - NO permitir wrap */
-    flex-wrap: nowrap;
-    /* Resetear cualquier configuración de grid */
-    grid-template-columns: none;
-    /* Asegurar que el contenedor tenga altura suficiente */
-    min-height: 180px;
-  }
-  
-  .card-grid::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-  
-  .main-card {
-    /* Cada card ocupa exactamente la mitad del ancho visible menos el gap */
-    flex: 0 0 calc(50% - var(--space-2));
-    min-width: calc(50% - var(--space-2));
-    max-width: calc(50% - var(--space-2));
-    width: calc(50% - var(--space-2));
-    /* Mantener altura consistente */
-    min-height: 160px;
-    /* Prevenir que el contenido fuerce cambios de tamaño */
-    box-sizing: border-box;
-  }
-  
-  .main-card .main-card-icon {
-    font-size: 2.2rem;
-  }
-  
-  .main-card h3 {
-    font-size: var(--text-lg);
-  }
-  
-  .main-card p {
-    font-size: var(--text-sm);
-  }
-}
-
-/* Móvil: 1 columna con carrusel */
-@media (max-width: 767px) {
-  .home-main-cards {
-    padding: var(--space-6) var(--space-2);
-  }
-  
-  .card-carousel-wrapper {
-    position: relative;
-  }
-  
-  .card-carousel-nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: white;
-    border: 1px solid var(--color-border-light);
-    box-shadow: var(--shadow-md);
-    transition: all 0.2s ease;
-  }
-
-  /* Sobrescribir display: none de .carousel-nav-button para los cards en móvil */
-  .carousel-nav-button.card-carousel-nav {
-    display: flex !important;
-  }
-  
-  /* También para enlaces rápidos en móvil */
-  .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
-  
-  .card-carousel-nav:hover:not(:disabled) {
-    background: var(--color-primary-5);
-    border-color: var(--color-primary-100);
-  }
-  
-  .card-carousel-nav:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-  
-  .card-carousel-nav.prev {
-    left: -18px;
-  }
-  
-  .card-carousel-nav.next {
-    right: -18px;
-  }
-  
-  .card-carousel-nav svg {
-    font-size: 18px;
-  }
-  
-  .card-grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: var(--space-4);
-    padding: 0 var(--space-2);
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-  }
-  
-  .card-grid::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-  
-  .main-card {
-    flex: 0 0 280px;
-    min-width: 280px;
-    max-width: 280px;
-  }
-  
-  .main-card .main-card-icon {
-    font-size: 2rem;
-  }
-  
-  .main-card h3 {
-    font-size: var(--text-base);
-  }
-  
-  .main-card p {
-    font-size: var(--text-xs);
-  }
-}
-
-/* ==============================================
-   NOTICES SECTION (AVISOS IMPORTANTES)
-   ============================================== */
-.home-notices {
-  background: var(--neutral-background-alt);
-  padding: var(--space-8) var(--space-4);
-  width: 100%;
-  box-sizing: border-box;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.home-notices-span {
-  width: 100%;
-}
-
-.home-notices-span h2 {
-  text-align: left;
-  color: var(--color-text-title);
-  margin: 0 0 var(--space-6) 0;
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  font-size: var(--text-2xl);
-}
-
-.notice-carousel-wrapper {
-  position: relative;
-}
-
-.notice-carousel {
-  display: flex;
-  gap: var(--space-4);
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  padding-bottom: var(--space-2);
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-
-.notice-carousel::-webkit-scrollbar { /* Webkit (Chrome, Safari, newer Opera) */
-  display: none;
-}
-
-.notice-card {
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-  min-width: 300px;
-  max-width: 320px;
-  flex-shrink: 0;
-  transition: all 0.22s ease-in-out;
-  cursor: pointer;
-}
-
-.notice-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.notice-card-img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  display: block;
-  border-radius: 0;
-}
-
-.notice-card-content {
-  padding: var(--space-4);
-}
-
-.notice-date {
-  font-size: var(--text-xs);
-  color: var(--color-primary-100);
-  font-weight: 600;
-  background: var(--color-primary-5);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  display: inline-block;
-  margin-bottom: var(--space-3);
-}
-
-.notice-card h4 {
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  color: var(--color-text-title);
-  font-size: var(--text-base);
-  margin: 0 0 var(--space-2) 0;
-  line-height: 1.3;
-}
-
-.notice-card p {
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-  margin: 0 0 var(--space-4) 0;
-  line-height: 1.4;
-}
-
-.notice-card a {
-  color: var(--color-primary-100);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: var(--text-sm);
-  transition: color 0.2s ease-in-out;
-}
-
-.notice-card a:hover {
-  color: var(--color-primary-70);
-}
-
-/* Botones de navegación del carrusel de avisos */
-.carousel-nav-button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: none; /* Hidden on mobile */
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: all 0.2s ease-in-out;
-  z-index: 10;
-  color: var(--color-text-secondary);
-}
-
-.carousel-nav-button:hover:not(:disabled) {
-  background: var(--color-primary-100);
-  color: white;
-  border-color: var(--color-primary-100);
-}
-
-.carousel-nav-button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.carousel-nav-button.prev {
-  left: -1.25rem;
-}
-
-.carousel-nav-button.next {
-  right: -1.25rem;
-}
-
-/* Media queries para avisos importantes */
-@media (min-width: 768px) {
-  .carousel-nav-button {
-    display: flex !important; /* Mostrar botones de navegación en tablet y desktop con !important */
-  }
-  
-  /* Asegurar que los botones de enlaces rápidos también se muestren */
-  .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
-  
-  /* Asegurar que los botones de avisos importantes también se muestren */
-  .carousel-nav-button.notice-carousel-nav {
-    display: flex !important;
-  }
-}
-
-/* Media query específica para tablet - avisos importantes */
-@media (min-width: 768px) and (max-width: 919px) {
-  .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; /* Forzar visualización de botones de avisos importantes en tablet */
-  }
-  
-  .carousel-nav-button.notice-carousel-nav {
-    display: flex !important; /* Forzar visualización específica para botones de avisos importantes */
-  }
-}
-
-/* ==============================================
-   QUICKLINKS SECTION
-   ============================================== */
-.home-quicklinks {
-  padding: var(--space-8) var(--space-4);
-  width: 100%;
-  box-sizing: border-box;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.home-quicklinks-span h2 {
-  text-align: left;
-  color: var(--color-text-title);
-  margin: 0 0 var(--space-6) 0;
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  font-size: var(--text-2xl);
-}
-
-/* Wrapper del carrusel de enlaces rápidos */
-.quicklink-carousel-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.quick-links-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--space-4);
-}
-
-.quicklink {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: white;
-  border-radius: var(--radius-lg);
-  text-decoration: none;
-  color: var(--color-text-title);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.22s ease-in-out;
-  border: 1px solid transparent;
-  min-width: 280px;
-  flex-shrink: 0;
-}
-
-.quicklink:hover:not(.disabled) {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-  border-color: var(--color-primary-10);
-}
-
-.quicklink.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.quicklink-icon {
-  color: var(--color-primary-100);
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.quicklink h3 {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  margin: 0;
-}
-
-/* Botones de navegación para carrusel de enlaces rápidos */
-.quicklink-carousel-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: white;
-  color: var(--color-text-secondary);
-  border: 1px solid #e5e7eb;
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: all 0.2s ease-in-out;
-  z-index: 10;
-}
-
-.quicklink-carousel-nav:hover:not(:disabled) {
-  background: var(--color-primary-100);
-  color: white;
-  border-color: var(--color-primary-100);
-}
-
-.quicklink-carousel-nav:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.quicklink-carousel-nav.prev {
-  left: -1.25rem;
-}
-
-.quicklink-carousel-nav.next {
-  right: -1.25rem;
-}
-
-/* Media queries para quicklinks */
-@media (min-width: 768px) and (max-width: 919px) {
-  /* En tablet: 2 columnas con carrusel */
-  .quicklinks-grid {
-    display: flex;
-    overflow-x: auto;
-  }
-  
-  .quicklink {
-    min-width: calc(50% - var(--space-2));
-    flex-shrink: 0;
-  }
-  
-  .quicklink-carousel-nav {
-    display: flex;
-  }
-  
-  /* Sobrescribir display: none de .carousel-nav-button para enlaces rápidos en tablet */
-  .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
-}
-
-@media (min-width: 920px) {
-  /* En tablet: 2 columnas con carrusel */
-  .quicklinks-grid {
-    display: flex;
-    overflow-x: auto;
-  }
-  
-  .quicklink {
-    min-width: calc(50% - var(--space-2));
-    flex-shrink: 0;
-  }
-  
-  .quicklink-carousel-nav {
-    display: flex;
-  }
-}
-
-@media (min-width: 1200px) {
-  /* En desktop: 4 columnas sin carrusel */
-  .quicklinks-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    overflow-x: visible;
-  }
-  
-  .quicklink {
-    min-width: auto;
-    flex-shrink:  1;
-  }
-  
-  .quicklink-carousel-nav {
-    display: none;
-  }
-}
-
-/* ==============================================
-   RESPONSIVE DESIGN - NAVBAR & HEADER
-   ============================================== */
-
-/* Mobile First - ya configurado por defecto */
-
-/* Tablet y Desktop - Navbar y header (920px and up) */
-@media (min-width: 920px) {
-  .home-logo-img {
-    width: 10rem;
-    height: 2rem;
-  }
-  
-  .home-nav {
-    display: flex; /* Mostrar navegación normal en tablet y desktop */
-  }
-
-  .hamburger-menu {
-    display: none; /* Ocultar hamburguesa en tablet y desktop */
-  }
-
-  .mobile-nav-menu {
-    display: none !important; /* Asegurar que el menú móvil esté oculto */
-  }
-  
-  .user-name {
-    display: block; /* Mostrar nombre de usuario en tablet y desktop */
-  }
-
-  .desktop-only {
-    display: block; /* Mostrar elementos desktop-only */
-  }
-  
-  .home-welcome {
-    padding: var(--space-12) var(--space-6);
-  }
-  
-  .home-welcome h1 {
-    font-size: var(--text-2xl);
-  }
-  
-  .home-welcome p {
-    font-size: var(--text-lg);
-  }
-
-  .notice-carousel-arrow {
-    display: flex;
-  }
-}
-
-/* Desktop (1200px and up) */
-@media (min-width: 1200px) {
-  /* Tarjetas principales: Volver a grid 3 columnas sin carrusel */
-  .card-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-8);
-    overflow-x: visible;
-    flex-wrap: initial;
-    min-height: initial;
-  }
-  
-  .main-card {
-    flex: initial;
-    min-width: auto;
-    max-width: none;
-    width: auto;
-    padding: var(--space-8);
-    min-height: 140px;
-  }
-  
-  .main-card .main-card-icon {
-    width: 3rem;
-    height: 3rem;
-    font-size: 2.5rem;
-  }
-  
-  .main-card h3 {
-    font-size: var(--text-xl);
-  }
-  
-  .main-card p {
-    font-size: var(--text-base);
-  }
-  
-  .card-carousel-nav {
-    display: none !important; /* Ocultar navegación de carrusel en desktop */
-  }
-  
-  /* Pero mantener visible la navegación de avisos importantes en desktop */
-  .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; /* Forzar visualización de botones de avisos importantes en desktop */
-  }
-
-  /* Footer responsive para desktop */
-  .home-footer {
-    padding: var(--space-6) 5% var(--space-4) !important; /* Menor padding para reducir altura */
-  }
-  
-  .home-footer .footer-content {
-    max-width: none !important;
-    gap: var(--space-12) !important;
-    padding: 0 !important;
-    flex-direction: row !important; /* Asegurar que sea horizontal en desktop */
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    display: flex !important;
-  }
-  
-  .home-footer .footer-brand-section {
-    max-width: 300px !important;
-    flex: 0 0 auto !important;
-  }
-  
-  .home-footer .footer-logo {
-    height: 2.5rem !important; /* Ligeramente mayor en desktop */
-  }
-  
-  .home-footer .footer-slogan {
-    font-size: var(--text-sm) !important;
-    max-width: 90% !important;
-  }
-  
-  .home-footer .footer-links-section {
-    gap: var(--space-10) !important;
-    max-width: none !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-evenly !important;
-    grid-template-columns: none !important; /* Anular grid */
-  }
-  
-  .home-footer .footer-col {
-    flex: 1 !important;
-    min-width: 0 !important;
-  }
-}
-
-@media (min-width: 1200px) {
-  .home-footer {
-    padding: var(--space-6) 5% var(--space-4) !important;
-  }
-  
-  .footer-content {
-    max-width: none !important;
-    gap: var(--space-12) !important;
-    padding: 0 !important;
-  }
-  
-  .footer-brand-section {
-    max-width: 300px !important;
-  }
-  
-  .footer-logo {
-    height: 2.5rem !important;
-  }
-  
-  .footer-slogan {
-    font-size: var(--text-sm) !important;
-    max-width: 90% !important;
-  }
-  
-  .footer-links-section {
-    gap: var(--space-10) !important;
-  }
-  
-  .footer-social-icons {
-    gap: var(--space-3) !important;
-  }
-  
-  .footer-social-icon {
-    font-size: 1.3rem !important;
-  }
-}
-
-/* ==============================================
-   MODAL STYLES
-   ============================================== */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: var(--space-4);
-  box-sizing: border-box;
-}
-
-.modal {
-  position: relative;
-  background: white;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  padding: var(--space-6);
-  overflow-y: auto;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-}
-
-.modal-close-button {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.modal-close-button:hover {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-}
-
-.modal h2 {
-  margin: 0 0 var(--space-4) 0;
-  color: var(--color-text-title);
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-}
-
-.notice-detail-text {
-  line-height: 1.6;
-  color: var(--color-text-secondary);
-}
-
-/* Support Modal Styles */
-.support-modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: var(--space-4);
-  box-sizing: border-box;
-}
-
-.support-modal-content {
-  position: relative;
-  background: white;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  padding: var(--space-6);
-  overflow-y: auto;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-}
-
-.support-modal-close-button {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.support-modal-close-button:hover {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-}
-
-/* ==============================================
-   CALENDAR & EVENTS SECTION - MEJORADO DESIGN SYSTEM
-   ============================================== */
-.home-calendar-events {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
-  padding: var(--space-8) var(--space-4);
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-  background: linear-gradient(135deg, var(--color-background-light) 0%, var(--neutral-background-alt) 100%);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-light);
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  overflow: hidden;
-  min-height: 520px; /* Altura mejorada para mejor uso del espacio */
-}
-
-.home-calendar-events::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-.calendar-column,
-.events-column {
-  background: var(--color-background-light);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-light);
-  transition: all 0.3s ease;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-6);
-  height: 100%; /* Utilizar toda la altura disponible */
-}
-
-.calendar-column::before,
-.events-column::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.calendar-column:hover,
-.events-column:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-primary-30);
-}
-
-.calendar-column:hover::before,
-.events-column:hover::before {
-  opacity: 1;
-}
-
-.calendar-column h2,
-.events-column h2 {
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  font-size: var(--text-xl);
-  color: var(--color-text-title);
-  margin: 0 0 var(--space-4) 0;
-  text-align: center;
-  position: relative;
-  padding-bottom: var(--space-3);
-  flex-shrink: 0; /* No se comprime */
-}
-
-.calendar-column h2::after,
-.events-column h2::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  border-radius: var(--radius-sm);
-}
-
-.calendar-container {
-  margin-bottom: var(--space-4);
-  background: var(--color-background-light);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 400px;
-  box-shadow: var(--shadow-sm);
-}
-
-.calendar-month-year {
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  margin: 0;
-  padding: var(--space-2);
-  background: var(--color-background-subtle);
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  flex: 1; /* Ocupar todo el espacio disponible */
-  overflow-y: auto;
-  padding-right: var(--space-2);
-  margin-right: calc(-1 * var(--space-2));
-  min-height: 320px; /* Altura mínima mejorada */
-  max-height: 420px; /* Altura máxima optimizada */
-}
-
-.events-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.events-list::-webkit-scrollbar-track {
-  background: var(--color-primary-5);
-  border-radius: var(--radius-sm);
-}
-
-.events-list::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  border-radius: var(--radius-sm);
-  transition: background 0.2s ease;
-}
-
-.events-list::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--color-primary-70) 0%, var(--color-secondary-70) 100%);
-}
-
-.event-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4);
-  background: linear-gradient(135deg, var(--color-background-light) 0%, var(--color-primary-5) 100%);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-primary-10);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.event-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  transition: width 0.3s ease;
-}
-
-.event-item:hover {
-  background: linear-gradient(135deg, var(--color-primary-10) 0%, var(--color-secondary-10) 100%);
-  transform: translateX(4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-primary-30);
-}
-
-.event-item:hover::before {
-  width: 6px;
-}
-
-.event-date {
-  font-size: var(--text-xs);
-  color: var(--color-primary-100);
-  font-weight: 700;
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  background: linear-gradient(135deg, var(--color-background-light) 0%, var(--color-primary-10) 100%);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-primary-20);
-  box-shadow: var(--shadow-sm);
-  flex-shrink: 0;
-  text-align: center;
-  min-width: 60px;
-  transition: all 0.2s ease;
-}
-
-.event-item:hover .event-date {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  color: white;
-  transform: scale(1.05);
-}
-
-.event-title {
-  font-size: var(--text-sm);
-  color: var(--color-text-title);
-  font-weight: 600;
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
-  margin-left: var(--space-4);
-  flex: 1;
-  transition: color 0.2s ease;
-}
-
-.event-item:hover .event-title {
-  color: var(--color-primary-100);
-}
-
-/* ====================================================
-   REACT CALENDAR - DESIGN SYSTEM COACHARTE
-   ==================================================== */
-.react-calendar {
-  width: 100%;
-  border: none;
-  background: transparent;
-  font-family: 'Geometria', Arial, sans-serif;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.react-calendar__navigation {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-3);
-  margin-bottom: var(--space-3);
-  background: var(--color-background-light);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
-
-.react-calendar__navigation__label {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text-title);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
-}
-
-.react-calendar__navigation__label:hover {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-}
-
-.react-calendar__navigation__arrow {
-  background: var(--color-primary-100);
-  border: none;
-  color: white;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.react-calendar__navigation__arrow:hover {
-  background: var(--color-primary-110);
-  transform: scale(1.05);
-}
-
-.react-calendar__navigation__arrow:active {
-  transform: scale(0.95);
-}
-
-.react-calendar__month-view__weekdays {
-  text-align: center;
-  text-transform: uppercase;
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-2);
-  font-weight: 600;
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
-  background: var(--color-background-subtle);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) 0;
-  flex-shrink: 0;
-}
-
-.react-calendar__month-view__weekdays__weekday {
-  padding: var(--space-1);
-  font-weight: 600;
-}
-
-.react-calendar__month-view__days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: var(--space-1);
-  flex: 1;
-  align-content: start;
-}
-
-.react-calendar__tile {
-  max-width: initial;
-  padding: var(--space-2);
-  text-align: center;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: var(--color-background-light);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  box-shadow: var(--shadow-sm);
-}
-
-.react-calendar__tile:enabled:hover {
-  background: linear-gradient(135deg, var(--color-primary-10) 0%, var(--color-secondary-10) 100%);
-  color: var(--color-primary-100);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-primary-30);
-}
-
-.react-calendar__tile:enabled:focus {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  color: white;
-  outline: none;
-  transform: scale(1.05);
-  box-shadow: var(--shadow-lg);
-  z-index: 1;
-}
-
-.react-calendar__tile--now {
-  font-weight: 700;
-  color: var(--color-primary-100);
-  background: linear-gradient(135deg, var(--color-primary-10) 0%, var(--color-secondary-10) 100%);
-  border-color: var(--color-primary-100);
-  box-shadow: var(--shadow-md);
-}
-
-.react-calendar__tile--active {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
-  color: white;
-  font-weight: 700;
-  box-shadow: var(--shadow-lg);
-}
-
-.react-calendar__tile--active:enabled:hover {
-  background: linear-gradient(135deg, var(--color-primary-70) 0%, var(--color-secondary-70) 100%);
-  transform: scale(1.02);
-}
-
-/* Días con eventos */
-.event-day {
   position: relative;
   font-weight: 700;
   color: var(--color-primary-100);
@@ -3042,7 +1262,7 @@ code {
   border-color: var(--color-primary-50);
 }
 
-.event-day::after {
+.custom-calendar .event-day::after {
   content: '';
   position: absolute;
   bottom: 4px;
@@ -3055,298 +1275,342 @@ code {
   box-shadow: 0 0 4px var(--color-primary-50);
 }
 
-.event-day:hover::after {
+.custom-calendar .event-day:hover::after {
   background: white;
   transform: translateX(-50%) scale(1.2);
 }
 
-/* Responsive para la sección de calendario y eventos */
+/* Estilos adicionales para mejorar el aspecto del calendario */
 
-/* Tablet: mantener 2 columnas pero ajustar espacios */
-@media (max-width: 1199px) and (min-width: 768px) {
-  .home-calendar-events {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
-    padding: var(--space-6) var(--space-3);
-    min-height: 450px;
+/* Mejora para días fuera del mes actual */
+.react-calendar__tile--neighboringMonth {
+  color: var(--color-text-disabled);
+  opacity: 0.4;
+  background: var(--color-background-subtle);
+}
+
+.react-calendar__tile--neighboringMonth:hover {
+  background: var(--color-background-hover);
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  transform: none;
+}
+
+/* Efecto de selección múltiple para rangos de fechas */
+.react-calendar__tile--range {
+  background: linear-gradient(135deg, var(--color-primary-5) 0%, var(--color-secondary-5) 100%);
+  color: var(--color-primary-100);
+  border-color: var(--color-primary-20);
+}
+
+.react-calendar__tile--rangeStart,
+.react-calendar__tile--rangeEnd {
+  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-secondary-100) 100%);
+  color: white;
+  font-weight: 700;
+}
+
+/* Animación sutil para el indicador de evento */
+.event-day::after {
+  animation: pulse-event 2s ease-in-out infinite;
+}
+
+@keyframes pulse-event {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
   }
-  
-  .calendar-column,
-  .events-column {
-    padding: var(--space-5);
-  }
-  
-  .calendar-column h2,
-  .events-column h2 {
-    font-size: var(--text-lg);
-    margin-bottom: var(--space-3);
-  }
-  
-  .events-list {
-    min-height: 250px;
-    max-height: 320px;
-  }
-  
-  .react-calendar__tile {
-    min-height: 2.2rem;
-    font-size: var(--text-sm);
-  }
-  
-  .react-calendar__navigation__arrow {
-    width: 2.2rem;
-    height: 2.2rem;
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1.1);
   }
 }
 
-/* Mobile: cambiar a 1 columna */
-@media (max-width: 767px) {
-  .home-calendar-events {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-    padding: var(--space-4) var(--space-3);
-    border-radius: var(--radius-lg);
-    min-height: auto;
-  }
-  
-  .calendar-column,
-  .events-column {
-    padding: var(--space-4);
-    min-height: 300px;
-  }
-  
-  .calendar-column h2,
-  .events-column h2 {
-    font-size: var(--text-lg);
-    margin-bottom: var(--space-3);
-  }
-  
-  .events-list {
-    min-height: 200px;
-    max-height: 250px;
-    gap: var(--space-2);
-  }
-  
+/* Efecto de hover para la navegación del mes */
+.react-calendar__navigation__label:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
+}
+
+.react-calendar__navigation__arrow:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
+}
+
+/* Mejora para celdas con contenido especial */
+.react-calendar__tile.has-content {
+  font-weight: 600;
+  position: relative;
+}
+
+.react-calendar__tile.has-content::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 4px;
+  height: 4px;
+  background: var(--color-accent-100);
+  border-radius: 50%;
+}
+
+/* Modo oscuro (para futuras implementaciones) */
+@media (prefers-color-scheme: dark) {
   .react-calendar__tile {
-    min-height: 2rem;
-    padding: var(--space-1);
-    font-size: var(--text-xs);
+    background: var(--color-background-dark, #2a2a2a);
+    color: var(--color-text-light, #e0e0e0);
+    border-color: var(--color-border-dark, #404040);
   }
   
   .react-calendar__navigation {
-    padding: var(--space-2) 0;
-    margin-bottom: var(--space-2);
+    background: var(--color-background-dark, #1a1a1a);
+    border-color: var(--color-border-dark, #404040);
+  }
+}
+
+/* Mejoras para accesibilidad */
+.react-calendar__tile:focus-visible {
+  outline: 3px solid var(--color-primary-100);
+  outline-offset: 2px;
+  z-index: 10;
+}
+
+/* Indicador de loading/carga */
+.react-calendar.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.react-calendar.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-primary-20);
+  border-top: 2px solid var(--color-primary-100);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Mejoras para el contenedor del calendario */
+.calendar-container {
+  position: relative;
+  background: var(--color-background-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.calendar-container:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Separador visual entre semanas */
+.react-calendar__month-view__days .react-calendar__tile:nth-child(7n) {
+  border-right: none;
+}
+
+.react-calendar__month-view__days .react-calendar__tile:nth-child(7n+1) {
+  border-left: none;
+}
+
+/* Efecto de elevation para días con eventos múltiples */
+.react-calendar__tile.multiple-events {
+  box-shadow: var(--shadow-md);
+  border-width: 2px;
+}
+
+.react-calendar__tile.multiple-events::after {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(45deg, var(--color-primary-100), var(--color-secondary-100), var(--color-accent-100));
+  animation: pulse-event 1.5s ease-in-out infinite;
+}
+
+/* Mejoras adicionales para responsive del calendario */
+
+/* Tablet pequeño */
+@media (max-width: 991px) and (min-width: 769px) {
+  .react-calendar__tile {
+    min-height: 2.5rem;
+    font-size: var(--text-sm);
+  }
+  
+  .react-calendar__navigation {
+    padding: var(--space-3);
+  }
+  
+  .react-calendar__navigation__arrow {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+/* Móvil grande */
+@media (max-width: 768px) and (min-width: 481px) {
+  .react-calendar__tile {
+    min-height: 2.3rem;
+    font-size: var(--text-sm);
+    padding: var(--space-1);
+  }
+  
+  .react-calendar__navigation {
+    padding: var(--space-2);
+  }
+  
+  .react-calendar__navigation__label {
+    font-size: var(--text-base);
+  }
+  
+  .react-calendar__navigation__arrow {
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+  
+  .react-calendar__month-view__weekdays {
+    padding: var(--space-2);
+  }
+  
+  .react-calendar__month-view__weekdays__weekday {
+    font-size: 0.7rem;
+  }
+}
+
+/* Móvil pequeño */
+@media (max-width: 480px) {
+  .react-calendar__tile {
+    min-height: 2rem;
+    font-size: var(--text-xs);
+    padding: var(--space-1);
+  }
+  
+  .react-calendar__navigation {
+    padding: var(--space-2);
+  }
+  
+  .react-calendar__navigation__label {
+    font-size: var(--text-base);
+    padding: var(--space-1) var(--space-2);
   }
   
   .react-calendar__navigation__arrow {
     width: 2rem;
     height: 2rem;
-    font-size: var(--text-sm);
-  }
-  
-  .react-calendar__navigation__label {
-    font-size: var(--text-base);
-    padding: var(--space-1) var(--space-3);
+    font-size: 0.8rem;
   }
   
   .react-calendar__month-view__weekdays {
-    font-size: var(--text-xs);
-    padding: var(--space-1) 0;
-    margin-bottom: var(--space-2);
+    padding: var(--space-1);
   }
   
   .react-calendar__month-view__weekdays__weekday {
+    font-size: 0.65rem;
     padding: var(--space-1);
   }
   
   .react-calendar__month-view__days {
     gap: 2px;
-    margin-top: var(--space-2);
   }
   
-  .event-item {
-    padding: var(--space-3);
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
-    border-radius: var(--radius-md);
+  .event-day::after {
+    width: 4px;
+    height: 4px;
+    bottom: 2px;
+  }
+}
+
+/* Muy pequeño (smartwatches o pantallas muy pequeñas) */
+@media (max-width: 320px) {
+  .react-calendar__tile {
+    min-height: 1.8rem;
+    font-size: 0.7rem;
+    padding: 2px;
   }
   
-  .event-item:hover {
-    transform: translateY(-1px);
+  .react-calendar__navigation__label {
+    font-size: var(--text-sm);
   }
   
-  .event-title {
-    margin-left: 0;
-    font-size: var(--text-xs);
+  .react-calendar__navigation__arrow {
+    width: 1.8rem;
+    height: 1.8rem;
   }
   
-  .event-date {
-    font-size: var(--text-xs);
-    padding: var(--space-1) var(--space-2);
-    min-width: 50px;
+  .react-calendar__month-view__weekdays__weekday {
+    font-size: 0.6rem;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .react-calendar__tile {
+    min-height: 2rem;
   }
   
-  .calendar-container {
-    padding: var(--space-3);
-    margin-bottom: var(--space-3);
+  .react-calendar__navigation {
+    padding: var(--space-2);
   }
   
-  .calendar-month-year {
-    font-size: var(--text-xs);
-    padding: var(--space-1) var(--space-3);
+  .react-calendar__month-view__weekdays {
+    padding: var(--space-1);
   }
 }
 
-/* Estilos para el popup de cumpleaños */
-.birthday-popup-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-}
-
-.birthday-popup-content {
-  background: var(--color-background-light);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8);
-  max-width: 400px;
-  width: 90%;
-  position: relative;
-  box-shadow: var(--shadow-2xl);
-  transform: scale(0.9);
-  animation: birthday-popup-enter 0.3s ease-out forwards;
-}
-
-@keyframes birthday-popup-enter {
-  0% { 
-    transform: scale(0.5) rotate(-180deg);
-    opacity: 0;
-  }
-  50% { 
-    transform: scale(1.1) rotate(5deg);
-    opacity: 0.8;
-  }
-  75% { 
-    transform: scale(0.95) rotate(-2deg);
-    opacity: 0.9;
-  }
-  100% { 
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
-/* Efecto de celebración extra para el popup */
-.birthday-popup-content {
-  animation: birthday-popup-enter 0.8s ease-out forwards, birthday-celebration-shake 0.5s ease-in-out 0.8s;
-}
-
-@keyframes birthday-celebration-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-.birthday-popup-close-button {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-muted);
-  transition: color 0.2s ease-in-out;
-}
-
-.birthday-popup-close-button:hover {
-  color: var(--color-text-title);
-}
-
-.birthday-popup-body {
-  text-align: center;
-}
-
-.birthday-popup-icon {
-  font-size: 4rem;
-  margin-bottom: var(--space-4);
-  animation: birthday-icon-bounce 1s infinite;
-}
-
-@keyframes birthday-icon-bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-20px); }
-  60% { transform: translateY(-10px); }
-}
-
-.birthday-popup-title {
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--color-primary-100);
-  margin-bottom: var(--space-4);
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-}
-
-.birthday-popup-message {
-  font-size: var(--text-base);
-  color: var(--color-text-body);
-  margin-bottom: var(--space-6);
-  line-height: 1.6;
-}
-
-.birthday-popup-decoration {
-  font-size: 2rem;
-  margin-bottom: var(--space-6);
-  animation: birthday-decoration-sway 2s ease-in-out infinite;
-}
-
-@keyframes birthday-decoration-sway {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(5deg); }
-}
-
-.birthday-popup-button {
-  background: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-  border: none;
-  padding: var(--space-3) var(--space-6);
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
-}
-
-.birthday-popup-button:hover {
-  background: var(--color-primary-110);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.birthday-popup-button:active {
-  transform: translateY(0);
-}
-
-/* Responsive para móviles */
-@media (max-width: 768px) {
-  .birthday-popup-content {
-    padding: var(--space-6);
-    max-width: 350px;
+/* Mejoras para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 2dppx) {
+  .react-calendar__tile {
+    border-width: 0.5px;
   }
   
-  .birthday-popup-title {
-    font-size: var(--text-xl);
+  .event-day::after {
+    box-shadow: 0 0 2px var(--color-primary-50);
+  }
+}
+
+/* Mejoras para modo de alto contraste */
+@media (prefers-contrast: high) {
+  .react-calendar__tile {
+    border-width: 2px;
+    border-color: var(--color-text-title);
   }
   
-  .birthday-popup-icon {
-    font-size: 3rem;
+  .react-calendar__tile--now {
+    border-width: 3px;
+  }
+  
+  .react-calendar__tile--active {
+    border-width: 3px;
+    border-color: white;
+  }
+  
+  .event-day::after {
+    border: 1px solid var(--color-background-light);
+  }
+}
+
+/* Mejoras para reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .react-calendar__tile,
+  .react-calendar__navigation__arrow,
+  .react-calendar__navigation__label {
+    transition: none;
+  }
+  
+  .event-day::after {
+    animation: none;
+  }
+  
+  .react-calendar__tile:hover {
+    transform: none;
   }
 }
