@@ -21,6 +21,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../../components/Avatar';
 import { generateInitials } from '../../utils/helpers';
+import { profileService } from '../../services/profileService';
 
 // Interfaces locales para el perfil (ya no dependemos de collaboratorService)
 interface ProfileDocument {
@@ -111,23 +112,36 @@ export default function ProfilePage() {
         setLoading(true);
         setError(null);
         
-        // Crear el perfil directamente desde los datos del usuario autenticado
+        // Obtener datos reales del perfil usando el servicio
+        const profileResponse = await profileService.getProfile();
+        
+        if (!profileResponse.success || !profileResponse.data) {
+          throw new Error(profileResponse.error || 'No se pudo obtener el perfil');
+        }
+
+        // Mapear datos del servicio al formato del componente
+        const mappedProfile = profileService.mapProfileToSimpleFormat(
+          profileResponse.data.profile,
+          profileResponse.data.department
+        );
+
         const profileData: UserProfile = {
-          id: user.id,
-          fullName: user.name,
-          firstName: user.name.split(' ')[0] || '',
-          lastName: user.name.split(' ').slice(1).join(' ') || '',
-          email: user.email,
-          position: user.role || 'Colaborador',
-          department: user.department || 'General',
-          joinDate: '2023-03-15', // Valor por defecto
-          avatarUrl: user.avatar || '',
-          initials: generateInitials(user.email),
-          internalRecord: `COA-${user.id.slice(-4)}`,
-          phone: '+52 55 0000-0000', // Valor por defecto
-          status: 'Activo',
-          documents: [], // Sin documentos por ahora
+          id: mappedProfile.id,
+          fullName: mappedProfile.fullName,
+          firstName: mappedProfile.firstName,
+          lastName: mappedProfile.lastName,
+          email: mappedProfile.email,
+          position: mappedProfile.position,
+          department: mappedProfile.department,
+          joinDate: mappedProfile.joinDate,
+          avatarUrl: mappedProfile.avatarUrl,
+          initials: mappedProfile.initials,
+          internalRecord: mappedProfile.internalRecord,
+          phone: mappedProfile.phone,
+          status: mappedProfile.status,
+          documents: [], // TODO: Implementar documentos más adelante
         };
+        
         setProfile(profileData);
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -147,23 +161,36 @@ export default function ProfilePage() {
       setLoading(true);
       setError(null);
       
-      // Crear el perfil directamente desde los datos del usuario autenticado
+      // Obtener datos reales del perfil usando el servicio
+      const profileResponse = await profileService.getProfile();
+      
+      if (!profileResponse.success || !profileResponse.data) {
+        throw new Error(profileResponse.error || 'No se pudo obtener el perfil');
+      }
+
+      // Mapear datos del servicio al formato del componente
+      const mappedProfile = profileService.mapProfileToSimpleFormat(
+        profileResponse.data.profile,
+        profileResponse.data.department
+      );
+
       const profileData: UserProfile = {
-        id: user.id,
-        fullName: user.name,
-        firstName: user.name.split(' ')[0] || '',
-        lastName: user.name.split(' ').slice(1).join(' ') || '',
-        email: user.email,
-        position: user.role || 'Colaborador',
-        department: user.department || 'General',
-        joinDate: '2023-03-15', // Valor por defecto
-        avatarUrl: user.avatar || '',
-        initials: generateInitials(user.email),
-        internalRecord: `COA-${user.id.slice(-4)}`,
-        phone: '+52 55 0000-0000', // Valor por defecto
-        status: 'Activo',
-        documents: [], // Sin documentos por ahora
+        id: mappedProfile.id,
+        fullName: mappedProfile.fullName,
+        firstName: mappedProfile.firstName,
+        lastName: mappedProfile.lastName,
+        email: mappedProfile.email,
+        position: mappedProfile.position,
+        department: mappedProfile.department,
+        joinDate: mappedProfile.joinDate,
+        avatarUrl: mappedProfile.avatarUrl,
+        initials: mappedProfile.initials,
+        internalRecord: mappedProfile.internalRecord,
+        phone: mappedProfile.phone,
+        status: mappedProfile.status,
+        documents: [], // TODO: Implementar documentos más adelante
       };
+      
       setProfile(profileData);
     } catch (err) {
       console.error('Error loading profile:', err);
