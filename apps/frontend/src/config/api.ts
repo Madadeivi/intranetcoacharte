@@ -189,13 +189,15 @@ export const customFetch = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
-  // LISTA DE FUNCIONES QUE NO REQUIEREN AUTHORIZATION HEADER:
+
+  // LISTA DE FUNCIONES QUE NO REQUIEREN AUTHORIZATION HEADER DE USUARIO:
   // - unified-auth: Maneja autenticación internamente via body
   // - email-service: Servicio interno, no requiere auth de usuario
   // - support-ticket: Servicio interno, no requiere auth de usuario
   // - zoho-crm: Servicio interno, no requiere auth de usuario
   // - debug-variables: Servicio de desarrollo, no requiere auth de usuario
-  const noAuthHeaderFunctions = [
+
+  const noUserAuthFunctions = [
     'unified-auth',
     'email-service', 
     'support-ticket',
@@ -216,19 +218,15 @@ export const customFetch = async <T>(
       defaultHeaders['apikey'] = supabaseAnonKey;
     }
 
-    // Para requests que requieren autenticación de usuario, 
-    // obtener el token del usuario autenticado
+
+    // Determinar si el endpoint requiere token de usuario
+    const requiresUserAuth = !noUserAuthFunctions.some(func => url.includes(func));
     
-    // Determinar si el endpoint requiere Authorization header
-    const requiresAuthHeader = !noAuthHeaderFunctions.some(func => url.includes(func));
-    
-    // Solo agregar Authorization header si:
-    // 1. Estamos en el navegador (no SSR)
-    // 2. El endpoint requiere autenticación
-    // 3. Existe un token válido en localStorage
-    if (typeof window !== 'undefined' && requiresAuthHeader) {
+    // Si requiere autenticación de usuario, agregar el token del usuario
+    if (typeof window !== 'undefined' && requiresUserAuth) {
       const userToken = localStorage.getItem('coacharte_auth_token');
       if (userToken && userToken.trim()) {
+        // Reemplazar el authorization header con el token del usuario
         defaultHeaders['Authorization'] = `Bearer ${userToken}`;
       }
     }
@@ -243,44 +241,7 @@ export const customFetch = async <T>(
 
     const data = await response.json();
 
-    // Solo debug logging en desarrollo, nunca en producción
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API Request Debug:', {
-        url,
-        status: response.status,
-        ok: response.ok,
-        dataStructure: {
-          hasSuccess: data.hasOwnProperty('success'),
-          hasData: data.hasOwnProperty('data'),
-          keys: Object.keys(data),
-        }
-      });
-    }
-
     if (!response.ok) {
-      // Solo log de errores en desarrollo para evitar exposición de datos sensibles
-      if (process.env.NODE_ENV === 'development') {
-        console.error('API Error Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          data
-        });
-      }
-      
-      // Manejo específico de errores de autorización
-      if (response.status === 401 || response.status === 403) {
-        // Si el error es de autorización y la URL no debería tener auth header,
-        // podría ser un problema de configuración
-        const shouldHaveAuth = !noAuthHeaderFunctions.some(func => url.includes(func));
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Authorization error:', {
-            url,
-            shouldHaveAuth,
-            hasAuthHeader: !!defaultHeaders['Authorization']
-          });
-        }
-      }
-      
       throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
     }
 
@@ -296,10 +257,6 @@ export const customFetch = async <T>(
       timestamp: new Date().toISOString()
     };
   } catch (error) {
-    // Solo log de errores en desarrollo para evitar exposición de información sensible
-    if (process.env.NODE_ENV === 'development') {
-      console.error('API request error:', error);
-    }
     throw error;
   }
 };
