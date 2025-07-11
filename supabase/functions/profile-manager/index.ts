@@ -83,17 +83,23 @@ function initializeSupabase(): SupabaseClient {
   return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-function extractUserIdFromToken(authHeader: string): string | null {
+async function getUserFromToken(supabase: SupabaseClient, authHeader: string): Promise<string | null> {
   try {
     if (!authHeader.startsWith('Bearer ')) {
       return null;
     }
     
     const token = authHeader.substring(7);
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || payload.user_id || null;
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      console.error('Error verifying token:', error);
+      return null;
+    }
+    
+    return user.id;
   } catch (error) {
-    console.error('Error extracting user ID from token:', error);
+    console.error('Error getting user from token:', error);
     return null;
   }
 }
@@ -222,7 +228,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const userId = extractUserIdFromToken(authHeader);
+    const userId = await getUserFromToken(supabase, authHeader);
     if (!userId) {
       return new Response(
         JSON.stringify({

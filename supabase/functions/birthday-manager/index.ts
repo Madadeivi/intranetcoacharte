@@ -42,7 +42,7 @@ serve(async (req) => {
     // Configurar el cliente de Supabase
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         global: {
           headers: { Authorization: req.headers.get('Authorization')! },
@@ -110,6 +110,7 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
     const currentMonth = currentDate.getMonth() + 1 // getMonth() devuelve 0-11, necesitamos 1-12
 
     // Consultar perfiles activos con fecha de cumpleaños en el mes actual
+    // Usar EXTRACT para filtrar por mes sin depender de años específicos
     const { data: profiles, error } = await supabaseClient
       .from('profiles')
       .select(`
@@ -122,8 +123,7 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
       `)
       .eq('status', 'active')
       .not('birth_date', 'is', null)
-      .gte('birth_date', `1900-${currentMonth.toString().padStart(2, '0')}-01`)
-      .lt('birth_date', `1900-${(currentMonth + 1).toString().padStart(2, '0')}-01`)
+      .filter('EXTRACT(MONTH FROM birth_date)', 'eq', currentMonth)
 
     if (error) {
       console.error('Error fetching current month birthdays:', error)
@@ -199,6 +199,7 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
     }
 
     // Consultar perfiles activos con fecha de cumpleaños en el mes específico
+    // Usar EXTRACT para filtrar por mes sin depender de años específicos
     const { data: profiles, error } = await supabaseClient
       .from('profiles')
       .select(`
@@ -211,8 +212,7 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
       `)
       .eq('status', 'active')
       .not('birth_date', 'is', null)
-      .gte('birth_date', `1900-${monthNum.toString().padStart(2, '0')}-01`)
-      .lt('birth_date', `1900-${(monthNum + 1).toString().padStart(2, '0')}-01`)
+      .filter('EXTRACT(MONTH FROM birth_date)', 'eq', monthNum)
 
     if (error) {
       console.error('Error fetching month birthdays:', error)

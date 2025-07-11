@@ -1,4 +1,5 @@
 import { apiConfig } from '../config/api';
+import authService from './authService';
 
 export interface Birthday {
   id: string;
@@ -29,7 +30,7 @@ export interface AllBirthdaysResponse {
  */
 const httpClient = {
   get: async (endpoint: string) => {
-    const token = localStorage.getItem('supabase.auth.token');
+    const token = authService.getToken();
     
     const response = await fetch(`${apiConfig.baseUrl}${endpoint}`, {
       method: 'GET',
@@ -139,8 +140,16 @@ export const birthdayService = {
    */
   sortByDate: (birthdays: Birthday[]): Birthday[] => {
     return [...birthdays].sort((a, b) => {
+      // Validar fechas antes de comparar
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
+      
+      // Verificar que las fechas son válidas
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+        console.warn('Invalid date format in sortByDate');
+        return 0;
+      }
+      
       return dateA.getTime() - dateB.getTime();
     });
   },
@@ -167,7 +176,18 @@ export const birthdayService = {
 
       // Filtrar cumpleañeros próximos
       const upcomingBirthdays = allBirthdays.filter(birthday => {
+        // Validar formato de fecha y crear objeto Date de forma segura
+        if (!birthday.date || typeof birthday.date !== 'string') {
+          return false;
+        }
+        
         const birthdayDate = new Date(birthday.date);
+        
+        // Verificar que la fecha es válida
+        if (isNaN(birthdayDate.getTime())) {
+          console.warn(`Invalid date format for birthday: ${birthday.date}`);
+          return false;
+        }
         const timeDiff = birthdayDate.getTime() - currentDate.getTime();
         const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
         
