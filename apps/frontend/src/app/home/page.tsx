@@ -33,6 +33,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import LockIcon from '@mui/icons-material/Lock';
 
 import {
   getCurrentMonthYear,
@@ -72,57 +73,23 @@ interface UserData {
   firstName?: string;
   lastName?: string;
   name?: string;
-  email?: string;
 }
 
 /**
- * Función utilitaria para extraer y normalizar los nombres del usuario
- * Maneja diferentes estructuras de datos del backend de manera robusta:
- * 1. Campos separados (firstName, lastName) - prioridad más alta
- * 2. Campo único 'name' que requiere parsing - fallback secundario  
- * 3. Email como nombre - fallback final
- * 
- * @param user - Objeto de usuario que puede contener diferentes campos de nombre
- * @returns Objeto con firstName, lastName, fullName y displayName normalizados
+ * Función utilitaria para extraer los nombres del usuario
+ * Los datos ya vienen procesados desde la edge function
  */
 const getUserNames = (user: UserData | null | undefined): UserNameData => {
   const firstName = user?.firstName || '';
   const lastName = user?.lastName || '';
-  const fullNameField = user?.name || '';
-  const email = user?.email || '';
+  const fullName = user?.name || `${firstName} ${lastName}`.trim();
+  const displayName = fullName || firstName || 'Usuario';
 
-  // Si tenemos campos separados (firstName, lastName), usarlos directamente
-  if (firstName || lastName) {
-    const fullName = `${firstName} ${lastName}`.trim();
-    return {
-      firstName,
-      lastName,
-      fullName,
-      displayName: fullName || firstName || 'Usuario'
-    };
-  }
-
-  // Si solo tenemos el campo 'name', parsearlo
-  if (fullNameField) {
-    const nameParts = fullNameField.split(' ').filter((part: string) => part.trim().length > 0);
-    const parsedFirstName = nameParts[0] || '';
-    const parsedLastName = nameParts.slice(1).join(' ') || '';
-    
-    return {
-      firstName: parsedFirstName,
-      lastName: parsedLastName,
-      fullName: fullNameField.trim(),
-      displayName: fullNameField.trim() || 'Usuario'
-    };
-  }
-
-  // Fallback final usando email si no hay nombres disponibles
-  const emailName = email.split('@')[0] || 'Usuario';
   return {
-    firstName: emailName,
-    lastName: '',
-    fullName: emailName,
-    displayName: emailName
+    firstName,
+    lastName,
+    fullName,
+    displayName
   };
 };
 
@@ -494,11 +461,8 @@ const HomePage: React.FC = () => {
               <AccountCircleIcon className="main-card-icon" />
               <h3>Mi Cuenta</h3>
               <p>Gestiona tu perfil, documentos y accesos</p>
-              <Link href="/profile" legacyBehavior>
-                <a onClick={(e) => {
-                  e.preventDefault();
-                  router.push('/profile');
-                }}>Mi Cuenta</a>
+              <Link href="/profile" className="main-card-button">
+                Mi Cuenta
               </Link>
             </div>
             <div className={`main-card ${DISABLED_CARDS.includes('Recursos Humanos') ? 'disabled' : ''}`}>
@@ -633,6 +597,10 @@ const HomePage: React.FC = () => {
               <SettingsIcon className="quicklink-icon" />
               <h3>Consulta Nómina</h3>
             </a>
+            <Link href="/change-password" className="quicklink">
+              <LockIcon className="quicklink-icon" />
+              <h3>Cambiar Contraseña</h3>
+            </Link>
             <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
               <EventIcon className="quicklink-icon" />
               <h3>Calendario de Eventos</h3>
