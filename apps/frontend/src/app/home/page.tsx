@@ -60,6 +60,38 @@ import {
 // Servicios
 import { birthdayService, Birthday } from '../../services/birthdayService';
 
+/**
+ * Función utilitaria para verificar si hoy es el cumpleaños del usuario
+ */
+const isUserBirthday = (user: any): boolean => {
+  // El campo puede venir como birth_date o birthday dependiendo de la fuente
+  const birthDateField = user?.birth_date || user?.birthday;
+  if (!birthDateField) return false;
+  
+  const today = new Date();
+  const birthday = new Date(birthDateField);
+  
+  return today.getMonth() === birthday.getMonth() && 
+         today.getDate() === birthday.getDate();
+};
+
+/**
+ * Función para simular que es el cumpleaños del usuario (solo para pruebas)
+ * Descomenta la línea siguiente para probar la funcionalidad
+ */
+// const isUserBirthday = (user: any): boolean => true;
+
+/**
+ * Función utilitaria para verificar si una fecha es cumpleaños hoy
+ */
+const isTodayBirthday = (birthdayDate: string): boolean => {
+  const today = new Date();
+  const birthday = new Date(birthdayDate);
+  
+  return today.getMonth() === birthday.getMonth() && 
+         today.getDate() === birthday.getDate();
+};
+
 // Interfaces y tipos
 interface SupportModalProps {
   userInfo: { firstName: string; lastName: string; email: string } | null;
@@ -134,15 +166,66 @@ const SupportModal = React.forwardRef<HTMLDivElement, SupportModalProps>(
 );
 SupportModal.displayName = 'SupportModal';
 
+// Componente para el popup de cumpleaños
+const BirthdayPopup = React.forwardRef<HTMLDivElement, { userInfo: { firstName: string; displayName: string } | null; onClose: () => void }>(
+  ({ userInfo, onClose }, ref) => {
+    const modalContentRef = useRef<HTMLDivElement>(null);
+
+    React.useImperativeHandle(ref, () => modalContentRef.current as HTMLDivElement);
+
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        if (modalContentRef.current && !modalContentRef.current.contains(event.target as Node)) {
+          onClose();
+        }
+      }
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [onClose]);
+
+    if (!userInfo) return null;
+
+    return (
+      <div className="birthday-popup-backdrop">
+        <div className="birthday-popup-content" ref={modalContentRef}>
+          <button className="birthday-popup-close-button" onClick={onClose} aria-label="Cerrar">
+            <CloseIcon />
+          </button>
+          <div className="birthday-popup-body">
+            <div className="birthday-popup-icon">
+              🎉
+            </div>
+            <h2 className="birthday-popup-title">¡Feliz Cumpleaños!</h2>
+            <p className="birthday-popup-message">
+              <strong>{userInfo.firstName || userInfo.displayName}</strong>, 
+              <br />
+              Te desea Coacharte un día lleno de alegría y bendiciones.
+            </p>
+            <div className="birthday-popup-decoration">
+              🎂🎈🎊
+            </div>
+            <button className="birthday-popup-button" onClick={onClose}>
+              ¡Gracias!
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+);
+BirthdayPopup.displayName = 'BirthdayPopup';
+
 const HomePage: React.FC = () => {
   const [searchActive, setSearchActive] = useState(false);
   const { user, logout, isLoading, error, clearError, isAuthenticated } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
+  const [isBirthdayPopupOpen, setIsBirthdayPopupOpen] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const supportModalRef = useRef<HTMLDivElement>(null);
+  const birthdayPopupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const cardCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de tarjetas
   const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de enlaces rápidos
@@ -163,6 +246,7 @@ const HomePage: React.FC = () => {
   const [birthdayCanScrollRight, setBirthdayCanScrollRight] = useState(true);
   const [currentMonthBirthdays, setCurrentMonthBirthdays] = useState<Birthday[]>([]);
   const [birthdaysLoading, setBirthdaysLoading] = useState(true);
+  const [showBirthdayPopup, setShowBirthdayPopup] = useState(false);
 
   // Cargar cumpleañeros del mes actual
   useEffect(() => {
@@ -182,6 +266,18 @@ const HomePage: React.FC = () => {
 
     fetchBirthdays();
   }, []);
+
+  // Verificar si es el cumpleaños del usuario y mostrar popup
+  useEffect(() => {
+    if (user && isUserBirthday(user) && !showBirthdayPopup) {
+      // Mostrar popup después de un pequeño delay para que se cargue la página
+      const timer = setTimeout(() => {
+        setShowBirthdayPopup(true);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, showBirthdayPopup]);
 
   const handleLogout = () => {
     logout();
@@ -425,9 +521,34 @@ const HomePage: React.FC = () => {
           >
             <span 
               id="user-avatar"
-              className="user-avatar"
+              className={`user-avatar ${isUserBirthday(user) ? 'birthday-doodle' : ''}`}
             >
               {userInitials}
+              {isUserBirthday(user) && (
+                <>
+                  <span className="birthday-doodle-icon">🎂</span>
+                  <span className="birthday-streamers">
+                    <span className="streamer streamer-1">🎊</span>
+                    <span className="streamer streamer-2">🎉</span>
+                    <span className="streamer streamer-3">🎈</span>
+                  </span>
+                  <span className="birthday-particles">
+                    <span className="birthday-particle"></span>
+                    <span className="birthday-particle"></span>
+                    <span className="birthday-particle"></span>
+                    <span className="birthday-particle"></span>
+                    <span className="birthday-particle"></span>
+                    <span className="birthday-particle"></span>
+                  </span>
+                  <span className="birthday-confetti">
+                    <span className="confetti-piece"></span>
+                    <span className="confetti-piece"></span>
+                    <span className="confetti-piece"></span>
+                    <span className="confetti-piece"></span>
+                    <span className="confetti-piece"></span>
+                  </span>
+                </>
+              )}
             </span>
             <div className="user-name-display">
               <span className="user-greeting">Hola, {displayName}</span>
@@ -836,6 +957,15 @@ const HomePage: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} Coacharte. Todos los derechos reservados.</p>
         </div>
       </footer>
+
+      {/* Modal de felicitaciones de cumpleaños */}
+      {showBirthdayPopup && user && (
+        <BirthdayPopup
+          userInfo={{ firstName: firstName || displayName, displayName }}
+          onClose={() => setShowBirthdayPopup(false)}
+          ref={birthdayPopupRef}
+        />
+      )}
 
       {/* Modal de soporte técnico */}
       {isSupportModalOpen && user && (
