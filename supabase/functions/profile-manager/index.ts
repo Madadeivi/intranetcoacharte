@@ -73,6 +73,35 @@ interface ProfileResponse {
 
 // ===== UTILIDADES =====
 
+// Inicializar la clave criptográfica una vez a nivel de módulo
+let jwtCryptoKey: CryptoKey | null = null;
+
+async function initializeJWTKey(): Promise<void> {
+  try {
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) {
+      console.error('JWT_SECRET no está configurado');
+      return;
+    }
+
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecret);
+    jwtCryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+  } catch (error) {
+    console.error('Error initializing JWT key:', error);
+    jwtCryptoKey = null;
+  }
+}
+
+// Inicializar la clave al cargar el módulo
+await initializeJWTKey();
+
 function initializeSupabase(): SupabaseClient {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -89,23 +118,11 @@ function initializeSupabase(): SupabaseClient {
  */
 async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: { sub: string } }> {
   try {
-    const jwtSecret = Deno.env.get("JWT_SECRET");
-    if (!jwtSecret) {
+    if (!jwtCryptoKey) {
       return { valid: false };
     }
 
-    // Convertir el secret string a CryptoKey
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(jwtSecret);
-    const key = await crypto.subtle.importKey(
-      "raw",
-      keyData,
-      { name: "HMAC", hash: "SHA-512" },
-      false,
-      ["sign", "verify"]
-    );
-
-    const payload = await verify(token, key) as { sub: string };
+    const payload = await verify(token, jwtCryptoKey) as { sub: string };
     return { valid: true, payload };
   } catch (error) {
     console.error('JWT verification error:', error);
