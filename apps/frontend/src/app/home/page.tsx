@@ -19,19 +19,10 @@ import SupportForm from '../../components/SupportForm';
 import NoticeDetailModal from '../../components/NoticeDetailModal/NoticeDetailModal';
 
 // Interfaces
-interface BirthdayPerson {
-  id: string;
-  name: string;
-  position: string;
-  department: string;
-  date: string;
-  avatar: string | null;
-  departmentId: string;
-}
 
 interface BirthdayData {
   success: boolean;
-  data: BirthdayPerson[];
+  data: Birthday[];
   month: number;
   year: number;
   count: number;
@@ -234,40 +225,74 @@ const BirthdaySlider: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Función para obtener los cumpleañeros
+  // Update transform when currentSlide changes
+  useEffect(() => {
+    if (sliderRef.current) {
+      sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+  }, [currentSlide]);
+
+  // Function to fetch birthday data
   const fetchBirthdayData = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // Aquí deberías usar tu endpoint real
-      const response = await fetch('/api/birthday-manager', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al obtener los cumpleañeros');
+      // Use existing birthday service with response validation
+      const response = await birthdayService.getCurrentMonthBirthdays();
+      
+      // Validate that the response has the expected structure
+      if (!response || typeof response !== 'object') {
+        throw new Error('Respuesta inválida del servidor');
       }
-
-      const data = await response.json();
-      setBirthdayData(data);
+      
+      // Validate that it has the required properties
+      if (!response.hasOwnProperty('success') || !response.hasOwnProperty('data')) {
+        throw new Error('Estructura de respuesta inválida');
+      }
+      
+      // Validate that the response is successful
+      if (!response.success) {
+        throw new Error('Error en la respuesta del servidor');
+      }
+      
+      // Validate that data is an array
+      if (!Array.isArray(response.data)) {
+        throw new Error('Datos de cumpleañeros inválidos');
+      }
+      
+      // Validate required response properties
+      if (typeof response.month !== 'number' || typeof response.year !== 'number') {
+        throw new Error('Información de fecha inválida');
+      }
+      
+      setBirthdayData(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      // Detailed error handling
+      let errorMessage = 'Error desconocido al obtener cumpleañeros';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setError(errorMessage);
       console.error('Error fetching birthday data:', err);
+      
+      // Optional: report error to monitoring service
+      // errorReportingService.reportError(err, 'BirthdaySlider.fetchBirthdayData');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Cargar datos al montar el componente
+  // Load data when component mounts
   useEffect(() => {
     fetchBirthdayData();
   }, []);
 
-  // Función para formatear la fecha
+  // Function to format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('es-ES', {
@@ -276,7 +301,7 @@ const BirthdaySlider: React.FC = () => {
     });
   };
 
-  // Función para verificar si es cumpleaños hoy
+  // Function to check if today is birthday
   const isBirthdayToday = (dateString: string) => {
     const today = new Date();
     const birthday = new Date(dateString);
@@ -284,7 +309,7 @@ const BirthdaySlider: React.FC = () => {
            today.getMonth() === birthday.getMonth();
   };
 
-  // Función para navegar en el slider
+  // Function to navigate in slider
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
   };
@@ -301,12 +326,12 @@ const BirthdaySlider: React.FC = () => {
     }
   };
 
-  // Función para obtener las iniciales del nombre
+  // Function to get name initials
   const getInitials = (name: string) => {
     return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
   };
 
-  // Si está cargando
+  // If loading
   if (isLoading) {
     return (
       <section className="birthday-slider-section">
@@ -318,7 +343,7 @@ const BirthdaySlider: React.FC = () => {
     );
   }
 
-  // Si hay error
+  // If there's an error
   if (error) {
     return (
       <section className="birthday-slider-section">
@@ -331,7 +356,7 @@ const BirthdaySlider: React.FC = () => {
     );
   }
 
-  // Si no hay datos
+  // If no data
   if (!birthdayData?.data || birthdayData.data.length === 0) {
     return (
       <section className="birthday-slider-section">
@@ -363,11 +388,10 @@ const BirthdaySlider: React.FC = () => {
         <div 
           className="birthday-slider-track" 
           ref={sliderRef}
-          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {Array.from({ length: slidesCount }).map((_, slideIndex) => (
             <div key={slideIndex} className="birthday-slider-slide">
-              {birthdays.slice(slideIndex * 3, (slideIndex + 1) * 3).map((birthday: BirthdayPerson) => (
+              {birthdays.slice(slideIndex * 3, (slideIndex + 1) * 3).map((birthday: Birthday) => (
                 <div 
                   key={birthday.id} 
                   className={`birthday-card ${isBirthdayToday(birthday.date) ? 'today' : ''}`}
