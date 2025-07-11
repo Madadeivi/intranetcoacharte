@@ -19,19 +19,10 @@ import SupportForm from '../../components/SupportForm';
 import NoticeDetailModal from '../../components/NoticeDetailModal/NoticeDetailModal';
 
 // Interfaces
-interface BirthdayPerson {
-  id: string;
-  name: string;
-  position: string;
-  department: string;
-  date: string;
-  avatar: string | null;
-  departmentId: string;
-}
 
 interface BirthdayData {
   success: boolean;
-  data: BirthdayPerson[];
+  data: Birthday[];
   month: number;
   year: number;
   count: number;
@@ -234,26 +225,22 @@ const BirthdaySlider: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
+  // Actualizar el transform cuando cambie currentSlide
+  useEffect(() => {
+    if (sliderRef.current) {
+      sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+  }, [currentSlide]);
+
   // Función para obtener los cumpleañeros
   const fetchBirthdayData = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // Aquí deberías usar tu endpoint real
-      const response = await fetch('/api/birthday-manager', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al obtener los cumpleañeros');
-      }
-
-      const data = await response.json();
-      setBirthdayData(data);
+      // Usar el servicio de cumpleañeros existente
+      const response = await birthdayService.getCurrentMonthBirthdays();
+      setBirthdayData(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
       console.error('Error fetching birthday data:', err);
@@ -363,11 +350,10 @@ const BirthdaySlider: React.FC = () => {
         <div 
           className="birthday-slider-track" 
           ref={sliderRef}
-          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {Array.from({ length: slidesCount }).map((_, slideIndex) => (
             <div key={slideIndex} className="birthday-slider-slide">
-              {birthdays.slice(slideIndex * 3, (slideIndex + 1) * 3).map((birthday: BirthdayPerson) => (
+              {birthdays.slice(slideIndex * 3, (slideIndex + 1) * 3).map((birthday: Birthday) => (
                 <div 
                   key={birthday.id} 
                   className={`birthday-card ${isBirthdayToday(birthday.date) ? 'today' : ''}`}
