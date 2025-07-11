@@ -1171,7 +1171,7 @@ code {
   height: 100%; /* Ocupar toda la altura de la celda del grid */
   width: 100%; /* Ocupar todo el ancho de la celda del grid */
   aspect-ratio: 1; /* Mantener relación cuadrada */
-  margin: 0 auto; /* Centra el círculo */
+  margin: auto; /* Centra el círculo horizontal y verticalmente */
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s;
   max-width: 60px; /* Límite máximo para no ser demasiado grande */
