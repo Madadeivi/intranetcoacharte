@@ -6,7 +6,7 @@
  * del usuario autenticado desde la edge function profile-manager.
  */
 
-import { customFetch, ApiResponse } from '../config/api';
+import { customFetch } from '../config/api';
 import { apiConfig } from '../config/api';
 
 // ===== INTERFACES =====

@@ -59,13 +59,16 @@ import {
 
 // Servicios
 import { birthdayService, Birthday } from '../../services/birthdayService';
+import { User } from '../../config/api';
 
 /**
  * Función utilitaria para verificar si hoy es el cumpleaños del usuario
  */
-const isUserBirthday = (user: any): boolean => {
+const isUserBirthday = (user: User | null): boolean => {
+  if (!user) return false;
+  
   // El campo puede venir como birth_date o birthday dependiendo de la fuente
-  const birthDateField = user?.birth_date || user?.birthday;
+  const birthDateField = user.birth_date || user.birthday;
   if (!birthDateField) return false;
   
   const today = new Date();
@@ -80,17 +83,6 @@ const isUserBirthday = (user: any): boolean => {
  * Descomenta la línea siguiente para probar la funcionalidad
  */
 // const isUserBirthday = (user: any): boolean => true;
-
-/**
- * Función utilitaria para verificar si una fecha es cumpleaños hoy
- */
-const isTodayBirthday = (birthdayDate: string): boolean => {
-  const today = new Date();
-  const birthday = new Date(birthdayDate);
-  
-  return today.getMonth() === birthday.getMonth() && 
-         today.getDate() === birthday.getDate();
-};
 
 // Interfaces y tipos
 interface SupportModalProps {
@@ -221,7 +213,6 @@ const HomePage: React.FC = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
-  const [isBirthdayPopupOpen, setIsBirthdayPopupOpen] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const supportModalRef = useRef<HTMLDivElement>(null);

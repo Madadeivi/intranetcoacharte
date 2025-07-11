@@ -8,6 +8,8 @@ export interface User {
   avatar?: string;
   created_at?: string;
   updated_at?: string;
+  birth_date?: string;
+  birthday?: string;
 }
 
 export interface Session {

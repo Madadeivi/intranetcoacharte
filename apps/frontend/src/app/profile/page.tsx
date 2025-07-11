@@ -20,7 +20,6 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../../components/Avatar';
-import { generateInitials } from '../../utils/helpers';
 import { profileService } from '../../services/profileService';
 
 // Interfaces locales para el perfil (ya no dependemos de collaboratorService)
