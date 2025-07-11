@@ -189,12 +189,14 @@ export const customFetch = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
+
   // LISTA DE FUNCIONES QUE NO REQUIEREN AUTHORIZATION HEADER DE USUARIO:
   // - unified-auth: Maneja autenticación internamente via body
   // - email-service: Servicio interno, no requiere auth de usuario
   // - support-ticket: Servicio interno, no requiere auth de usuario
   // - zoho-crm: Servicio interno, no requiere auth de usuario
   // - debug-variables: Servicio de desarrollo, no requiere auth de usuario
+
   const noUserAuthFunctions = [
     'unified-auth',
     'email-service', 
@@ -213,9 +215,9 @@ export const customFetch = async <T>(
 
     // Añadir cabeceras de autorización para Supabase Edge Functions
     if (supabaseAnonKey) {
-      defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       defaultHeaders['apikey'] = supabaseAnonKey;
     }
+
 
     // Determinar si el endpoint requiere token de usuario
     const requiresUserAuth = !noUserAuthFunctions.some(func => url.includes(func));
