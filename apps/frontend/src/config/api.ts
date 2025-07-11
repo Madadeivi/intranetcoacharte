@@ -190,7 +190,6 @@ export const customFetch = async <T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
-    // Obtener la clave anónima de Supabase para las Edge Functions
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
     const defaultHeaders: Record<string, string> = {
@@ -202,27 +201,21 @@ export const customFetch = async <T>(
       defaultHeaders['apikey'] = supabaseAnonKey;
     }
 
-    // TODO: ELIMINAR ESTOS LOGS DESPUÉS DE DEPURAR
-    console.log('🔍 [DEBUG] customFetch debug info:', {
-      url,
-      functionName: url.split('/').pop(),
-      hasSupabaseKey: !!supabaseAnonKey,
-      isClient: typeof window !== 'undefined'
-    });
-
-    // Para unified-auth, birthday-manager, y otros endpoints que usan Supabase auth
-    // usar la clave anónima de Supabase
-    if (url.includes('unified-auth') || url.includes('birthday-manager') || url.includes('profile-manager')) {
+    // Autorización específica por endpoint:
+    if (url.includes('unified-auth') || url.includes('birthday-manager')) {
+      // unified-auth y birthday-manager: usan Supabase anon key
       if (supabaseAnonKey) {
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
-        console.log('🔧 [DEBUG] Using Supabase anon key for', url);
+      }
+    } else if (url.includes('profile-manager')) {
+      // profile-manager: usa token de usuario personalizado
+      if (typeof window !== 'undefined') {
+        const userToken = localStorage.getItem('coacharte_auth_token');
+        if (userToken) {
+          defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+        }
       }
     }
-
-    console.log('📋 [DEBUG] Final headers:', {
-      ...defaultHeaders,
-      Authorization: defaultHeaders.Authorization ? defaultHeaders.Authorization.substring(0, 30) + '...' : 'none'
-    });
 
     const response = await fetch(url, {
       ...options,
@@ -234,28 +227,7 @@ export const customFetch = async <T>(
 
     const data = await response.json();
 
-    // TODO: ELIMINAR ESTOS LOGS DESPUÉS DE DEPURAR
-    console.log('📡 [DEBUG] API Response:', {
-      url,
-      status: response.status,
-      ok: response.ok,
-      statusText: response.statusText,
-      dataPreview: {
-        success: data.success,
-        hasData: !!data.data,
-        error: data.error,
-        message: data.message,
-        keys: Object.keys(data)
-      }
-    });
-
     if (!response.ok) {
-      console.error('💥 [DEBUG] API Error Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        url,
-        data
-      });
       throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
     }
 

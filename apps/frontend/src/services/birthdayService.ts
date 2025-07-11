@@ -1,5 +1,4 @@
-import { apiConfig } from '../config/api';
-import authService from './authService';
+import { apiConfig, customFetch } from '../config/api';
 
 export interface Birthday {
   id: string;
@@ -26,29 +25,6 @@ export interface AllBirthdaysResponse {
 }
 
 /**
- * Cliente HTTP simple para hacer peticiones a las funciones edge
- */
-const httpClient = {
-  get: async (endpoint: string) => {
-    const token = authService.getToken();
-    
-    const response = await fetch(`${apiConfig.baseUrl}${endpoint}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  }
-};
-
-/**
  * Servicio para gestionar cumpleañeros
  */
 export const birthdayService = {
@@ -57,8 +33,19 @@ export const birthdayService = {
    */
   getCurrentMonthBirthdays: async (): Promise<BirthdayResponse> => {
     try {
-      const response = await httpClient.get('/birthday-manager?action=get-current-month');
-      return response;
+      const response = await customFetch<BirthdayResponse>(
+        `${apiConfig.endpoints.birthday.getCurrentMonth}?action=get-current-month`,
+        {
+          method: 'GET',
+        }
+      );
+      
+      // customFetch envuelve la respuesta en ApiResponse
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Error al obtener cumpleañeros');
+      }
     } catch (error) {
       console.error('Error fetching current month birthdays:', error);
       throw error;
@@ -79,8 +66,19 @@ export const birthdayService = {
         params.append('year', year.toString());
       }
 
-      const response = await httpClient.get(`/birthday-manager?${params.toString()}`);
-      return response;
+      const response = await customFetch<BirthdayResponse>(
+        `${apiConfig.endpoints.birthday.getMonth}?${params.toString()}`,
+        {
+          method: 'GET',
+        }
+      );
+      
+      // customFetch envuelve la respuesta en ApiResponse
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Error al obtener cumpleañeros');
+      }
     } catch (error) {
       console.error('Error fetching month birthdays:', error);
       throw error;
@@ -92,8 +90,19 @@ export const birthdayService = {
    */
   getAllBirthdays: async (): Promise<AllBirthdaysResponse> => {
     try {
-      const response = await httpClient.get('/birthday-manager?action=get-all');
-      return response;
+      const response = await customFetch<AllBirthdaysResponse>(
+        `${apiConfig.endpoints.birthday.getAll}?action=get-all`,
+        {
+          method: 'GET',
+        }
+      );
+      
+      // customFetch envuelve la respuesta en ApiResponse
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Error al obtener cumpleañeros');
+      }
     } catch (error) {
       console.error('Error fetching all birthdays:', error);
       throw error;
