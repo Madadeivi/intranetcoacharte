@@ -630,12 +630,17 @@ const HomePage: React.FC = () => {
         <div className="calendar-column">
           <h2>Calendario</h2>
           <div className="calendar-container">
-            <Calendar 
+            <Calendar
+              className="custom-calendar"
               tileClassName={tileClassName}
               locale="es-MX"
+              nextLabel={<ArrowForwardIosIcon />}
+              prevLabel={<ArrowBackIosNewIcon />}
+              next2Label={null}
+              prev2Label={null}
+              formatShortWeekday={(locale, date) => date.toLocaleDateString(locale, { weekday: 'narrow' })}
             />
           </div>
-          <p className="calendar-month-year">{currentMonthYearText}</p>
         </div>
         <div className="events-column">
           <h2>Próximos Eventos</h2>

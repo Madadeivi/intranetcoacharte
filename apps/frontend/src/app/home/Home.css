@@ -521,6 +521,7 @@ code {
   color: var(--color-text-title);
   font-size: var(--text-base);
   margin-bottom: var(--space-1);
+  padding: 0;
 }
 
 .user-info .user-email { /* Email dentro del desplegable */
@@ -529,8 +530,16 @@ code {
   color: var(--color-text-secondary);
 }
 
-.user-dropdown a,
-.user-dropdown button { /* Estilos para items del desplegable */
+/* Divisor entre secciones del dropdown */
+.user-dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-3) 0;
+}
+
+/* Enlaces y botones dentro del dropdown */
+.user-dropdown-menu a,
+.user-dropdown-menu button {
   display: block;
   width: 100%;
   padding: var(--space-3) var(--space-4); 
@@ -546,15 +555,233 @@ code {
   margin-bottom: var(--space-1); /* Espacio entre items */
 }
 
-.user-dropdown a:last-child,
-.user-dropdown button:last-child {
-  margin-bottom: 0; /* Sin margen para el último item */
-}
-
 .user-dropdown a:hover,
 .user-dropdown button:hover {
-  background-color: var(--color-primary-5); 
-  color: var(--color-primary-100); 
+  background-color: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
+.user-dropdown a:last-child,
+.user-dropdown button:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.user-dropdown-item {
+  background: var(--color-primary-10);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-title);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown-item:hover {
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+}
+
+/* Estilos para el botón del avatar y el avatar mismo si es un div */
+.user-avatar-button {
+  width: 2.5rem; 
+  height: 2.5rem; 
+  border-radius: 50%;
+  background-color: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600; 
+  font-size: var(--text-sm); /* Tamaño de las iniciales */
+  cursor: pointer;
+  border: none; /* Quitar borde si es un botón */
+  padding: 0; /* Quitar padding si es un botón */
+  overflow: hidden; /* Para asegurar que el contenido no se salga del círculo */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.user-avatar-button:hover {
+  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
+  box-shadow: var(--shadow-md);
+}
+
+/* Contenedor del nombre de usuario y flecha (si se usa) */
+.user-details {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer; /* Si todo el bloque es clickeable */
+}
+
+.user-name { /* Estilo para el nombre del usuario al lado del avatar */
+  font-weight: 500; /* Geometria-Medium */
+  color: var(--color-text-title);
+  font-size: var(--text-sm);
+  display: none; /* Oculto por defecto, se muestra en desktop via media query */
+}
+
+/* --- Estilos para React-Calendar --- */
+
+/* Contenedor principal del calendario */
+.calendar-container {
+  width: 100%;
+  height: 100%;
+}
+
+.custom-calendar {
+  width: 100%;
+  height: 100%;
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
+  font-family: inherit;
+}
+
+/* Navegación (flechas y título) */
+.custom-calendar .react-calendar__navigation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1em;
+  padding: 0.5em 0;
+}
+
+.custom-calendar .react-calendar__navigation button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #333;
+  padding: 0.5em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.custom-calendar .react-calendar__navigation button:hover {
+  background-color: #f2f2f2;
+}
+
+.custom-calendar .react-calendar__navigation button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.custom-calendar .react-calendar__navigation__label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  flex-grow: 1;
+  text-align: center;
+}
+
+/* Vista del mes */
+.custom-calendar .react-calendar__viewContainer {
+  height: 100%;
+}
+
+.custom-calendar .react-calendar__month-view {
+  height: 100%;
+}
+
+/* Días de la semana */
+.custom-calendar .react-calendar__month-view__weekdays {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.5em;
+}
+
+.custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none; /* Quita el subrayado */
+  font-size: 0.85em;
+}
+
+/* Celdas de los días */
+.custom-calendar .react-calendar__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  height: 42px; /* Altura fija */
+  width: 42px;  /* Ancho fijo */
+  margin: 0 auto; /* Centra el círculo */
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.custom-calendar .react-calendar__tile:hover {
+  background-color: #e9ecef;
+}
+
+/* Día actual */
+.custom-calendar .react-calendar__tile--now {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Día seleccionado */
+.custom-calendar .react-calendar__tile--active {
+  background-color: var(--color-primary-100); /* Color primario de Coacharte */
+  color: white;
+  font-weight: bold;
+}
+
+.custom-calendar .react-calendar__tile--active:hover {
+  background-color: var(--color-primary-110);
+}
+
+/* Días fuera del mes actual */
+.custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  color: #b0b0b0;
+}
+
+/* Indicador de evento */
+.custom-calendar .event-day {
+  position: relative;
+}
+
+.custom-calendar .event-day::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-accent-100); /* Un color de acento */
+}
+
+/* Responsividad */
+@media (max-width: 992px) {
+  .home-calendar-events {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-calendar .react-calendar__tile {
+    height: 38px;
+    width: 38px;
+  }
 }
 
 /* ==============================================
@@ -1238,19 +1465,10 @@ code {
   width: 100%;
 }
 
-.quicklinks-grid {
-  display: flex;
-  flex-direction: row;
+.quick-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--space-4);
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: var(--space-1);
-}
-
-.quicklinks-grid::-webkit-scrollbar {
-  display: none;
 }
 
 .quicklink {
@@ -2184,98 +2402,10 @@ code {
   color: var(--color-text-secondary);
   background: var(--color-background-light);
   border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  font-family: 'Geometria', Arial, sans-serif;
-}
-
-.react-calendar__tile:enabled:hover {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-  border-color: var(--color-primary-50);
-}
-
-.react-calendar__tile:enabled:focus {
-  background: var(--color-primary-100);
-  color: white;
-  outline: none;
-  border-color: var(--color-primary-100);
-}
-
-.react-calendar__tile--now {
-  font-weight: 600;
-  color: var(--color-primary-100);
-  background: var(--color-primary-10);
-  border-color: var(--color-primary-100);
-  position: relative;
-}
-
-.react-calendar__tile--now::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 4px;
-  height: 4px;
-  background: var(--color-primary-100);
-  border-radius: 50%;
-}
-
-.react-calendar__tile--active {
-  background: var(--color-primary-100);
-  color: white;
-  font-weight: 600;
-  border-color: var(--color-primary-100);
-}
-
-.react-calendar__tile--active:enabled:hover {
-  background: var(--color-primary-110);
-}
-
-/* Días con eventos - Simplificado */
-.event-day {
-  position: relative;
-  font-weight: 600;
-  color: var(--color-primary-100);
-  background: var(--color-primary-5);
-  border-color: var(--color-primary-50);
-}
-
-.event-day::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background: var(--color-primary-100);
-  border-radius: 50%;
-}
-
-.event-day:hover::after {
-  background: white;
-}
-
-.react-calendar__tile {
-  max-width: initial;
-  padding: var(--space-2);
-  text-align: center;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: var(--color-background-light);
-  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 2.5rem; /* Altura mínima consistente */
+  min-height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
