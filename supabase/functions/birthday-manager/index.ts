@@ -2,9 +2,6 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
-console.log('Birthday Manager function started')
-
-// Tipos de datos
 interface Profile {
   id: string
   full_name: string | null
@@ -28,19 +25,15 @@ interface Birthday {
   departmentId: string | null
 }
 
-// Usar any para simplificar los tipos de Supabase
 // deno-lint-ignore no-explicit-any
 type SupabaseClient = any
 
 serve(async (req) => {
-  // Manejar solicitudes OPTIONS para CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Configurar el cliente de Supabase con SERVICE_ROLE_KEY
-    // Esto bypasa RLS y no requiere autenticación de usuario
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -51,9 +44,7 @@ serve(async (req) => {
           detectSessionInUrl: false
         },
         global: {
-          headers: {
-            // No incluir Authorization del request para evitar conflictos
-          }
+          headers: {}
         }
       }
     )
@@ -115,10 +106,8 @@ serve(async (req) => {
 async function getCurrentMonthBirthdays(supabaseClient: any) {
   try {
     const currentDate = new Date()
-    const currentMonth = currentDate.getMonth() + 1 // getMonth() devuelve 0-11, necesitamos 1-12
+    const currentMonth = currentDate.getMonth() + 1
 
-    // Consultar perfiles activos con fecha de cumpleaños en el mes actual
-    console.log('Fetching birthdays for month:', currentMonth)
     const { data: profiles, error } = await supabaseClient
       .from('profiles')
       .select(`
@@ -132,23 +121,16 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
       .eq('status', 'active')
       .not('birth_date', 'is', null)
     
-    console.log('Query result:', { profiles: profiles?.length, error })
-
     if (error) {
-      console.error('Error fetching current month birthdays:', error)
       throw error
     }
 
-    // Filtrar por mes en JavaScript ya que el SQL filter puede estar causando problemas
     const filteredProfiles = profiles?.filter((profile: Record<string, unknown>) => {
       if (!profile.birth_date) return false
       const birthDate = new Date(String(profile.birth_date))
       return birthDate.getMonth() + 1 === currentMonth
     }) || []
 
-    console.log('Filtered profiles:', filteredProfiles.length)
-
-    // Obtener información de departamentos por separado
     // deno-lint-ignore no-explicit-any
     const departmentIds = filteredProfiles?.map((p: any) => p.department_id).filter(Boolean) || []
     const { data: departments } = await supabaseClient
@@ -161,7 +143,6 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
       departments?.map((dept: any) => [dept.id, dept.name]) || []
     )
 
-    // Transformar los datos al formato esperado por el frontend
     const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => ({
       id: String(profile.id),
       name: String(profile.full_name || 'Sin nombre'),
@@ -172,7 +153,6 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
       departmentId: profile.department_id ? String(profile.department_id) : null
     })) || []
 
-    // Ordenar por fecha de cumpleaños (día del mes)
     birthdays.sort((a: Birthday, b: Birthday) => {
       const dayA = new Date(a.date).getDate()
       const dayB = new Date(b.date).getDate()

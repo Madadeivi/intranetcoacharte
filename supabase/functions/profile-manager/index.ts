@@ -47,7 +47,6 @@ interface ProfileData {
   bank_card_number?: string;
   zoho_record_id?: string;
   internal_registry?: string;
-  tags?: string;
   locked: boolean;
   last_login_at?: string;
   initials?: string;
@@ -80,7 +79,6 @@ async function initializeJWTKey(): Promise<void> {
   try {
     const jwtSecret = Deno.env.get("JWT_SECRET");
     if (!jwtSecret) {
-      console.error('JWT_SECRET no está configurado');
       return;
     }
 
@@ -94,7 +92,6 @@ async function initializeJWTKey(): Promise<void> {
       ["sign", "verify"]
     );
   } catch (error) {
-    console.error('Error initializing JWT key:', error);
     jwtCryptoKey = null;
   }
 }
@@ -117,15 +114,13 @@ function initializeSupabase(): SupabaseClient {
       detectSessionInUrl: false
     },
     global: {
-      headers: {
-        // No incluir Authorization del request para evitar conflictos con JWT personalizado
-      }
+      headers: {}
     }
   });
 }
 
 /**
- * Verificar JWT personalizado (mismo algoritmo que unified-auth)
+ * Verificar JWT personalizado
  */
 async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: { sub: string } }> {
   try {
@@ -136,7 +131,6 @@ async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload
     const payload = await verify(token, jwtCryptoKey) as { sub: string };
     return { valid: true, payload };
   } catch (error) {
-    console.error('JWT verification error:', error);
     return { valid: false };
   }
 }
@@ -156,7 +150,6 @@ async function getUserFromToken(authHeader: string): Promise<string | null> {
     
     return null;
   } catch (error) {
-    console.error('Error verifying token:', error);
     return null;
   }
 }
@@ -165,7 +158,6 @@ async function getUserFromToken(authHeader: string): Promise<string | null> {
 
 async function getProfile(supabase: SupabaseClient, userId: string): Promise<ProfileResponse> {
   try {
-    // Obtener el perfil del usuario con información del departamento
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select(`
@@ -200,23 +192,16 @@ async function getProfile(supabase: SupabaseClient, userId: string): Promise<Pro
         bank_card_number,
         zoho_record_id,
         internal_registry,
-        tags,
         locked,
         last_login_at,
         initials,
         created_at,
-        updated_at,
-        departments (
-          id,
-          name,
-          description
-        )
+        updated_at
       `)
       .eq('id', userId)
       .single();
 
     if (profileError) {
-      console.error('Error fetching profile:', profileError);
       return {
         success: false,
         error: 'Profile not found',
@@ -232,25 +217,29 @@ async function getProfile(supabase: SupabaseClient, userId: string): Promise<Pro
       };
     }
 
-    // Extraer información del departamento
-    const department = Array.isArray(profileData.departments) 
-      ? profileData.departments[0] as DepartmentData | null
-      : profileData.departments as DepartmentData | null;
-    
-    // Remover la información anidada del departamento del perfil
-    const { departments: _departments, ...profile } = profileData;
+    let department: DepartmentData | undefined;
+    if (profileData.department_id) {
+      const { data: departmentData, error: departmentError } = await supabase
+        .from('departments')
+        .select('id, name, description')
+        .eq('id', profileData.department_id)
+        .single();
+
+      if (!departmentError && departmentData) {
+        department = departmentData;
+      }
+    }
     
     return {
       success: true,
       data: {
-        profile: profile as ProfileData,
+        profile: profileData as ProfileData,
         department: department || undefined
       },
       message: 'Perfil obtenido exitosamente'
     };
     
   } catch (error) {
-    console.error('Error in getProfile:', error);
     return {
       success: false,
       error: 'Internal server error',
@@ -268,15 +257,14 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
+    const userTokenHeader = req.headers.get('X-User-Token');
     
-    if (!authHeader) {
-      console.error('Missing Authorization header');
+    if (!userTokenHeader) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Authorization header missing',
-          message: 'Token de autorización requerido'
+          error: 'User token missing',
+          message: 'Token de usuario requerido'
         }),
         { 
           status: 401, 
@@ -285,9 +273,8 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const userId = await getUserFromToken(authHeader);
-    if (!userId) {
-      console.error('Token validation failed');
+    const { valid, payload } = await verifyCustomJWT(userTokenHeader);
+    if (!valid || !payload?.sub) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -301,9 +288,9 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
+    const userId = payload.sub;
     const supabase = initializeSupabase();
 
-    // Solo soportamos GET para obtener el perfil
     if (req.method === 'GET') {
       const result = await getProfile(supabase, userId);
       
@@ -329,8 +316,6 @@ serve(async (req: Request): Promise<Response> => {
     );
 
   } catch (error) {
-    console.error('Error in profile-manager:', error);
-    
     return new Response(
       JSON.stringify({
         success: false,

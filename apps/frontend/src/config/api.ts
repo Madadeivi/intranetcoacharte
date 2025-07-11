@@ -207,25 +207,16 @@ export const customFetch = async <T>(
       if (supabaseAnonKey) {
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
-    } else if (url.includes('birthday-manager')) {
-      // birthday-manager: necesita JWT de usuario válido
-      if (typeof window !== 'undefined') {
-        const userToken = localStorage.getItem('coacharte_auth_token');
-        if (userToken) {
-          defaultHeaders['Authorization'] = `Bearer ${userToken}`;
-        } else {
-          // Fallback al anon key si no hay token de usuario
-          if (supabaseAnonKey) {
-            defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
-          }
-        }
+    } else if (url.includes('birthday-manager') || url.includes('profile-manager')) {
+      // birthday-manager y profile-manager: usan anon key para bypassing JWT validation
+      if (supabaseAnonKey) {
+        defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
-    } else if (url.includes('profile-manager')) {
-      // profile-manager: usa token de usuario personalizado
-      if (typeof window !== 'undefined') {
+      // Agregar el JWT personalizado como header personalizado para profile-manager
+      if (url.includes('profile-manager') && typeof window !== 'undefined') {
         const userToken = localStorage.getItem('coacharte_auth_token');
         if (userToken) {
-          defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+          defaultHeaders['X-User-Token'] = userToken;
         }
       }
     }
