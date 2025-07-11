@@ -238,12 +238,50 @@ const BirthdaySlider: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
-      // Usar el servicio de cumpleañeros existente
+      // Usar el servicio de cumpleañeros existente con validación de respuesta
       const response = await birthdayService.getCurrentMonthBirthdays();
+      
+      // Validar que la respuesta tenga la estructura esperada
+      if (!response || typeof response !== 'object') {
+        throw new Error('Respuesta inválida del servidor');
+      }
+      
+      // Validar que tenga las propiedades requeridas
+      if (!response.hasOwnProperty('success') || !response.hasOwnProperty('data')) {
+        throw new Error('Estructura de respuesta inválida');
+      }
+      
+      // Validar que la respuesta sea exitosa
+      if (!response.success) {
+        throw new Error('Error en la respuesta del servidor');
+      }
+      
+      // Validar que data sea un array
+      if (!Array.isArray(response.data)) {
+        throw new Error('Datos de cumpleañeros inválidos');
+      }
+      
+      // Validar las propiedades requeridas de la respuesta
+      if (typeof response.month !== 'number' || typeof response.year !== 'number') {
+        throw new Error('Información de fecha inválida');
+      }
+      
       setBirthdayData(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      // Manejo detallado de errores
+      let errorMessage = 'Error desconocido al obtener cumpleañeros';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setError(errorMessage);
       console.error('Error fetching birthday data:', err);
+      
+      // Opcional: reportar el error a un servicio de monitoreo
+      // errorReportingService.reportError(err, 'BirthdaySlider.fetchBirthdayData');
     } finally {
       setIsLoading(false);
     }
