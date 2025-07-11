@@ -239,29 +239,7 @@ export const customFetch = async <T>(
 
     const data = await response.json();
 
-    // Solo debug logging en desarrollo, nunca en producción
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API Request Debug:', {
-        url,
-        status: response.status,
-        ok: response.ok,
-        dataStructure: {
-          hasSuccess: data.hasOwnProperty('success'),
-          hasData: data.hasOwnProperty('data'),
-          keys: Object.keys(data),
-        }
-      });
-    }
-
     if (!response.ok) {
-      // Solo log de errores en desarrollo para evitar exposición de datos sensibles
-      if (process.env.NODE_ENV === 'development') {
-        console.error('API Error Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          data
-        });
-      }
       throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
     }
 
@@ -277,10 +255,6 @@ export const customFetch = async <T>(
       timestamp: new Date().toISOString()
     };
   } catch (error) {
-    // Solo log de errores en desarrollo para evitar exposición de información sensible
-    if (process.env.NODE_ENV === 'development') {
-      console.error('API request error:', error);
-    }
     throw error;
   }
 };
