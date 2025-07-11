@@ -189,22 +189,6 @@ export const customFetch = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
-
-  // LISTA DE FUNCIONES QUE NO REQUIEREN AUTHORIZATION HEADER DE USUARIO:
-  // - unified-auth: Maneja autenticación internamente via body
-  // - email-service: Servicio interno, no requiere auth de usuario
-  // - support-ticket: Servicio interno, no requiere auth de usuario
-  // - zoho-crm: Servicio interno, no requiere auth de usuario
-  // - debug-variables: Servicio de desarrollo, no requiere auth de usuario
-
-  const noUserAuthFunctions = [
-    'unified-auth',
-    'email-service', 
-    'support-ticket',
-    'zoho-crm',
-    'debug-variables'
-  ];
-
   try {
     // Obtener la clave anónima de Supabase para las Edge Functions
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -213,40 +197,28 @@ export const customFetch = async <T>(
       'Content-Type': 'application/json',
     };
 
-    // Añadir cabeceras de autorización para Supabase Edge Functions
+    // Siempre agregar la clave de Supabase
     if (supabaseAnonKey) {
-      defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       defaultHeaders['apikey'] = supabaseAnonKey;
     }
 
-
-    // Determinar si el endpoint requiere token de usuario
-    const requiresUserAuth = !noUserAuthFunctions.some(func => url.includes(func));
-    
     // TODO: ELIMINAR ESTOS LOGS DESPUÉS DE DEPURAR
     console.log('🔍 [DEBUG] customFetch debug info:', {
       url,
-      requiresUserAuth,
       functionName: url.split('/').pop(),
-      noUserAuthFunctions,
       hasSupabaseKey: !!supabaseAnonKey,
       isClient: typeof window !== 'undefined'
     });
-    
-    // Si requiere autenticación de usuario, agregar el token del usuario
-    if (typeof window !== 'undefined' && requiresUserAuth) {
-      const userToken = localStorage.getItem('coacharte_auth_token');
-      if (userToken && userToken.trim()) {
-        // Reemplazar el authorization header con el token del usuario
-        defaultHeaders['Authorization'] = `Bearer ${userToken}`;
-        console.log('🔑 [DEBUG] Using user token for', url, 'token:', userToken.substring(0, 20) + '...');
-      } else {
-        console.log('⚠️ [DEBUG] No user token found for', url);
+
+    // Para unified-auth, birthday-manager, y otros endpoints que usan Supabase auth
+    // usar la clave anónima de Supabase
+    if (url.includes('unified-auth') || url.includes('birthday-manager') || url.includes('profile-manager')) {
+      if (supabaseAnonKey) {
+        defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
+        console.log('🔧 [DEBUG] Using Supabase anon key for', url);
       }
-    } else {
-      console.log('🔧 [DEBUG] Using Supabase anon key for', url);
     }
-    
+
     console.log('📋 [DEBUG] Final headers:', {
       ...defaultHeaders,
       Authorization: defaultHeaders.Authorization ? defaultHeaders.Authorization.substring(0, 30) + '...' : 'none'
