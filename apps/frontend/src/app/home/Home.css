@@ -789,28 +789,129 @@ code {
   color: var(--color-text-on-primary);
 }
 
-/* Estilos para el botón del avatar y el avatar mismo si es un div */
-.user-avatar-button {
-  width: 2.5rem; 
-  height: 2.5rem; 
-  border-radius: 50%;
-  background-color: var(--color-primary-100);
-  color: var(--color-text-on-primary);
+/* Contenedor del nombre de usuario y flecha (si se usa) */
+.user-details {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: 600; 
-  font-size: var(--text-sm); /* Tamaño de las iniciales */
-  cursor: pointer;
-  border: none; /* Quitar borde si es un botón */
-  padding: 0; /* Quitar padding si es un botón */
-  overflow: hidden; /* Para asegurar que el contenido no se salga del círculo */
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  gap: var(--space-2);
+  cursor: pointer; /* Si todo el bloque es clickeable */
 }
 
-.user-avatar-button:hover {
-  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
-  box-shadow: var(--shadow-md);
+.user-name { /* Estilo para el nombre del usuario al lado del avatar */
+  font-weight: 500; /* Geometria-Medium */
+  color: var(--color-text-title);
+  font-size: var(--text-sm);
+  display: none; /* Oculto por defecto, se muestra en desktop via media query */
+}
+
+/* Menú desplegable del usuario */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2)); /* Posicionarlo debajo del avatar con un pequeño espacio */
+  right: 0;
+  background-color: var(--color-background-light);
+  border-radius: var(--radius-lg); 
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2); 
+  z-index: 110; /* Encima de otros elementos como el header */
+  min-width: 200px; /* Ancho mínimo del desplegable */
+  border: 1px solid var(--color-border-light); 
+  opacity: 0; /* Inicialmente oculto para animación */
+  transform: translateY(-10px); /* Posición inicial para animación */
+  animation: fadeInDown 0.2s ease-out forwards; /* Animación de entrada */
+}
+
+@keyframes fadeInDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-info { /* Sección de información del usuario dentro del desplegable */
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--space-2);
+}
+
+.user-info .user-name { /* Nombre dentro del desplegable */
+  display: block; /* Asegurar que se muestre */
+  font-weight: 600; /* Geometria-Bold o Semibold */
+  color: var(--color-text-title);
+  font-size: var(--text-base);
+  margin-bottom: var(--space-1);
+  padding: 0;
+}
+
+.user-info .user-email { /* Email dentro del desplegable */
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Divisor entre secciones del dropdown */
+.user-dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-3) 0;
+}
+
+/* Enlaces y botones dentro del dropdown */
+.user-dropdown-menu a,
+.user-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4); 
+  text-align: left;
+  background: transparent; /* Fondo transparente por defecto */
+  border: none;
+  color: var(--color-text-title); 
+  font-size: var(--text-sm);
+  font-family: 'Geometria', Arial, sans-serif; /* Fuente base */
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease; 
+  border-radius: var(--radius-md); 
+  margin-bottom: var(--space-1); /* Espacio entre items */
+}
+
+.user-dropdown a:hover,
+.user-dropdown button:hover {
+  background-color: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
+.user-dropdown a:last-child,
+.user-dropdown button:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.user-dropdown-item {
+  background: var(--color-primary-10);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-title);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown-item:hover {
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
 }
 
 /* Contenedor del nombre de usuario y flecha (si se usa) */
@@ -938,192 +1039,154 @@ code {
   color: var(--color-text-on-primary);
 }
 
-/* Estilos para el botón del avatar y el avatar mismo si es un div */
-.user-avatar-button {
-  width: 2.5rem; 
-  height: 2.5rem; 
-  border-radius: 50%;
-  background-color: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600; 
-  font-size: var(--text-sm); /* Tamaño de las iniciales */
-  cursor: pointer;
-  border: none; /* Quitar borde si es un botón */
-  padding: 0; /* Quitar padding si es un botón */
-  overflow: hidden; /* Para asegurar que el contenido no se salga del círculo */
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
 
-.user-avatar-button:hover {
-  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
-  box-shadow: var(--shadow-md);
-}
-
-/* Contenedor del nombre de usuario y flecha (si se usa) */
-.user-details {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer; /* Si todo el bloque es clickeable */
-}
-
-.user-name { /* Estilo para el nombre del usuario al lado del avatar */
-  font-weight: 500; /* Geometria-Medium */
-  color: var(--color-text-title);
-  font-size: var(--text-sm);
-  display: none; /* Oculto por defecto, se muestra en desktop via media query */
-}
-
-/* Menú desplegable del usuario */
-.user-dropdown {
-  position: absolute;
-  top: calc(100% + var(--space-2)); /* Posicionarlo debajo del avatar con un pequeño espacio */
-  right: 0;
-  background-color: var(--color-background-light);
-  border-radius: var(--radius-lg); 
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-2); 
-  z-index: 110; /* Encima de otros elementos como el header */
-  min-width: 200px; /* Ancho mínimo del desplegable */
-  border: 1px solid var(--color-border-light); 
-  opacity: 0; /* Inicialmente oculto para animación */
-  transform: translateY(-10px); /* Posición inicial para animación */
-  animation: fadeInDown 0.2s ease-out forwards; /* Animación de entrada */
-}
-
-@keyframes fadeInDown {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.user-info { /* Sección de información del usuario dentro del desplegable */
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-light);
-  margin-bottom: var(--space-2);
-}
-
-.user-info .user-name { /* Nombre dentro del desplegable */
-  display: block; /* Asegurar que se muestre */
-  font-weight: 600; /* Geometria-Bold o Semibold */
-  color: var(--color-text-title);
-  font-size: var(--text-base);
-  margin-bottom: var(--space-1);
-  padding: 0;
-}
-
-.user-info .user-email { /* Email dentro del desplegable */
-  display: block;
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-}
-
-/* Divisor entre secciones del dropdown */
-.user-dropdown-divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: var(--space-3) 0;
-}
-
-/* Enlaces y botones dentro del dropdown */
-.user-dropdown-menu a,
-.user-dropdown-menu button {
-  display: block;
+/* ==============================================
+   FOOTER SECTION
+   ============================================== */
+.home-footer {
+  margin-top: auto; /* Para pegarlo al fondo con flexbox */
+  background: var(--color-dark-100);
+  color: white;
+  padding: var(--space-6) var(--space-4) var(--space-4); /* Menor padding para reducir altura */
   width: 100%;
-  padding: var(--space-3) var(--space-4); 
-  text-align: left;
-  background: transparent; /* Fondo transparente por defecto */
-  border: none;
-  color: var(--color-text-title); 
-  font-size: var(--text-sm);
-  font-family: 'Geometria', Arial, sans-serif; /* Fuente base */
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease; 
-  border-radius: var(--radius-md); 
-  margin-bottom: var(--space-1); /* Espacio entre items */
+  box-sizing: border-box;
 }
 
-.user-dropdown a:hover,
-.user-dropdown button:hover {
-  background-color: var(--color-primary-5);
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+/* Sección de logo y slogan */
+.footer-brand-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.footer-logo {
+  height: 2rem; /* Menor altura para reducir espacio */
+  width: auto;
+}
+
+.footer-slogan {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  text-align: left;
+  margin: 0;
+}
+
+/* Sección central con las 3 columnas */
+.footer-links-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.footer-col h4 {
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  color: white;
+  font-size: var(--text-sm); /* Menor tamaño para reducir altura */
+  margin: 0 0 var(--space-2) 0; /* Menor margin bottom */
+  text-align: center;
+}
+
+.footer-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1); /* Menor gap para reducir altura */
+}
+
+.footer-links-list a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: var(--text-xs); /* Menor tamaño para reducir altura */
+  transition: color 0.2s ease-in-out;
+}
+
+.footer-links-list a:hover {
+  color: white;
+}
+
+.footer-social-icons {
+  display: flex;
+  gap: var(--space-2); /* Menor gap */
+  justify-content: center;
+  margin-top: var(--space-2); /* Menor margin */
+}
+
+.footer-social-icon {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.2rem; /* Menor tamaño */
+  transition: color 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.footer-social-icon:hover {
   color: var(--color-primary-100);
 }
 
-.user-dropdown a:last-child,
-.user-dropdown button:last-child {
-  margin-bottom: 0;
+.footer-copy {
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: var(--space-3);
+  margin-top: var(--space-4);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: var(--text-xs);
 }
 
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-0.5rem) scale(0.95);
+.footer-copy p {
+  margin: 0;
+}
+
+/* Media queries específicas para footer */
+@media (min-width: 920px) {
+  .footer-content {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: var(--space-8) !important;
+    padding: 0 var(--space-4) !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+  
+  .footer-brand-section {
+    flex: 0 0 auto !important;
+    max-width: 250px !important;
   }
-}
-
-.user-dropdown-item {
-  background: var(--color-primary-10);
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  color: var(--color-text-title);
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.user-dropdown-item:hover {
-  background: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-}
-
-/* Estilos para el botón del avatar y el avatar mismo si es un div */
-.user-avatar-button {
-  width: 2.5rem; 
-  height: 2.5rem; 
-  border-radius: 50%;
-  background-color: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600; 
-  font-size: var(--text-sm); /* Tamaño de las iniciales */
-  cursor: pointer;
-  border: none; /* Quitar borde si es un botón */
-  padding: 0; /* Quitar padding si es un botón */
-  overflow: hidden; /* Para asegurar que el contenido no se salga del círculo */
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.user-avatar-button:hover {
-  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
-  box-shadow: var(--shadow-md);
-}
-
-/* Contenedor del nombre de usuario y flecha (si se usa) */
-.user-details {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer; /* Si todo el bloque es clickeable */
-}
-
-.user-name { /* Estilo para el nombre del usuario al lado del avatar */
-  font-weight: 500; /* Geometria-Medium */
-  color: var(--color-text-title);
-  font-size: var(--text-sm);
-  display: none; /* Oculto por defecto, se muestra en desktop via media query */
+  
+  .footer-links-section {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-evenly !important;
+    gap: var(--space-6) !important;
+    max-width: none !important;
+    grid-template-columns: none !important;
+  }
+  
+  .footer-col {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  
+  .home-footer .footer-social-icons {
+    gap: var(--space-3) !important;
+  }
+  
+  .home-footer .footer-social-icon {
+    font-size: 1.3rem !important;
+  }
+  
+  .home-footer .footer-copy {
+    margin-top: var(--space-4) !important;
+  }
 }
 
 /* --- Estilos para React-Calendar --- */
@@ -2339,7 +2402,7 @@ code {
   }
   
   .home-welcome h1 {
-    font-size: var(--text-3xl);
+       font-size: var(--text-3xl);
   }
   
   .home-welcome p {
