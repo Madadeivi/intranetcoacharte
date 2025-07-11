@@ -5,6 +5,7 @@ export interface SupportTicket {
   category: string;
   priority: string; 
   message: string;
+  attachments?: File[];
 }
 
 export interface SupportTicketResponse {

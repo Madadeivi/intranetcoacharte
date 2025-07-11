@@ -2,15 +2,21 @@ import React, { useState } from 'react';
 import { supportService } from '../services/support';
 import './SupportForm.css';
 import { SupportTicket, SubmitStatus } from '../types/support'; // Importar desde el nuevo archivo
+import CloseIcon from '@mui/icons-material/Close';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ImageIcon from '@mui/icons-material/Image';
 
 interface SupportFormProps {
   userEmail: string;
   userName: string;
+  onClose?: () => void;
 }
 
-const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
+const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>({ type: null, message: '' });
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState<Omit<SupportTicket, 'userEmail' | 'userName'>>({
     subject: '',
@@ -29,6 +35,83 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
     }));
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    // En desarrollo local, omitir validaciones de archivos
+    if (process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENV === 'local') {
+      setAttachedFiles(prev => {
+        const newFiles = [...prev, ...files];
+        if (newFiles.length > 10) { // Límite más alto en desarrollo
+          setSubmitStatus({
+            type: 'error',
+            message: 'Máximo 10 archivos permitidos en desarrollo.',
+          });
+          return prev;
+        }
+        return newFiles;
+      });
+      setSubmitStatus({ type: null, message: '' });
+      e.target.value = '';
+      return;
+    }
+
+    const validFiles = files.filter(file => {
+      // Validar tipo de archivo (solo imágenes)
+      const isValidType = file.type.startsWith('image/');
+      // Validar tamaño (máximo 5MB)
+      const isValidSize = file.size <= 5 * 1024 * 1024;
+      
+      if (!isValidType) {
+        setSubmitStatus({
+          type: 'error',
+          message: `El archivo ${file.name} no es una imagen válida. Solo se permiten imágenes.`,
+        });
+        return false;
+      }
+      
+      if (!isValidSize) {
+        setSubmitStatus({
+          type: 'error',
+          message: `El archivo ${file.name} es demasiado grande. Máximo 5MB por imagen.`,
+        });
+        return false;
+      }
+      
+      return true;
+    });
+
+    if (validFiles.length > 0) {
+      setAttachedFiles(prev => {
+        const newFiles = [...prev, ...validFiles];
+        if (newFiles.length > 5) {
+          setSubmitStatus({
+            type: 'error',
+            message: 'Máximo 5 imágenes permitidas por ticket.',
+          });
+          return prev;
+        }
+        return newFiles;
+      });
+      setSubmitStatus({ type: null, message: '' });
+    }
+    
+    // Limpiar el input
+    e.target.value = '';
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    setAttachedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -41,6 +124,7 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
         userEmail,
         userName,
         priority: formData.priority as 'Low' | 'Medium' | 'High' | 'Urgent',
+        attachments: attachedFiles, // Incluir los archivos adjuntos
       };
 
       const validation = supportService.validateTicketData(ticketData);
@@ -53,7 +137,7 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
         return;
       }
 
-      // Crear el ticket
+      // Crear el ticket (el servicio se encargará de manejar los archivos)
       const response = await supportService.createTicket(ticketData);
 
       if (response.success && response.ticketId) {
@@ -62,12 +146,14 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
           message: response.message || `Ticket ${response.ticketId} creado exitosamente.`,
         });
 
+        // Limpiar el formulario
         setFormData({
           subject: '',
           category: 'technical',
           priority: 'Medium',
           message: '',
         });
+        setAttachedFiles([]);
       } else {
         setSubmitStatus({
           type: 'error',
@@ -98,11 +184,28 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
 
   return (
     <div className="support-form-container">
+      {onClose && (
+        <button 
+          type="button" 
+          className="support-form-close-button" 
+          onClick={onClose}
+          aria-label="Cerrar formulario"
+        >
+          <CloseIcon />
+        </button>
+      )}
+      
       <div className="support-form-header">
         <h2 className="support-form-title">Crear Ticket de Soporte</h2>
         <p className="support-form-subtitle">
           Completa el formulario y nuestro equipo te contactará lo antes posible
         </p>
+        {(process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENV === 'local') && (
+          <div className="dev-mode-notice">
+            <span className="dev-mode-icon">🛠️</span>
+            <span className="dev-mode-text">Modo Desarrollo: Validaciones omitidas</span>
+          </div>
+        )}
       </div>
       
       {submitStatus.type && (
@@ -202,6 +305,59 @@ const SupportForm: React.FC<SupportFormProps> = ({ userEmail, userName }) => {
           <span className="form-hint">
             Proporciona todos los detalles relevantes para ayudarnos a resolver tu solicitud más rápidamente
           </span>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">
+            Adjuntar imágenes (opcional)
+          </label>
+          <div className="file-upload-container">
+            <input
+              type="file"
+              id="file-upload"
+              accept="image/*"
+              multiple
+              onChange={handleFileUpload}
+              disabled={isSubmitting}
+              className="file-input-hidden"
+            />
+            <label htmlFor="file-upload" className="file-upload-button">
+              <AttachFileIcon className="file-upload-icon" />
+              Seleccionar imágenes
+            </label>
+            <span className="file-upload-hint">
+              {process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENV === 'local' 
+                ? 'Máximo 10 archivos en desarrollo (validaciones omitidas)'
+                : 'Máximo 5 imágenes, 5MB cada una (JPG, PNG, GIF)'
+              }
+            </span>
+          </div>
+          
+          {attachedFiles.length > 0 && (
+            <div className="attached-files-list">
+              <h4 className="attached-files-title">
+                <ImageIcon className="attached-files-icon" />
+                Archivos adjuntos ({attachedFiles.length})
+              </h4>
+              {attachedFiles.map((file, index) => (
+                <div key={index} className="attached-file-item">
+                  <div className="file-info">
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-size">{formatFileSize(file.size)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="remove-file-button"
+                    aria-label={`Eliminar ${file.name}`}
+                    disabled={isSubmitting}
+                  >
+                    <DeleteIcon />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="user-info-card">

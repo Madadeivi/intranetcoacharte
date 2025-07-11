@@ -175,6 +175,7 @@ export interface SupportTicketRequest {
   source?: string;
   department?: string;
   collaboratorId?: string;
+  attachments?: File[];
 }
 
 export interface SupportTicketResponse {

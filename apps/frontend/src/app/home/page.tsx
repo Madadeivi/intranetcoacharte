@@ -34,7 +34,6 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import LockIcon from '@mui/icons-material/Lock';
-import CakeIcon from '@mui/icons-material/Cake';
 
 import {
   getCurrentMonthYear,

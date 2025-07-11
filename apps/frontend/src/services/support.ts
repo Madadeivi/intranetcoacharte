@@ -3,9 +3,10 @@
 import { 
   apiConfig, 
   customFetch,
-  SupportTicketRequest, 
-  SupportTicketResponse 
+  SupportTicketRequest
 } from '../config/api';
+
+import { SupportTicketResponse } from '../types/support';
 
 class SupportService {
   /**
@@ -13,13 +14,65 @@ class SupportService {
    */
   async createTicket(ticketData: SupportTicketRequest): Promise<SupportTicketResponse> {
     try {
-      const response = await customFetch<SupportTicketResponse>(
-        apiConfig.endpoints.support.createTicket,
-        {
-          method: 'POST',
-          body: JSON.stringify(ticketData),
-        }
-      );
+      // En desarrollo local, simular respuesta exitosa
+      if (process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENV === 'local') {
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const mockTicketId = `DEV-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        console.log('🎫 Ticket simulado en desarrollo:', {
+          ticketId: mockTicketId,
+          data: ticketData,
+          attachments: ticketData.attachments?.length || 0
+        });
+        
+        return {
+          success: true,
+          message: `Ticket creado exitosamente en modo desarrollo`,
+          ticketId: mockTicketId,
+          ticketNumber: mockTicketId,
+          webUrl: `https://support.coacharte.com/tickets/${mockTicketId}`,
+        };
+      }
+
+      let response;
+      
+      // Si hay archivos adjuntos, usar FormData
+      if (ticketData.attachments && ticketData.attachments.length > 0) {
+        const formData = new FormData();
+        
+        // Agregar los datos del ticket
+        formData.append('userEmail', ticketData.userEmail);
+        formData.append('userName', ticketData.userName);
+        formData.append('subject', ticketData.subject);
+        formData.append('category', ticketData.category || 'general');
+        formData.append('priority', ticketData.priority || 'Medium');
+        formData.append('message', ticketData.message);
+        
+        // Agregar archivos adjuntos
+        ticketData.attachments.forEach((file: File, index: number) => {
+          formData.append(`attachment_${index}`, file, file.name);
+        });
+        
+        response = await customFetch<SupportTicketResponse>(
+          apiConfig.endpoints.support.createTicket,
+          {
+            method: 'POST',
+            body: formData,
+            // No establecer Content-Type, el navegador lo hará automáticamente para FormData
+          }
+        );
+      } else {
+        // Sin archivos adjuntos, usar JSON
+        response = await customFetch<SupportTicketResponse>(
+          apiConfig.endpoints.support.createTicket,
+          {
+            method: 'POST',
+            body: JSON.stringify(ticketData),
+          }
+        );
+      }
 
       if (response.success && response.data) {
         return response.data;
@@ -36,6 +89,14 @@ class SupportService {
    * Validar datos del ticket antes de enviar
    */
   validateTicketData(ticketData: SupportTicketRequest): { isValid: boolean; errors: string[] } {
+    // Omitir validación en desarrollo local
+    if (process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENV === 'local') {
+      return {
+        isValid: true,
+        errors: [],
+      };
+    }
+
     const errors: string[] = [];
 
     if (!ticketData.userEmail) {

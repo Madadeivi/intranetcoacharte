@@ -2033,3 +2033,455 @@ code {
   0%, 100% { opacity: 0.3; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(1.1); }
 }
+
+/* ==============================================
+   MODAL DE SOPORTE
+   ============================================== */
+
+/* Backdrop del modal */
+.support-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Contenido del modal */
+.support-modal-content {
+  background: var(--color-background-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Botón de cerrar del modal */
+.support-modal-close-button {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.support-modal-close-button:hover {
+  background: var(--color-error-light);
+  color: var(--color-error);
+  transform: scale(1.1);
+}
+
+.support-modal-close-button:focus {
+  outline: 2px solid var(--color-primary-100);
+  outline-offset: 2px;
+}
+
+/* Responsive para modal */
+@media (max-width: 768px) {
+  .support-modal-backdrop {
+    padding: var(--space-2);
+  }
+  
+  .support-modal-content {
+    max-height: 95vh;
+  }
+  
+  .support-modal-close-button {
+    top: var(--space-3);
+    right: var(--space-3);
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .support-modal-backdrop {
+    padding: var(--space-1);
+  }
+  
+  .support-modal-content {
+    max-height: 98vh;
+    border-radius: var(--radius-lg);
+  }
+  
+  .support-modal-close-button {
+    top: var(--space-2);
+    right: var(--space-2);
+  }
+}
+
+/* ==============================================
+   MODAL DE CUMPLEAÑOS
+   ============================================== */
+
+/* Backdrop del popup de cumpleaños */
+.birthday-popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: var(--space-4);
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Contenido del popup */
+.birthday-popup-content {
+  background: linear-gradient(135deg, var(--color-primary-5) 0%, var(--color-secondary-5) 100%);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  max-width: 450px;
+  width: 100%;
+  position: relative;
+  animation: birthdayPopupIn 0.6s ease-out;
+  overflow: hidden;
+}
+
+@keyframes birthdayPopupIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Botón de cerrar del popup */
+.birthday-popup-close-button {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  width: 2.5rem;
+  height: 2.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.birthday-popup-close-button:hover {
+  background: white;
+  color: var(--color-text-title);
+  transform: scale(1.1);
+}
+
+/* Cuerpo del popup */
+.birthday-popup-body {
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  text-align: center;
+  position: relative;
+}
+
+.birthday-popup-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="party" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2" fill="%23ff6b6b" opacity="0.2"/><circle cx="15" cy="15" r="2" fill="%234ecdc4" opacity="0.2"/><circle cx="20" cy="8" r="1.5" fill="%2345b7d1" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23party)"/></svg>') repeat;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+.birthday-popup-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+  animation: birthday-bounce 2s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.birthday-popup-title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-title);
+  margin-bottom: var(--space-4);
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  background: linear-gradient(135deg, var(--color-primary-100), var(--color-secondary-100));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
+}
+
+.birthday-popup-message {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+.birthday-popup-decoration {
+  font-size: 2rem;
+  margin-bottom: var(--space-6);
+  position: relative;
+  z-index: 1;
+}
+
+.birthday-popup-button {
+  background: linear-gradient(135deg, var(--color-primary-100), var(--color-secondary-100));
+  color: white;
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+}
+
+.birthday-popup-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.birthday-popup-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive para popup de cumpleaños */
+@media (max-width: 768px) {
+  .birthday-popup-content {
+    max-width: 90vw;
+  }
+  
+  .birthday-popup-body {
+    padding: var(--space-6) var(--space-4) var(--space-4);
+  }
+  
+  .birthday-popup-icon {
+    font-size: 3rem;
+  }
+  
+  .birthday-popup-title {
+    font-size: var(--text-xl);
+  }
+  
+  .birthday-popup-message {
+    font-size: var(--text-base);
+  }
+  
+  .birthday-popup-decoration {
+    font-size: 1.5rem;
+  }
+  
+  .birthday-popup-button {
+    font-size: var(--text-base);
+    padding: var(--space-3) var(--space-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .birthday-popup-body {
+    padding: var(--space-5) var(--space-3) var(--space-3);
+  }
+  
+  .birthday-popup-close-button {
+    width: 2rem;
+    height: 2rem;
+    top: var(--space-2);
+    right: var(--space-2);
+  }
+}
+
+/* Animaciones especiales para el popup de cumpleaños */
+.birthday-popup-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #f0932b);
+  background-size: 300% 100%;
+  animation: birthday-gradient 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Partículas flotantes para el popup */
+.birthday-popup-content::after {
+  content: '🎉 ✨ 🎂 🎈 🎊 ✨ 🎉';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 1.5rem;
+  opacity: 0.1;
+  z-index: 0;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Animaciones adicionales para tarjetas de cumpleaños de hoy */
+.birthday-card.today {
+  animation: birthday-highlight 2s ease-in-out infinite;
+  border-color: var(--color-primary-100);
+  box-shadow: 0 0 20px rgba(var(--color-primary-100-rgb), 0.3);
+}
+
+.birthday-card.today::before {
+  animation: birthday-gradient 2s ease-in-out infinite;
+}
+
+.birthday-card.today .birthday-avatar {
+  animation: birthday-pulse 2s ease-in-out infinite;
+}
+
+.birthday-card.today .birthday-name {
+  background: linear-gradient(135deg, var(--color-primary-100), var(--color-secondary-100));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.birthday-card.today .birthday-date {
+  background: linear-gradient(135deg, var(--color-primary-10), var(--color-secondary-10));
+  border-color: var(--color-primary-50);
+  color: var(--color-primary-100);
+  font-weight: 700;
+}
+
+@keyframes birthday-highlight {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(var(--color-primary-100-rgb), 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(var(--color-primary-100-rgb), 0.5);
+  }
+}
+
+@keyframes birthday-pulse {
+  0%, 100% { 
+    transform: scale(1);
+  }
+  50% { 
+    transform: scale(1.05);
+  }
+}
+
+/* ==============================================
+   MEJORAS ADICIONALES PARA MODALES
+   ============================================== */
+
+/* Prevenir scroll del body cuando hay modal abierto */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Mejorar contraste en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .support-modal-backdrop,
+  .birthday-popup-backdrop {
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .support-modal-content {
+    background: var(--color-background-dark, #1a1a1a);
+    color: var(--color-text-light, #e0e0e0);
+  }
+  
+  .birthday-popup-content {
+    background: linear-gradient(135deg, var(--color-primary-dark-5, #2a2a2a) 0%, var(--color-secondary-dark-5, #2a2a2a) 100%);
+  }
+}
+
+/* Accesibilidad mejorada para modales */
+.support-modal-content:focus,
+.birthday-popup-content:focus {
+  outline: 3px solid var(--color-primary-100);
+  outline-offset: 2px;
+}
+
+/* Mejoras para pantallas muy pequeñas */
+@media (max-width: 320px) {
+  .support-modal-backdrop,
+  .birthday-popup-backdrop {
+    padding: var(--space-1);
+  }
+  
+  .support-modal-content,
+  .birthday-popup-content {
+    border-radius: var(--radius-md);
+  }
+  
+  .birthday-popup-title {
+    font-size: var(--text-lg);
+  }
+  
+  .birthday-popup-message {
+    font-size: var(--text-sm);
+  }
+}
