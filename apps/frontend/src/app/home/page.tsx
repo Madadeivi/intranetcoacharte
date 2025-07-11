@@ -18,6 +18,25 @@ import { useClickOutside } from '../../hooks';
 import SupportForm from '../../components/SupportForm';
 import NoticeDetailModal from '../../components/NoticeDetailModal/NoticeDetailModal';
 
+// Interfaces
+interface BirthdayPerson {
+  id: string;
+  name: string;
+  position: string;
+  department: string;
+  date: string;
+  avatar: string | null;
+  departmentId: string;
+}
+
+interface BirthdayData {
+  success: boolean;
+  data: BirthdayPerson[];
+  month: number;
+  year: number;
+  count: number;
+}
+
 // Icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -206,6 +225,224 @@ const BirthdayPopup = React.forwardRef<HTMLDivElement, { userInfo: { firstName: 
   }
 );
 BirthdayPopup.displayName = 'BirthdayPopup';
+
+// Componente para el slider de cumpleañeros
+const BirthdaySlider: React.FC = () => {
+  const [birthdayData, setBirthdayData] = useState<BirthdayData | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Función para obtener los cumpleañeros
+  const fetchBirthdayData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Aquí deberías usar tu endpoint real
+      const response = await fetch('/api/birthday-manager', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener los cumpleañeros');
+      }
+
+      const data = await response.json();
+      setBirthdayData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+      console.error('Error fetching birthday data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    fetchBirthdayData();
+  }, []);
+
+  // Función para formatear la fecha
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+    });
+  };
+
+  // Función para verificar si es cumpleaños hoy
+  const isBirthdayToday = (dateString: string) => {
+    const today = new Date();
+    const birthday = new Date(dateString);
+    return today.getDate() === birthday.getDate() && 
+           today.getMonth() === birthday.getMonth();
+  };
+
+  // Función para navegar en el slider
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const nextSlide = () => {
+    if (birthdayData?.data && birthdayData.data.length > 0) {
+      setCurrentSlide((prev) => (prev + 1) % Math.ceil(birthdayData.data.length / 3));
+    }
+  };
+
+  const prevSlide = () => {
+    if (birthdayData?.data && birthdayData.data.length > 0) {
+      setCurrentSlide((prev) => (prev - 1 + Math.ceil(birthdayData.data.length / 3)) % Math.ceil(birthdayData.data.length / 3));
+    }
+  };
+
+  // Función para obtener las iniciales del nombre
+  const getInitials = (name: string) => {
+    return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
+  };
+
+  // Si está cargando
+  if (isLoading) {
+    return (
+      <section className="birthday-slider-section">
+        <div className="birthday-slider-header">
+          <CakeIcon className="birthday-slider-icon" />
+          <h2 className="birthday-slider-title">Cargando cumpleañeros...</h2>
+        </div>
+      </section>
+    );
+  }
+
+  // Si hay error
+  if (error) {
+    return (
+      <section className="birthday-slider-section">
+        <div className="birthday-slider-header">
+          <CakeIcon className="birthday-slider-icon" />
+          <h2 className="birthday-slider-title">Error al cargar cumpleañeros</h2>
+          <p className="birthday-slider-subtitle">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Si no hay datos
+  if (!birthdayData?.data || birthdayData.data.length === 0) {
+    return (
+      <section className="birthday-slider-section">
+        <div className="birthday-slider-header">
+          <CakeIcon className="birthday-slider-icon" />
+          <h2 className="birthday-slider-title">Cumpleañeros del mes</h2>
+        </div>
+        <div className="birthday-no-data">
+          <CakeIcon className="birthday-no-data-icon" />
+          <p className="birthday-no-data-text">No hay cumpleañeros este mes</p>
+        </div>
+      </section>
+    );
+  }
+
+  const { data: birthdays, month, year, count } = birthdayData;
+  const monthName = new Date(year, month - 1).toLocaleDateString('es-ES', { month: 'long' });
+  const slidesCount = Math.ceil(birthdays.length / 3);
+
+  return (
+    <section className="birthday-slider-section">
+      <div className="birthday-slider-header">
+        <CakeIcon className="birthday-slider-icon" />
+        <h2 className="birthday-slider-title">Cumpleañeros de {monthName} {year}</h2>
+        <p className="birthday-slider-subtitle">{count} cumpleañeros este mes</p>
+      </div>
+
+      <div className="birthday-slider-container">
+        <div 
+          className="birthday-slider-track" 
+          ref={sliderRef}
+          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+        >
+          {Array.from({ length: slidesCount }).map((_, slideIndex) => (
+            <div key={slideIndex} className="birthday-slider-slide">
+              {birthdays.slice(slideIndex * 3, (slideIndex + 1) * 3).map((birthday: BirthdayPerson) => (
+                <div 
+                  key={birthday.id} 
+                  className={`birthday-card ${isBirthdayToday(birthday.date) ? 'today' : ''}`}
+                >
+                  <div className="birthday-card-celebration">🎉</div>
+                  
+                  <div className="birthday-card-header">
+                    <div className="birthday-card-avatar">
+                      {birthday.avatar ? (
+                        <Image 
+                          src={birthday.avatar} 
+                          alt={birthday.name}
+                          width={64}
+                          height={64}
+                          className="birthday-card-avatar-image"
+                        />
+                      ) : (
+                        getInitials(birthday.name)
+                      )}
+                    </div>
+                    <div className="birthday-card-info">
+                      <h3 className="birthday-card-name">{birthday.name}</h3>
+                      <p className="birthday-card-position">{birthday.position}</p>
+                      <span className="birthday-card-department">{birthday.department}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="birthday-card-date">
+                    <EventIcon className="birthday-card-date-icon" />
+                    <p className="birthday-card-date-text">{formatDate(birthday.date)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {slidesCount > 1 && (
+        <>
+          <div className="birthday-slider-navigation">
+            <button 
+              className="birthday-slider-nav-button" 
+              onClick={prevSlide}
+              disabled={currentSlide === 0}
+              title="Anterior"
+              aria-label="Slide anterior"
+            >
+              <ArrowBackIosNewIcon />
+            </button>
+            <button 
+              className="birthday-slider-nav-button" 
+              onClick={nextSlide}
+              disabled={currentSlide === slidesCount - 1}
+              title="Siguiente"
+              aria-label="Slide siguiente"
+            >
+              <ArrowForwardIosIcon />
+            </button>
+          </div>
+          
+          <div className="birthday-slider-dots">
+            {Array.from({ length: slidesCount }).map((_, index) => (
+              <div
+                key={index}
+                className={`birthday-slider-dot ${index === currentSlide ? 'active' : ''}`}
+                onClick={() => goToSlide(index)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  );
+};
 
 const HomePage: React.FC = () => {
   const [searchActive, setSearchActive] = useState(false);
@@ -711,7 +948,6 @@ const HomePage: React.FC = () => {
                   className="notice-card-img"
                   width={300} // Ancho de la imagen
                   height={180} // Alto de la imagen
-                  style={{ objectFit: 'cover' }} // Para asegurar que la imagen cubra el área designada
                 />
                 <div className="notice-card-content">
                   <div className="notice-date">{notice.date}</div>
@@ -903,6 +1139,9 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       )}
+
+      {/* Slider de Cumpleañeros */}
+      <BirthdaySlider />
 
       {/* Footer */}
       <footer className="home-footer">
