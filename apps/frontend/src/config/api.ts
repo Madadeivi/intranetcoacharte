@@ -202,8 +202,13 @@ export const customFetch = async <T>(
     }
 
     // Autorización específica por endpoint:
-    if (url.includes('unified-auth') || url.includes('birthday-manager')) {
-      // unified-auth y birthday-manager: usan Supabase anon key
+    if (url.includes('unified-auth')) {
+      // unified-auth: usa service role key directamente, solo necesita anon key
+      if (supabaseAnonKey) {
+        defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
+      }
+    } else if (url.includes('birthday-manager')) {
+      // birthday-manager: también usa service role key directamente, solo necesita anon key
       if (supabaseAnonKey) {
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
