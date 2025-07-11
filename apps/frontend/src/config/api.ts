@@ -204,23 +204,7 @@ export const customFetch = async <T>(
 
     // Para requests que requieren autenticación de usuario, 
     // obtener el token del usuario autenticado
-    // EXCEPCIONES: Funciones que NO requieren Authorization header
-    // unified-auth: maneja auth internamente
-    // email-service: no requiere auth de usuario
-    // support-ticket: no requiere auth de usuario  
-    // zoho-crm: no requiere auth de usuario
-    // debug-variables: no requiere auth de usuario
-    const noAuthHeaderFunctions = [
-      '/unified-auth',
-      '/email-service', 
-      '/support-ticket',
-      '/zoho-crm',
-      '/debug-variables'
-    ];
-    
-    const requiresAuth = !noAuthHeaderFunctions.some(func => url.includes(func));
-    
-    if (typeof window !== 'undefined' && requiresAuth) {
+    if (typeof window !== 'undefined') {
       const userToken = localStorage.getItem('coacharte_auth_token');
       if (userToken) {
         defaultHeaders['Authorization'] = `Bearer ${userToken}`;
