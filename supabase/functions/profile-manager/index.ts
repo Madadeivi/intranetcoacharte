@@ -10,6 +10,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
+import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 // ===== INTERFACES =====
@@ -72,6 +73,35 @@ interface ProfileResponse {
 
 // ===== UTILIDADES =====
 
+// Inicializar la clave criptográfica una vez a nivel de módulo
+let jwtCryptoKey: CryptoKey | null = null;
+
+async function initializeJWTKey(): Promise<void> {
+  try {
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) {
+      console.error('JWT_SECRET no está configurado');
+      return;
+    }
+
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecret);
+    jwtCryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+  } catch (error) {
+    console.error('Error initializing JWT key:', error);
+    jwtCryptoKey = null;
+  }
+}
+
+// Inicializar la clave al cargar el módulo
+await initializeJWTKey();
+
 function initializeSupabase(): SupabaseClient {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -83,23 +113,39 @@ function initializeSupabase(): SupabaseClient {
   return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-async function getUserFromToken(supabase: SupabaseClient, authHeader: string): Promise<string | null> {
+/**
+ * Verificar JWT personalizado (mismo algoritmo que unified-auth)
+ */
+async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: { sub: string } }> {
+  try {
+    if (!jwtCryptoKey) {
+      return { valid: false };
+    }
+
+    const payload = await verify(token, jwtCryptoKey) as { sub: string };
+    return { valid: true, payload };
+  } catch (error) {
+    console.error('JWT verification error:', error);
+    return { valid: false };
+  }
+}
+
+async function getUserFromToken(authHeader: string): Promise<string | null> {
   try {
     if (!authHeader.startsWith('Bearer ')) {
       return null;
     }
     
     const token = authHeader.substring(7);
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { valid, payload } = await verifyCustomJWT(token);
     
-    if (error || !user) {
-      console.error('Error verifying token:', error);
-      return null;
+    if (valid && payload?.sub) {
+      return payload.sub;
     }
     
-    return user.id;
+    return null;
   } catch (error) {
-    console.error('Error getting user from token:', error);
+    console.error('Error verifying token:', error);
     return null;
   }
 }
@@ -211,10 +257,10 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const supabase = initializeSupabase();
     const authHeader = req.headers.get('Authorization');
     
     if (!authHeader) {
+      console.error('Missing Authorization header');
       return new Response(
         JSON.stringify({
           success: false,
@@ -228,8 +274,9 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const userId = await getUserFromToken(supabase, authHeader);
+    const userId = await getUserFromToken(authHeader);
     if (!userId) {
+      console.error('Token validation failed');
       return new Response(
         JSON.stringify({
           success: false,
@@ -242,6 +289,8 @@ serve(async (req: Request): Promise<Response> => {
         }
       );
     }
+
+    const supabase = initializeSupabase();
 
     // Solo soportamos GET para obtener el perfil
     if (req.method === 'GET') {

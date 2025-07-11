@@ -112,7 +112,6 @@
             "npm:@eslint/eslintrc@3",
             "npm:@mui/icons-material@^7.1.0",
             "npm:@mui/material@^7.1.0",
-            "npm:@supabase/supabase-js@^2.39.0",
             "npm:@tailwindcss/postcss@4",
             "npm:@types/bcryptjs@^2.4.0",
             "npm:@types/node@20",

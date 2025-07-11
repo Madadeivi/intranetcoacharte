@@ -2402,7 +2402,7 @@ code {
   }
   
   .home-welcome h1 {
-       font-size: var(--text-3xl);
+    font-size: var(--text-2xl);
   }
   
   .home-welcome p {
