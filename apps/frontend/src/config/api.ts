@@ -199,8 +199,16 @@ export const customFetch = async <T>(
 
     // Añadir cabeceras de autorización para Supabase Edge Functions
     if (supabaseAnonKey) {
-      defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       defaultHeaders['apikey'] = supabaseAnonKey;
+    }
+
+    // Para requests que requieren autenticación de usuario, 
+    // obtener el token del usuario autenticado
+    if (typeof window !== 'undefined') {
+      const userToken = localStorage.getItem('auth_token');
+      if (userToken) {
+        defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+      }
     }
 
     const response = await fetch(url, {

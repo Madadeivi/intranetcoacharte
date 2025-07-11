@@ -104,15 +104,15 @@ export default function ProfilePage() {
       return;
     }
 
-    const loadProfileData = async () => {
-      if (!user?.id) return;
+  const loadProfileData = async () => {
+    if (!user?.id) return;
 
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Obtener datos reales del perfil usando el servicio
-        const profileResponse = await profileService.getProfile();
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Obtener datos reales del perfil usando el servicio
+      const profileResponse = await profileService.getProfile();
         
         if (!profileResponse.success || !profileResponse.data) {
           throw new Error(profileResponse.error || 'No se pudo obtener el perfil');
