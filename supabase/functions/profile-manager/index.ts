@@ -110,7 +110,18 @@ function initializeSupabase(): SupabaseClient {
     throw new Error('Missing required Supabase environment variables');
   }
   
-  return createClient(supabaseUrl, supabaseServiceKey);
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    },
+    global: {
+      headers: {
+        // No incluir Authorization del request para evitar conflictos con JWT personalizado
+      }
+    }
+  });
 }
 
 /**

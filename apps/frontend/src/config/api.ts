@@ -203,14 +203,22 @@ export const customFetch = async <T>(
 
     // Autorización específica por endpoint:
     if (url.includes('unified-auth')) {
-      // unified-auth: usa service role key directamente, solo necesita anon key
+      // unified-auth: genera tokens, usa anon key
       if (supabaseAnonKey) {
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
     } else if (url.includes('birthday-manager')) {
-      // birthday-manager: también usa service role key directamente, solo necesita anon key
-      if (supabaseAnonKey) {
-        defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
+      // birthday-manager: necesita JWT de usuario válido
+      if (typeof window !== 'undefined') {
+        const userToken = localStorage.getItem('coacharte_auth_token');
+        if (userToken) {
+          defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+        } else {
+          // Fallback al anon key si no hay token de usuario
+          if (supabaseAnonKey) {
+            defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
+          }
+        }
       }
     } else if (url.includes('profile-manager')) {
       // profile-manager: usa token de usuario personalizado
