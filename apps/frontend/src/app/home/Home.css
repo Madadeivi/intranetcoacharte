@@ -2672,6 +2672,7 @@ code {
    ============================================== */
 .home-calendar-events {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-6);
   padding: var(--space-8) var(--space-4);
   max-width: 1400px; /* Increased from 1200px */
