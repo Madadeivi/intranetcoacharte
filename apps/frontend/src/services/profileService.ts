@@ -75,7 +75,7 @@ class ProfileService {
    */
   async getProfile(): Promise<ProfileResponse> {
     try {
-      // customFetch envuelve la respuesta en ApiResponse
+      // customFetch devuelve directamente la respuesta del servidor
       const response = await customFetch<ProfileResponse>(
         apiConfig.endpoints.profile.get,
         {
@@ -83,12 +83,8 @@ class ProfileService {
         }
       );
 
-      // La respuesta viene envuelta por customFetch en { success, data }
-      if (response.success && response.data) {
-        return response.data;
-      } else {
-        throw new Error(response.error || 'Error al obtener el perfil');
-      }
+      // La respuesta ya viene en el formato correcto desde el servidor
+      return response as ProfileResponse;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return {
