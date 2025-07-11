@@ -8,6 +8,8 @@ export interface User {
   avatar?: string;
   created_at?: string;
   updated_at?: string;
+  birth_date?: string;
+  birthday?: string;
 }
 
 export interface Session {
@@ -35,6 +37,14 @@ interface ApiConfig {
     collaborator: {
       // Nota: getProfile eliminado - ahora se usa directamente la tabla 'profiles'
       getDocuments: string;
+    };
+    profile: {
+      get: string;
+    };
+    birthday: {
+      getCurrentMonth: string;
+      getMonth: string;
+      getAll: string;
     };
   };
 }
@@ -64,6 +74,14 @@ export const apiConfig: ApiConfig = (() => {
         // Nota: getProfile ahora se maneja directamente con queries a la tabla 'profiles'
         // ya no se usa la función Edge collaborator-db
         getDocuments: `${functionsBaseUrl}/document-manager`,
+      },
+      profile: {
+        get: `${functionsBaseUrl}/profile-manager`,
+      },
+      birthday: {
+        getCurrentMonth: `${functionsBaseUrl}/birthday-manager`,
+        getMonth: `${functionsBaseUrl}/birthday-manager`,
+        getAll: `${functionsBaseUrl}/birthday-manager`,
       },
     },
   };

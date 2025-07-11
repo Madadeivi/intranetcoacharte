@@ -271,6 +271,349 @@ code {
   flex-shrink: 0;
 }
 
+/* Estilos para el avatar cuando es cumpleaños */
+.user-avatar.birthday-doodle {
+  position: relative;
+  animation: birthday-pulse 2s infinite, birthday-shimmer 4s ease-in-out infinite, birthday-subtle-rotate 8s linear infinite;
+  overflow: visible;
+  z-index: 10;
+  box-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 0 40px rgba(255, 215, 0, 0.4),
+    0 0 60px rgba(255, 215, 0, 0.2);
+}
+
+/* Rotación sutil y continua */
+@keyframes birthday-subtle-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Efecto de confeti que cae */
+.user-avatar.birthday-doodle .birthday-confetti {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ff6b6b;
+  animation: confetti-fall 3s infinite ease-in-out;
+}
+
+.confetti-piece:nth-child(1) {
+  left: 10%;
+  background: #ff6b6b;
+  animation-delay: 0s;
+}
+
+.confetti-piece:nth-child(2) {
+  left: 30%;
+  background: #4ecdc4;
+  animation-delay: 0.5s;
+}
+
+.confetti-piece:nth-child(3) {
+  left: 50%;
+  background: #45b7d1;
+  animation-delay: 1s;
+}
+
+.confetti-piece:nth-child(4) {
+  left: 70%;
+  background: #f9ca24;
+  animation-delay: 1.5s;
+}
+
+.confetti-piece:nth-child(5) {
+  left: 90%;
+  background: #f0932b;
+  animation-delay: 2s;
+}
+
+@keyframes confetti-fall {
+  0% { 
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% { 
+    transform: translateY(80px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.user-avatar.birthday-doodle::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #f0932b, #eb4d4b, #6c5ce7);
+  background-size: 400% 400%;
+  border-radius: 50%;
+  z-index: -1;
+  animation: birthday-rainbow 3s ease infinite;
+}
+
+/* Efecto shimmer/brillo para el avatar de cumpleaños */
+.user-avatar.birthday-doodle::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  border-radius: 50%;
+  z-index: -2;
+  animation: birthday-shimmer 2.5s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+@keyframes birthday-shimmer {
+  0% { 
+    background-position: -200% -200%;
+    transform: rotate(0deg);
+  }
+  25% { 
+    background-position: 200% -200%;
+    transform: rotate(90deg);
+  }
+  50% { 
+    background-position: 200% 200%;
+    transform: rotate(180deg);
+  }
+  75% { 
+    background-position: -200% 200%;
+    transform: rotate(270deg);
+  }
+  100% { 
+    background-position: -200% -200%;
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes birthday-rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.birthday-doodle-icon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 16px;
+  animation: birthday-bounce 1.5s infinite;
+  z-index: 2;
+}
+
+/* Partículas flotantes adicionales para cumpleaños */
+.user-avatar.birthday-doodle .birthday-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.birthday-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ffdc00;
+  border-radius: 50%;
+  animation: particle-float 4s infinite ease-in-out;
+}
+
+.birthday-particle:nth-child(1) {
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+  background: #ff6b6b;
+}
+
+.birthday-particle:nth-child(2) {
+  top: 20%;
+  right: 10%;
+  animation-delay: 0.5s;
+  background: #4ecdc4;
+}
+
+.birthday-particle:nth-child(3) {
+  bottom: 10%;
+  left: 15%;
+  animation-delay: 1s;
+  background: #45b7d1;
+}
+
+.birthday-particle:nth-child(4) {
+  bottom: 20%;
+  right: 15%;
+  animation-delay: 1.5s;
+  background: #f9ca24;
+}
+
+.birthday-particle:nth-child(5) {
+  top: 50%;
+  left: 5%;
+  animation-delay: 2s;
+  background: #f0932b;
+}
+
+.birthday-particle:nth-child(6) {
+  top: 50%;
+  right: 5%;
+  animation-delay: 2.5s;
+  background: #eb4d4b;
+}
+
+@keyframes particle-float {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  25% { 
+    transform: translate(5px, -10px) scale(1.2);
+    opacity: 1;
+  }
+  50% { 
+    transform: translate(-5px, -5px) scale(0.8);
+    opacity: 0.5;
+  }
+  75% { 
+    transform: translate(8px, 8px) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Efecto de resplandor pulsante adicional */
+.user-avatar.birthday-doodle {
+  box-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 0 40px rgba(255, 215, 0, 0.4),
+    0 0 60px rgba(255, 215, 0, 0.2);
+}
+
+/* Estilos para las serpentinas */
+.birthday-streamers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.streamer {
+  position: absolute;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.streamer-1 {
+  top: -15px;
+  left: -15px;
+  animation: streamer-float-1 3s infinite ease-in-out;
+}
+
+.streamer-2 {
+  top: -10px;
+  right: -20px;
+  animation: streamer-float-2 2.5s infinite ease-in-out;
+}
+
+.streamer-3 {
+  bottom: -15px;
+  left: -10px;
+  animation: streamer-float-3 2.8s infinite ease-in-out;
+}
+
+@keyframes streamer-float-1 {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(-8px) rotate(10deg);
+    opacity: 1;
+  }
+}
+
+@keyframes streamer-float-2 {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(-6px) rotate(-8deg);
+    opacity: 1;
+  }
+}
+
+@keyframes streamer-float-3 {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(6px) rotate(5deg);
+    opacity: 1;
+  }
+}
+
+/* Responsive para serpentinas en móviles */
+@media (max-width: 768px) {
+  .streamer {
+    font-size: 10px;
+  }
+  
+  .streamer-1 {
+    top: -12px;
+    left: -12px;
+  }
+  
+  .streamer-2 {
+    top: -8px;
+    right: -15px;
+  }
+  
+  .streamer-3 {
+    bottom: -12px;
+    left: -8px;
+  }
+}
+
+@keyframes birthday-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+@keyframes birthday-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
 /* Contenedor principal de la información del usuario */
 .user-info-container {
   display: flex;
@@ -521,6 +864,7 @@ code {
   color: var(--color-text-title);
   font-size: var(--text-base);
   margin-bottom: var(--space-1);
+  padding: 0;
 }
 
 .user-info .user-email { /* Email dentro del desplegable */
@@ -529,8 +873,16 @@ code {
   color: var(--color-text-secondary);
 }
 
-.user-dropdown a,
-.user-dropdown button { /* Estilos para items del desplegable */
+/* Divisor entre secciones del dropdown */
+.user-dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-3) 0;
+}
+
+/* Enlaces y botones dentro del dropdown */
+.user-dropdown-menu a,
+.user-dropdown-menu button {
   display: block;
   width: 100%;
   padding: var(--space-3) var(--space-4); 
@@ -546,15 +898,588 @@ code {
   margin-bottom: var(--space-1); /* Espacio entre items */
 }
 
+.user-dropdown a:hover,
+.user-dropdown button:hover {
+  background-color: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
 .user-dropdown a:last-child,
 .user-dropdown button:last-child {
-  margin-bottom: 0; /* Sin margen para el último item */
+  margin-bottom: 0;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.user-dropdown-item {
+  background: var(--color-primary-10);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-title);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown-item:hover {
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+}
+
+/* Estilos para el botón del avatar y el avatar mismo si es un div */
+.user-avatar-button {
+  width: 2.5rem; 
+  height: 2.5rem; 
+  border-radius: 50%;
+  background-color: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600; 
+  font-size: var(--text-sm); /* Tamaño de las iniciales */
+  cursor: pointer;
+  border: none; /* Quitar borde si es un botón */
+  padding: 0; /* Quitar padding si es un botón */
+  overflow: hidden; /* Para asegurar que el contenido no se salga del círculo */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.user-avatar-button:hover {
+  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
+  box-shadow: var(--shadow-md);
+}
+
+/* Contenedor del nombre de usuario y flecha (si se usa) */
+.user-details {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer; /* Si todo el bloque es clickeable */
+}
+
+.user-name { /* Estilo para el nombre del usuario al lado del avatar */
+  font-weight: 500; /* Geometria-Medium */
+  color: var(--color-text-title);
+  font-size: var(--text-sm);
+  display: none; /* Oculto por defecto, se muestra en desktop via media query */
+}
+
+/* Menú desplegable del usuario */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2)); /* Posicionarlo debajo del avatar con un pequeño espacio */
+  right: 0;
+  background-color: var(--color-background-light);
+  border-radius: var(--radius-lg); 
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2); 
+  z-index: 110; /* Encima de otros elementos como el header */
+  min-width: 200px; /* Ancho mínimo del desplegable */
+  border: 1px solid var(--color-border-light); 
+  opacity: 0; /* Inicialmente oculto para animación */
+  transform: translateY(-10px); /* Posición inicial para animación */
+  animation: fadeInDown 0.2s ease-out forwards; /* Animación de entrada */
+}
+
+@keyframes fadeInDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-info { /* Sección de información del usuario dentro del desplegable */
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--space-2);
+}
+
+.user-info .user-name { /* Nombre dentro del desplegable */
+  display: block; /* Asegurar que se muestre */
+  font-weight: 600; /* Geometria-Bold o Semibold */
+  color: var(--color-text-title);
+  font-size: var(--text-base);
+  margin-bottom: var(--space-1);
+  padding: 0;
+}
+
+.user-info .user-email { /* Email dentro del desplegable */
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Divisor entre secciones del dropdown */
+.user-dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-3) 0;
+}
+
+/* Enlaces y botones dentro del dropdown */
+.user-dropdown-menu a,
+.user-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4); 
+  text-align: left;
+  background: transparent; /* Fondo transparente por defecto */
+  border: none;
+  color: var(--color-text-title); 
+  font-size: var(--text-sm);
+  font-family: 'Geometria', Arial, sans-serif; /* Fuente base */
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease; 
+  border-radius: var(--radius-md); 
+  margin-bottom: var(--space-1); /* Espacio entre items */
 }
 
 .user-dropdown a:hover,
 .user-dropdown button:hover {
-  background-color: var(--color-primary-5); 
-  color: var(--color-primary-100); 
+  background-color: var(--color-primary-5);
+  color: var(--color-primary-100);
+}
+
+.user-dropdown a:last-child,
+.user-dropdown button:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.user-dropdown-item {
+  background: var(--color-primary-10);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-title);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown-item:hover {
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+}
+
+/* Estilos para el botón del avatar y el avatar mismo si es un div */
+.user-avatar-button {
+  width: 2.5rem; 
+  height: 2.5rem; 
+  border-radius: 50%;
+  background-color: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600; 
+  font-size: var(--text-sm); /* Tamaño de las iniciales */
+  cursor: pointer;
+  border: none; /* Quitar borde si es un botón */
+  padding: 0; /* Quitar padding si es un botón */
+  overflow: hidden; /* Para asegurar que el contenido no se salga del círculo */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.user-avatar-button:hover {
+  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
+  box-shadow: var(--shadow-md);
+}
+
+/* Contenedor del nombre de usuario y flecha (si se usa) */
+.user-details {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer; /* Si todo el bloque es clickeable */
+}
+
+.user-name { /* Estilo para el nombre del usuario al lado del avatar */
+  font-weight: 500; /* Geometria-Medium */
+  color: var(--color-text-title);
+  font-size: var(--text-sm);
+  display: none; /* Oculto por defecto, se muestra en desktop via media query */
+}
+
+/* --- Estilos para React-Calendar --- */
+
+/* Contenedor principal del calendario */
+.calendar-container {
+  width: 100%;
+  height: 100%;
+}
+
+.custom-calendar {
+  width: 100%;
+  height: 100%;
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
+  font-family: inherit;
+}
+
+/* Navegación (flechas y título) */
+.custom-calendar .react-calendar__navigation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1em;
+  padding: 0.5em 0;
+}
+
+.custom-calendar .react-calendar__navigation button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #333;
+  padding: 0.5em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.custom-calendar .react-calendar__navigation button:hover {
+  background-color: #f2f2f2;
+}
+
+.custom-calendar .react-calendar__navigation button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.custom-calendar .react-calendar__navigation__label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  flex-grow: 1;
+  text-align: center;
+}
+
+/* Vista del mes */
+.custom-calendar .react-calendar__viewContainer {
+  height: 100%;
+}
+
+.custom-calendar .react-calendar__month-view {
+  height: 100%;
+}
+
+/* Días de la semana */
+.custom-calendar .react-calendar__month-view__weekdays {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.5em;
+}
+
+.custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none; /* Quita el subrayado */
+  font-size: 0.85em;
+}
+
+/* Celdas de los días */
+.custom-calendar .react-calendar__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  height: 42px; /* Altura fija */
+  width: 42px;  /* Ancho fijo */
+  margin: 0 auto; /* Centra el círculo */
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.custom-calendar .react-calendar__tile:hover {
+  background-color: #e9ecef;
+}
+
+/* Día actual */
+.custom-calendar .react-calendar__tile--now {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Día seleccionado */
+.custom-calendar .react-calendar__tile--active {
+  background-color: var(--color-primary-100); /* Color primario de Coacharte */
+  color: white;
+  font-weight: bold;
+}
+
+.custom-calendar .react-calendar__tile--active:hover {
+  background-color: var(--color-primary-110);
+}
+
+/* Días fuera del mes actual */
+.custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  color: #b0b0b0;
+}
+
+/* Indicador de evento */
+.custom-calendar .event-day {
+  position: relative;
+}
+
+.custom-calendar .event-day::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-accent-100); /* Un color de acento */
+}
+
+/* Responsividad */
+@media (max-width: 992px) {
+  .home-calendar-events {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-calendar .react-calendar__tile {
+    height: 38px;
+    width: 38px;
+  }
+}
+
+/* --- Estilos para el Banner de Cumpleañeros --- */
+
+.home-birthdays {
+  margin: var(--space-6) 0;
+  padding: var(--space-6) var(--space-4);
+  background: linear-gradient(135deg, var(--color-primary-5) 0%, var(--color-primary-10) 100%);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.birthdays-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.birthdays-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.birthdays-icon {
+  font-size: 2rem;
+  color: var(--color-primary-100);
+}
+
+.birthdays-title h2 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-title);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.birthdays-subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.birthday-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.birthday-carousel {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: var(--space-2) 0;
+  flex: 1;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.birthday-carousel::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.birthday-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-background-light);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-4);
+  min-width: 200px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid var(--color-border);
+}
+
+.birthday-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.birthday-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-bottom: var(--space-3);
+  overflow: hidden;
+  border: 3px solid var(--color-primary-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-10);
+}
+
+.birthday-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.birthday-avatar-initials {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-primary-100);
+  text-transform: uppercase;
+}
+
+.birthday-info {
+  text-align: center;
+  flex: 1;
+}
+
+.birthday-name {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-title);
+  margin: 0 0 var(--space-1) 0;
+  line-height: 1.2;
+}
+
+.birthday-position {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-1) 0;
+  font-weight: 500;
+}
+
+.birthday-department {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.birthday-date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-primary-5);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-primary-100);
+}
+
+.birthday-date-icon {
+  font-size: 1rem;
+}
+
+.birthday-carousel-nav {
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Responsividad para cumpleañeros */
+@media (max-width: 768px) {
+  .home-birthdays {
+    margin: var(--space-4) 0;
+    padding: var(--space-4) var(--space-2);
+  }
+  
+  .birthday-carousel-wrapper {
+    gap: var(--space-2);
+  }
+  
+  .birthday-card {
+    min-width: 160px;
+    padding: var(--space-3);
+  }
+  
+  .birthday-avatar {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .birthdays-title h2 {
+    font-size: var(--text-xl);
+  }
+  
+  .birthday-carousel {
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .birthdays-title {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  
+  .birthday-card {
+    min-width: 140px;
+  }
+  
+  .birthday-name {
+    font-size: var(--text-base);
+  }
 }
 
 /* ==============================================
@@ -800,11 +1725,6 @@ code {
   opacity: 0.5;
   cursor: not-allowed;
   background-color: var(--neutral-background-disabled);
-}
-
-.main-card.disabled:hover {
-  transform: none;
-  box-shadow: var(--shadow-sm);
 }
 
 /* Botón/enlace de acción dentro de la tarjeta principal */
@@ -1238,19 +2158,10 @@ code {
   width: 100%;
 }
 
-.quicklinks-grid {
-  display: flex;
-  flex-direction: row;
+.quick-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--space-4);
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: var(--space-1);
-}
-
-.quicklinks-grid::-webkit-scrollbar {
-  display: none;
 }
 
 .quicklink {
@@ -1382,7 +2293,7 @@ code {
   
   .quicklink {
     min-width: auto;
-    flex-shrink: 1;
+    flex-shrink:  1;
   }
   
   .quicklink-carousel-nav {
@@ -1524,179 +2435,6 @@ code {
   }
   
   .home-footer .footer-col {
-    flex: 1 !important;
-    min-width: 0 !important;
-  }
-  
-  .home-footer .footer-social-icons {
-    gap: var(--space-3) !important;
-  }
-  
-  .home-footer .footer-social-icon {
-    font-size: 1.3rem !important;
-  }
-  
-  .home-footer .footer-copy {
-    margin-top: var(--space-4) !important;
-  }
-}
-
-
-
-/* Agregado para el botón de cerrar sesión en el menú móvil */
-.mobile-logout-button {
-  display: block;
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  border: none;
-  background: none;
-  color: var(--color-text-title);
-  text-decoration: none;
-  font-size: var(--text-base);
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
-  border-top: 1px solid var(--color-border);
-  margin-top: var(--space-2);
-}
-
-.mobile-logout-button:hover {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-}
-
-/* ==============================================
-   FOOTER SECTION
-   ============================================== */
-.home-footer {
-  margin-top: auto; /* Para pegarlo al fondo con flexbox */
-  background: var(--color-dark-100);
-  color: white;
-  padding: var(--space-6) var(--space-4) var(--space-4); /* Menor padding para reducir altura */
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  width: 100%;
-}
-
-/* Sección de logo y slogan */
-.footer-brand-section {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-2);
-}
-
-.footer-logo {
-  height: 2rem; /* Menor altura para reducir espacio */
-  width: auto;
-}
-
-.footer-slogan {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  text-align: left;
-  margin: 0;
-}
-
-/* Sección central con las 3 columnas */
-.footer-links-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-4);
-  text-align: center;
-}
-
-.footer-col h4 {
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-  color: white;
-  font-size: var(--text-sm); /* Menor tamaño para reducir altura */
-  margin: 0 0 var(--space-2) 0; /* Menor margin bottom */
-  text-align: center;
-}
-
-.footer-links-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1); /* Menor gap para reducir altura */
-}
-
-.footer-links-list a {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: var(--text-xs); /* Menor tamaño para reducir altura */
-  transition: color 0.2s ease-in-out;
-}
-
-.footer-links-list a:hover {
-  color: white;
-}
-
-.footer-social-icons {
-  display: flex;
-  gap: var(--space-2); /* Menor gap */
-  justify-content: center;
-  margin-top: var(--space-2); /* Menor margin */
-}
-
-.footer-social-icon {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1.2rem; /* Menor tamaño */
-  transition: color 0.2s ease-in-out;
-  text-decoration: none;
-}
-
-.footer-social-icon:hover {
-  color: var(--color-primary-100);
-}
-
-.footer-copy {
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: var(--space-3);
-  margin-top: var(--space-4);
-  color: rgba(255, 255, 255, 0.6);
-  font-size: var(--text-xs);
-}
-
-.footer-copy p {
-  margin: 0;
-}
-
-/* Media queries específicas para footer */
-@media (min-width: 920px) {
-  .footer-content {
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    gap: var(--space-8) !important;
-    padding: 0 var(--space-4) !important;
-  }
-  
-  .footer-brand-section {
-    flex: 0 0 auto !important;
-    max-width: 250px !important;
-  }
-  
-  .footer-links-section {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-evenly !important;
-    gap: var(--space-6) !important;
-    max-width: none !important;
-    grid-template-columns: none !important;
-  }
-  
-  .footer-col {
     flex: 1 !important;
     min-width: 0 !important;
   }
@@ -2184,98 +2922,10 @@ code {
   color: var(--color-text-secondary);
   background: var(--color-background-light);
   border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  font-family: 'Geometria', Arial, sans-serif;
-}
-
-.react-calendar__tile:enabled:hover {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-  border-color: var(--color-primary-50);
-}
-
-.react-calendar__tile:enabled:focus {
-  background: var(--color-primary-100);
-  color: white;
-  outline: none;
-  border-color: var(--color-primary-100);
-}
-
-.react-calendar__tile--now {
-  font-weight: 600;
-  color: var(--color-primary-100);
-  background: var(--color-primary-10);
-  border-color: var(--color-primary-100);
-  position: relative;
-}
-
-.react-calendar__tile--now::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 4px;
-  height: 4px;
-  background: var(--color-primary-100);
-  border-radius: 50%;
-}
-
-.react-calendar__tile--active {
-  background: var(--color-primary-100);
-  color: white;
-  font-weight: 600;
-  border-color: var(--color-primary-100);
-}
-
-.react-calendar__tile--active:enabled:hover {
-  background: var(--color-primary-110);
-}
-
-/* Días con eventos - Simplificado */
-.event-day {
-  position: relative;
-  font-weight: 600;
-  color: var(--color-primary-100);
-  background: var(--color-primary-5);
-  border-color: var(--color-primary-50);
-}
-
-.event-day::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background: var(--color-primary-100);
-  border-radius: 50%;
-}
-
-.event-day:hover::after {
-  background: white;
-}
-
-.react-calendar__tile {
-  max-width: initial;
-  padding: var(--space-2);
-  text-align: center;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: var(--color-background-light);
-  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 2.5rem; /* Altura mínima consistente */
+  min-height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2481,5 +3131,159 @@ code {
   .calendar-month-year {
     font-size: var(--text-xs);
     padding: var(--space-1) var(--space-3);
+  }
+}
+
+/* Estilos para el popup de cumpleaños */
+.birthday-popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.birthday-popup-content {
+  background: var(--color-background-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  box-shadow: var(--shadow-2xl);
+  transform: scale(0.9);
+  animation: birthday-popup-enter 0.3s ease-out forwards;
+}
+
+@keyframes birthday-popup-enter {
+  0% { 
+    transform: scale(0.5) rotate(-180deg);
+    opacity: 0;
+  }
+  50% { 
+    transform: scale(1.1) rotate(5deg);
+    opacity: 0.8;
+  }
+  75% { 
+    transform: scale(0.95) rotate(-2deg);
+    opacity: 0.9;
+  }
+  100% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Efecto de celebración extra para el popup */
+.birthday-popup-content {
+  animation: birthday-popup-enter 0.8s ease-out forwards, birthday-celebration-shake 0.5s ease-in-out 0.8s;
+}
+
+@keyframes birthday-celebration-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.birthday-popup-close-button {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: color 0.2s ease-in-out;
+}
+
+.birthday-popup-close-button:hover {
+  color: var(--color-text-title);
+}
+
+.birthday-popup-body {
+  text-align: center;
+}
+
+.birthday-popup-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+  animation: birthday-icon-bounce 1s infinite;
+}
+
+@keyframes birthday-icon-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-20px); }
+  60% { transform: translateY(-10px); }
+}
+
+.birthday-popup-title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-primary-100);
+  margin-bottom: var(--space-4);
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+}
+
+.birthday-popup-message {
+  font-size: var(--text-base);
+  color: var(--color-text-body);
+  margin-bottom: var(--space-6);
+  line-height: 1.6;
+}
+
+.birthday-popup-decoration {
+  font-size: 2rem;
+  margin-bottom: var(--space-6);
+  animation: birthday-decoration-sway 2s ease-in-out infinite;
+}
+
+@keyframes birthday-decoration-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.birthday-popup-button {
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+}
+
+.birthday-popup-button:hover {
+  background: var(--color-primary-110);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.birthday-popup-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .birthday-popup-content {
+    padding: var(--space-6);
+    max-width: 350px;
+  }
+  
+  .birthday-popup-title {
+    font-size: var(--text-xl);
+  }
+  
+  .birthday-popup-icon {
+    font-size: 3rem;
   }
 }
