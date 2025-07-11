@@ -215,6 +215,7 @@ export const customFetch = async <T>(
 
     // Añadir cabeceras de autorización para Supabase Edge Functions
     if (supabaseAnonKey) {
+      defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       defaultHeaders['apikey'] = supabaseAnonKey;
     }
 
