@@ -189,6 +189,20 @@ export const customFetch = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
+  // LISTA DE FUNCIONES QUE NO REQUIEREN AUTHORIZATION HEADER DE USUARIO:
+  // - unified-auth: Maneja autenticación internamente via body
+  // - email-service: Servicio interno, no requiere auth de usuario
+  // - support-ticket: Servicio interno, no requiere auth de usuario
+  // - zoho-crm: Servicio interno, no requiere auth de usuario
+  // - debug-variables: Servicio de desarrollo, no requiere auth de usuario
+  const noUserAuthFunctions = [
+    'unified-auth',
+    'email-service', 
+    'support-ticket',
+    'zoho-crm',
+    'debug-variables'
+  ];
+
   try {
     // Obtener la clave anónima de Supabase para las Edge Functions
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -201,6 +215,18 @@ export const customFetch = async <T>(
     if (supabaseAnonKey) {
       defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       defaultHeaders['apikey'] = supabaseAnonKey;
+    }
+
+    // Determinar si el endpoint requiere token de usuario
+    const requiresUserAuth = !noUserAuthFunctions.some(func => url.includes(func));
+    
+    // Si requiere autenticación de usuario, agregar el token del usuario
+    if (typeof window !== 'undefined' && requiresUserAuth) {
+      const userToken = localStorage.getItem('coacharte_auth_token');
+      if (userToken && userToken.trim()) {
+        // Reemplazar el authorization header con el token del usuario
+        defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+      }
     }
 
     const response = await fetch(url, {
