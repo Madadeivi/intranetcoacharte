@@ -50,8 +50,8 @@ export const DISABLED_CARDS: string[] = [
 // Eventos del calendario
 export const CURRENT_YEAR = new Date().getFullYear();
 export const CALENDAR_EVENTS: { date: Date; title: string }[] = [
-    { date: new Date(2025, 6, 7), title: 'Lanzamiento Intranet' },
-    { date: new Date(2025, 6, 13), title: 'Pago de Nómina' },
+    { date: new Date(2025, 6, 11), title: 'Lanzamiento Intranet' },
+    { date: new Date(2025, 6, 15), title: 'Pago de Nómina' },
     { date: new Date(2025, 6, 30), title: 'Pago de Nómina' },
     { date: new Date(2025, 6, 30), title: 'Evento de Integración' },
   ];

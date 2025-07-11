@@ -36,6 +36,11 @@ interface ApiConfig {
       // Nota: getProfile eliminado - ahora se usa directamente la tabla 'profiles'
       getDocuments: string;
     };
+    birthday: {
+      getCurrentMonth: string;
+      getMonth: string;
+      getAll: string;
+    };
   };
 }
 
@@ -64,6 +69,11 @@ export const apiConfig: ApiConfig = (() => {
         // Nota: getProfile ahora se maneja directamente con queries a la tabla 'profiles'
         // ya no se usa la función Edge collaborator-db
         getDocuments: `${functionsBaseUrl}/document-manager`,
+      },
+      birthday: {
+        getCurrentMonth: `${functionsBaseUrl}/birthday-manager`,
+        getMonth: `${functionsBaseUrl}/birthday-manager`,
+        getAll: `${functionsBaseUrl}/birthday-manager`,
       },
     },
   };
