@@ -190,7 +190,13 @@ export const customFetch = async <T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    // Detectar si estamos en desarrollo local
+    const isLocalDevelopment = url.includes('localhost') || url.includes('127.0.0.1');
+    
+    // Usar la clave anónima apropiada según el entorno
+    const supabaseAnonKey = isLocalDevelopment 
+      ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+      : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
     const defaultHeaders: Record<string, string> = {
       'Content-Type': 'application/json',

@@ -295,6 +295,9 @@ deno_version = 1
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+[edge_runtime.secrets]
+JWT_SECRET = "env(JWT_SECRET)"
+
 [analytics]
 enabled = true
 port = 54327
