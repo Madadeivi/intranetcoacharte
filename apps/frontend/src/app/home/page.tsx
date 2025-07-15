@@ -240,6 +240,7 @@ const BirthdaySlider: React.FC = () => {
       
       // Use existing birthday service with response validation
       const response = await birthdayService.getCurrentMonthBirthdays();
+      console.log('Birthday Data Response:', response);
       
       // Validate that the response has the expected structure
       if (!response || typeof response !== 'object') {
@@ -506,6 +507,7 @@ const HomePage: React.FC = () => {
       try {
         setBirthdaysLoading(true);
         const response = await birthdayService.getCurrentMonthBirthdays();
+        console.log('Current Month Birthdays Response:', response);
         if (response.success) {
           setCurrentMonthBirthdays(response.data);
         }
