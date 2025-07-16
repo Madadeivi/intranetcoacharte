@@ -1141,22 +1141,24 @@ const HomePage: React.FC = () => {
                       key={index} 
                       className={`event-item ${event.urgent ? 'event-urgent' : ''} ${event.featured ? 'event-featured' : ''}`}
                     >
-                      {event.image && (
-                        <Image 
-                          src={event.image} 
-                          alt={event.title}
-                          width={80}
-                          height={80}
-                          className="event-image"
-                        />
-                      )}
-                      <div className="event-date">
-                        <div className="event-date-month">
-                          {event.date.toLocaleDateString('es-ES', { month: 'short' })}
+                      <div className="event-left-elements">
+                        <div className="event-date">
+                          <div className="event-date-month">
+                            {event.date.toLocaleDateString('es-ES', { month: 'short' })}
+                          </div>
+                          <div className="event-date-day">
+                            {event.date.getDate()}
+                          </div>
                         </div>
-                        <div className="event-date-day">
-                          {event.date.getDate()}
-                        </div>
+                        {event.image && (
+                          <Image 
+                            src={event.image} 
+                            alt={event.title}
+                            width={70}
+                            height={60}
+                            className="event-image"
+                          />
+                        )}
                       </div>
                       <div className="event-content">
                         <h3 className="event-title">{event.title}</h3>

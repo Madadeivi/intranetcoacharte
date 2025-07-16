@@ -3224,22 +3224,23 @@ code {
   background: var(--color-primary-110);
 }
 
-/* Cada evento individual - Tamaño fijo */
+/* Cada evento individual - Distribución vertical optimizada */
 .event-item {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: var(--space-3);
   padding: var(--space-3);
   width: 100%;
+  min-height: 100px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--color-background-light) 0%, #fafbfc 100%);
+  background: var(--color-background-light);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Efecto de brillo sutil */
@@ -3267,32 +3268,34 @@ code {
 
 /* Imagen del evento */
 .event-image {
-  width: 60px;
+  width: 70px;
   height: 60px;
   border-radius: var(--radius-md);
   object-fit: cover;
   flex-shrink: 0;
   border: 2px solid var(--color-border-light);
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .event-item:hover .event-image {
   transform: scale(1.05);
   border-color: var(--color-primary-50);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 /* Fecha del evento - Diseño tipo calendario */
 .event-date {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-110) 100%);
-  color: white;
-  padding: var(--space-3);
+  background: linear-gradient(135deg, var(--color-secondary-100) 0%, var(--color-secondary-110) 100%);
+  color: var(--color-text-on-secondary);
+  padding: var(--space-2);
   border-radius: var(--radius-md);
   font-weight: 700;
   text-align: center;
   min-width: 70px;
+  height: 50px;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -3319,12 +3322,13 @@ code {
 
 /* Contenido del evento */
 .event-content {
-  flex: 1;
+  flex: 3;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   min-height: 80px;
   justify-content: space-between;
+  padding: var(--space-1) 0;
 }
 
 /* Título del evento */
@@ -3340,6 +3344,7 @@ code {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 /* Descripción del evento */
@@ -3354,14 +3359,16 @@ code {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-grow: 1;
 }
 
 /* Información adicional del evento */
 .event-meta {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  margin-top: var(--space-2);
+  gap: var(--space-3);
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 /* Tiempo del evento */
@@ -3375,6 +3382,8 @@ code {
   background: var(--color-primary-5);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--color-primary-10);
+  transition: all 0.3s ease;
 }
 
 /* Categoría del evento */
@@ -3387,6 +3396,8 @@ code {
   background: var(--color-background-subtle);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  transition: all 0.3s ease;
 }
 
 /* Icono del evento */
@@ -3418,11 +3429,11 @@ code {
 
 /* Badge de evento destacado */
 .event-featured {
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--color-secondary-100);
 }
 
 .event-featured .event-date {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, var(--color-secondary-100) 0%, var(--color-secondary-110) 100%);
 }
 
 /* Estado cuando no hay eventos */
@@ -3446,7 +3457,7 @@ code {
 }
 
 .events-list p::before {
-  content: '📅';
+  content: '📅'; /* Icono de calendario */
   font-size: 2rem;
   opacity: 0.5;
 }
@@ -3817,6 +3828,20 @@ code {
     top: var(--space-1);
     right: var(--space-1);
   }
+}
+
+/* Contenedor para elementos izquierdos (fecha e imagen) */
+.event-left-elements {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  min-height: 100px;
+  flex-shrink: 0;
+  padding: var(--space-2);
+  min-width: 120px;
+  width: 120px;
 }
 
 
