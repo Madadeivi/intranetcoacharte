@@ -18,6 +18,7 @@ interface Profile {
 interface Birthday {
   id: string
   name: string
+  initial: string
   position: string
   department: string
   date: string
@@ -114,6 +115,7 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
         id,
         full_name,
         last_name,
+        initials,
         title,
         birth_date,
         avatar_url,
@@ -147,9 +149,11 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
     const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => {
       const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
       const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
+      const initial = profile.initials || '';
       return {
         id: String(profile.id),
         name: fullName,
+        initial,
         position: String(profile.title || 'Sin cargo'),
         department: departmentName,
         date: String(profile.birth_date || ''),
@@ -208,6 +212,7 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
         id,
         full_name,
         last_name,
+        initials,
         title,
         birth_date,
         avatar_url,
@@ -245,9 +250,11 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
     const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => {
       const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
       const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
+      const initial = profile.initials || '';
       return {
         id: String(profile.id),
         name: fullName,
+        initial,
         position: String(profile.title || 'Sin cargo'),
         department: departmentName,
         date: String(profile.birth_date || ''),
@@ -296,6 +303,7 @@ async function getAllBirthdays(supabaseClient: any) {
         id,
         full_name,
         last_name,
+        initials,
         title,
         birth_date,
         avatar_url,
@@ -327,9 +335,11 @@ async function getAllBirthdays(supabaseClient: any) {
     const birthdays: Birthday[] = profiles?.map((profile: Record<string, unknown>) => {
       const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
       const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
+      const initial = profile.initials || '';
       return {
         id: String(profile.id),
         name: fullName,
+        initial,
         position: String(profile.title || 'Sin cargo'),
         department: departmentName,
         date: String(profile.birth_date || ''),

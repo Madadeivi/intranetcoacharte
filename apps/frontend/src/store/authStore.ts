@@ -253,8 +253,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
         return;
       }
-      
-      console.log('✅ Token encontrado, validando...');
+
       const result = await authService.validateToken();
       
       if (result.success && result.user) {

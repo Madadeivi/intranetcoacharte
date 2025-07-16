@@ -337,10 +337,7 @@ const BirthdaySlider: React.FC = () => {
     }
   };
 
-  // Function to get name initials
-  const getInitials = (name: string) => {
-    return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
-  };
+
 
   // If loading
   if (isLoading) {
@@ -420,7 +417,7 @@ const BirthdaySlider: React.FC = () => {
                           className="birthday-card-avatar-image"
                         />
                       ) : (
-                        getInitials(birthday.name)
+                        birthday.initial
                       )}
                     </div>
                     <div className="birthday-card-info">

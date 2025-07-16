@@ -3,6 +3,7 @@ import { apiConfig, customFetch } from '../config/api';
 export interface Birthday {
   id: string;
   name: string;
+  initial: string;
   position: string;
   department: string;
   date: string;
