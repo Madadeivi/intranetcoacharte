@@ -241,6 +241,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
+      // Primero verificar si hay un token
+      const token = authService.getToken();
+      if (!token) {
+        set({
+          user: null,
+          isLoading: false,
+          isAuthenticated: false,
+          requiresPasswordChange: false,
+          error: null
+        });
+        return;
+      }
+      
+      console.log('✅ Token encontrado, validando...');
       const result = await authService.validateToken();
       
       if (result.success && result.user) {

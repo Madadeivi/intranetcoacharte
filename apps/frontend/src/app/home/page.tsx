@@ -125,9 +125,13 @@ interface UserData {
  * Los datos ya vienen procesados desde la edge function
  */
 const getUserNames = (user: UserData | null | undefined): UserNameData => {
+  // Ajuste: usar full_name y last_name del backend para construir el nombre completo
+  // Si el backend ya envía name, úsalo, si no, concatena full_name y last_name
   const firstName = user?.firstName || '';
   const lastName = user?.lastName || '';
+  // Preferir el campo name si existe, si no, concatenar full_name y last_name
   const fullName = user?.name || `${firstName} ${lastName}`.trim();
+  // El displayName será el nombre completo, o el nombre, o 'Usuario'
   const displayName = fullName || firstName || 'Usuario';
 
   return {
@@ -247,7 +251,6 @@ const BirthdaySlider: React.FC = () => {
       
       // Use existing birthday service with response validation
       const response = await birthdayService.getCurrentMonthBirthdays();
-      console.log('Birthday Data Response:', response);
       
       // Validate that the response has the expected structure
       if (!response || typeof response !== 'object') {
@@ -517,7 +520,6 @@ const HomePage: React.FC = () => {
       try {
         setBirthdaysLoading(true);
         const response = await birthdayService.getCurrentMonthBirthdays();
-        console.log('Current Month Birthdays Response:', response);
         if (response.success) {
           setCurrentMonthBirthdays(response.data);
         }
