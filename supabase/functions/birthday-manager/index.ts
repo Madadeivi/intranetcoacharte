@@ -196,8 +196,7 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
       throw new Error('Month must be between 1 and 12')
     }
 
-    // Consultar perfiles activos con fecha de cumpleaños en el mes específico
-    // Usar EXTRACT para filtrar por mes sin depender de años específicos
+    // Consultar perfiles activos con fecha de cumpleaños
     const { data: profiles, error } = await supabaseClient
       .from('profiles')
       .select(`
@@ -210,16 +209,22 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
       `)
       .eq('status', 'active')
       .not('birth_date', 'is', null)
-      .filter('EXTRACT(MONTH FROM birth_date)', 'eq', monthNum)
 
     if (error) {
       console.error('Error fetching month birthdays:', error)
       throw error
     }
 
+    // Filtrar perfiles por mes específico
+    const filteredProfiles = profiles?.filter((profile: Record<string, unknown>) => {
+      if (!profile.birth_date) return false
+      const birthDate = new Date(String(profile.birth_date))
+      return birthDate.getMonth() + 1 === monthNum
+    }) || []
+
     // Obtener información de departamentos por separado
     // deno-lint-ignore no-explicit-any
-    const departmentIds = profiles?.map((p: any) => p.department_id).filter(Boolean) || []
+    const departmentIds = filteredProfiles?.map((p: any) => p.department_id).filter(Boolean) || []
     const { data: departments } = await supabaseClient
       .from('departments')
       .select('id, name')
@@ -231,7 +236,7 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
     )
 
     // Transformar los datos al formato esperado por el frontend
-    const birthdays: Birthday[] = profiles?.map((profile: Record<string, unknown>) => ({
+    const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => ({
       id: String(profile.id),
       name: String(profile.full_name || 'Sin nombre'),
       position: String(profile.title || 'Sin cargo'),
