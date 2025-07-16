@@ -2697,7 +2697,9 @@ code {
 }
 
 .birthday-card {
-  flex: 0 0 280px;
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: calc(100% / 3 - var(--space-4) * 2 / 3);
   background: var(--color-background-light);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
