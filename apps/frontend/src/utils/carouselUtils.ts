@@ -5,7 +5,7 @@ import { RefObject } from 'react';
  * @param elementRef - Referencia al elemento del carrusel
  * @param offset - Cantidad de píxeles a desplazar
  */
-export function scrollCarousel(elementRef: RefObject<HTMLElement>, offset: number): void {
+export function scrollCarousel(elementRef: RefObject<HTMLElement | null>, offset: number): void {
   const element = elementRef.current;
   if (element) {
     element.scrollBy({ left: offset, behavior: 'smooth' });
@@ -32,11 +32,42 @@ export function checkCarouselScrollability(element: HTMLElement | null): {
 }
 
 /**
+ * Maneja el scroll vertical de un carrusel
+ * @param elementRef - Referencia al elemento del carrusel
+ * @param offset - Cantidad de píxeles a desplazar verticalmente
+ */
+export function scrollCarouselVertical(elementRef: RefObject<HTMLElement | null>, offset: number): void {
+  const element = elementRef.current;
+  if (element) {
+    element.scrollBy({ top: offset, behavior: 'smooth' });
+  }
+}
+
+/**
+ * Verifica si el carrusel puede hacer scroll hacia arriba o abajo
+ * @param element - Elemento del carrusel
+ * @returns Objeto con las propiedades canScrollUp y canScrollDown
+ */
+export function checkCarouselVerticalScrollability(element: HTMLElement | null): {
+  canScrollUp: boolean;
+  canScrollDown: boolean;
+} {
+  if (!element) {
+    return { canScrollUp: false, canScrollDown: false };
+  }
+  
+  return {
+    canScrollUp: element.scrollTop > 0,
+    canScrollDown: element.scrollTop < element.scrollHeight - element.clientHeight
+  };
+}
+
+/**
  * Configura los event listeners para gestos táctiles en un carrusel
  * @param elementRef - Referencia al elemento del carrusel
  * @returns Función de limpieza para remover los event listeners
  */
-export function setupTouchGestures(elementRef: RefObject<HTMLElement>): () => void {
+export function setupTouchGestures(elementRef: RefObject<HTMLElement | null>): () => void {
   const element = elementRef.current;
   if (!element) return () => {};
   

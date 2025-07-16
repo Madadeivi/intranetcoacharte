@@ -43,6 +43,8 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LockIcon from '@mui/icons-material/Lock';
 import CakeIcon from '@mui/icons-material/Cake';
 
@@ -52,6 +54,11 @@ import {
   scrollCarousel,
   debounce,
 } from '../../utils/functions';
+
+import {
+  scrollCarouselVertical,
+  checkCarouselVerticalScrollability,
+} from '../../utils/carouselUtils';
 
 import {
   generateInitials
@@ -240,6 +247,7 @@ const BirthdaySlider: React.FC = () => {
       
       // Use existing birthday service with response validation
       const response = await birthdayService.getCurrentMonthBirthdays();
+      console.log('Birthday Data Response:', response);
       
       // Validate that the response has the expected structure
       if (!response || typeof response !== 'object') {
@@ -433,35 +441,35 @@ const BirthdaySlider: React.FC = () => {
       {slidesCount > 1 && (
         <>
           <div className="birthday-slider-navigation">
-            <button 
-              className="birthday-slider-nav-button" 
-              onClick={prevSlide}
-              disabled={currentSlide === 0}
-              title="Anterior"
-              aria-label="Slide anterior"
-            >
-              <ArrowBackIosNewIcon />
-            </button>
-            <button 
-              className="birthday-slider-nav-button" 
-              onClick={nextSlide}
-              disabled={currentSlide === slidesCount - 1}
-              title="Siguiente"
-              aria-label="Slide siguiente"
-            >
-              <ArrowForwardIosIcon />
-            </button>
-          </div>
+              <button
+                className="birthday-slider-nav-button"
+                onClick={prevSlide}
+                disabled={currentSlide === 0}
+                title="Anterior"
+                aria-label="Slide anterior"
+              >
+                <ArrowBackIosNewIcon />
+              </button>
+              <button
+                className="birthday-slider-nav-button"
+                onClick={nextSlide}
+                disabled={currentSlide === slidesCount - 1}
+                title="Siguiente"
+                aria-label="Slide siguiente"
+              >
+                <ArrowForwardIosIcon />
+              </button>
+            </div>
           
-          <div className="birthday-slider-dots">
-            {Array.from({ length: slidesCount }).map((_, index) => (
+            <div className="birthday-slider-dots">
+              {Array.from({ length: slidesCount }).map((_, index) => (
               <div
                 key={index}
                 className={`birthday-slider-dot ${index === currentSlide ? 'active' : ''}`}
                 onClick={() => goToSlide(index)}
               />
-            ))}
-          </div>
+              ))}
+            </div>
         </>
       )}
     </section>
@@ -483,6 +491,7 @@ const HomePage: React.FC = () => {
   const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de enlaces rápidos
   const noticeCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de avisos
   const birthdayCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de cumpleañeros
+  const eventCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de eventos
 
   // Hook para cerrar el dropdown al hacer clic fuera
   useClickOutside(dropdownRef as RefObject<HTMLElement>, () => setDropdownOpen(false), dropdownOpen);
@@ -496,6 +505,8 @@ const HomePage: React.FC = () => {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [birthdayCanScrollLeft, setBirthdayCanScrollLeft] = useState(false);
   const [birthdayCanScrollRight, setBirthdayCanScrollRight] = useState(true);
+  const [eventCanScrollLeft, setEventCanScrollLeft] = useState(false);
+  const [eventCanScrollRight, setEventCanScrollRight] = useState(true);
   const [currentMonthBirthdays, setCurrentMonthBirthdays] = useState<Birthday[]>([]);
   const [birthdaysLoading, setBirthdaysLoading] = useState(true);
   const [showBirthdayPopup, setShowBirthdayPopup] = useState(false);
@@ -506,6 +517,7 @@ const HomePage: React.FC = () => {
       try {
         setBirthdaysLoading(true);
         const response = await birthdayService.getCurrentMonthBirthdays();
+        console.log('Current Month Birthdays Response:', response);
         if (response.success) {
           setCurrentMonthBirthdays(response.data);
         }
@@ -589,6 +601,16 @@ const HomePage: React.FC = () => {
     }
   }, 50);
 
+  // Lógica de scroll para el carrusel de eventos (vertical)
+  const handleEventScroll = debounce(() => {
+    const el = eventCarouselRef.current;
+    if (el) {
+      const { canScrollUp, canScrollDown } = checkCarouselVerticalScrollability(el);
+      setEventCanScrollLeft(canScrollUp);  // Reutilizamos para "arriba"
+      setEventCanScrollRight(canScrollDown);  // Reutilizamos para "abajo"
+    }
+  }, 50);
+
   const scrollCardCarouselBy = (offset: number) => {
     scrollCarousel(cardCarouselRef, offset);
     // Actualizar estado inmediatamente para mejor UX
@@ -610,6 +632,12 @@ const HomePage: React.FC = () => {
     scrollCarousel(birthdayCarouselRef, offset);
     // Actualizar estado inmediatamente para mejor UX
     setTimeout(() => handleBirthdayScroll(), 100);
+  };
+
+  const scrollEventCarouselBy = (offset: number) => {
+    scrollCarouselVertical(eventCarouselRef, offset);
+    // Actualizar estado inmediatamente para mejor UX
+    setTimeout(() => handleEventScroll(), 100);
   };
 
   useEffect(() => {
@@ -689,6 +717,26 @@ const HomePage: React.FC = () => {
       el.removeEventListener('scroll', handleBirthdayScroll);
     };
   }, [handleBirthdayScroll]);
+
+  // useEffect para el carrusel de eventos
+  useEffect(() => {
+    const el = eventCarouselRef.current;
+    if (!el) return;
+    
+    el.addEventListener('scroll', handleEventScroll);
+    
+    // Comprobar estado inicial con un pequeño delay para asegurar que el DOM esté listo
+    const checkInitialState = () => {
+      handleEventScroll();
+    };
+    
+    checkInitialState();
+    setTimeout(checkInitialState, 100);
+    
+    return () => {
+      el.removeEventListener('scroll', handleEventScroll);
+    };
+  }, [handleEventScroll]);
 
 
   // useEffect para clearError y manejo de error (ya existen, se mantienen)
@@ -1060,36 +1108,92 @@ const HomePage: React.FC = () => {
 
       {/* Calendario y próximos eventos */}
       <section className="home-calendar-events">
-        <div className="calendar-column">
-          <h2>Calendario</h2>
-          <div className="calendar-container">
-            <Calendar
-              className="custom-calendar"
-              tileClassName={tileClassName}
-              locale="es-MX"
-              nextLabel={<ArrowForwardIosIcon />}
-              prevLabel={<ArrowBackIosNewIcon />}
-              next2Label={null}
-              prev2Label={null}
-              formatShortWeekday={(locale, date) => date.toLocaleDateString(locale, { weekday: 'narrow' })}
-            />
+          <div className="calendar-column">
+            <h2>Calendario</h2>
+            <div className="calendar-container">
+              <Calendar
+                className="custom-calendar"
+                tileClassName={tileClassName}
+                locale="es-MX"
+                nextLabel={<ArrowForwardIosIcon />}
+                prevLabel={<ArrowBackIosNewIcon />}
+                next2Label={null}
+                prev2Label={null}
+                formatShortWeekday={(locale, date) => date.toLocaleDateString(locale, { weekday: 'narrow' })}
+              />
+            </div>
           </div>
-        </div>
-        <div className="events-column">
-          <h2>Próximos Eventos</h2>
-          <div className="events-list">
-            {CALENDAR_EVENTS.length > 0 ? (
-              CALENDAR_EVENTS.map((event, index) => (
-                <div key={index} className="event-item">
-                  <span className="event-date">{event.date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
-                  <span className="event-title">{event.title}</span>
-                </div>
-              ))
-            ) : (
-              <p>No hay eventos próximos.</p>
-            )}
+          <div className="events-column">
+            <h2>Próximos Eventos</h2>
+            <div className="events-carousel-wrapper">
+              <button 
+                onClick={() => scrollEventCarouselBy(-CAROUSEL_SCROLL_OFFSET)} 
+                disabled={!eventCanScrollLeft} 
+                className="carousel-nav-button prev event-carousel-nav" 
+                aria-label="Eventos anteriores"
+              >
+                <KeyboardArrowUpIcon />
+              </button>
+              <div className="events-list" ref={eventCarouselRef}>
+                {CALENDAR_EVENTS.length > 0 ? (
+                  CALENDAR_EVENTS.map((event, index) => (
+                    <div 
+                      key={index} 
+                      className={`event-item ${event.urgent ? 'event-urgent' : ''} ${event.featured ? 'event-featured' : ''}`}
+                    >
+                      <div className="event-left-elements">
+                        <div className="event-date">
+                          <div className="event-date-month">
+                            {event.date.toLocaleDateString('es-ES', { month: 'short' })}
+                          </div>
+                          <div className="event-date-day">
+                            {event.date.getDate()}
+                          </div>
+                        </div>
+                        {event.image && (
+                          <Image 
+                            src={event.image} 
+                            alt={event.title}
+                            width={70}
+                            height={60}
+                            className="event-image"
+                          />
+                        )}
+                      </div>
+                      <div className="event-content">
+                        <h3 className="event-title">{event.title}</h3>
+                        {event.description && (
+                          <p className="event-description">{event.description}</p>
+                        )}
+                        <div className="event-meta">
+                          {event.time && (
+                            <div className="event-time">
+                              <EventIcon style={{ fontSize: '12px' }} />
+                              {event.time}
+                            </div>
+                          )}
+                          {event.category && (
+                            <div className="event-category">{event.category}</div>
+                          )}
+                        </div>
+                      </div>
+                      <EventIcon className="event-icon" />
+                    </div>
+                  ))
+                ) : (
+                  <p>No hay eventos próximos programados.</p>
+                )}
+              </div>
+              <button 
+                onClick={() => scrollEventCarouselBy(CAROUSEL_SCROLL_OFFSET)} 
+                disabled={!eventCanScrollRight} 
+                className="carousel-nav-button next event-carousel-nav" 
+                aria-label="Siguientes eventos"
+              >
+                <KeyboardArrowDownIcon />
+              </button>
+            </div>
           </div>
-        </div>
       </section>
 
       {/* Banner de cumpleañeros del mes */}
@@ -1234,4 +1338,3 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-

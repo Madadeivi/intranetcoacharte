@@ -49,11 +49,53 @@ export const DISABLED_CARDS: string[] = [
 
 // Eventos del calendario
 export const CURRENT_YEAR = new Date().getFullYear();
-export const CALENDAR_EVENTS: { date: Date; title: string }[] = [
-    { date: new Date(2025, 6, 11), title: 'Lanzamiento Intranet' },
-    { date: new Date(2025, 6, 15), title: 'Pago de Nómina' },
-    { date: new Date(2025, 6, 30), title: 'Pago de Nómina' },
-    { date: new Date(2025, 6, 30), title: 'Evento de Integración' },
+
+interface CalendarEvent {
+  date: Date;
+  title: string;
+  description?: string;
+  time?: string;
+  image?: string;
+  category?: string;
+  urgent?: boolean;
+  featured?: boolean;
+}
+
+export const CALENDAR_EVENTS: CalendarEvent[] = [
+    { 
+      date: new Date(2025, 6, 11), 
+      title: 'Lanzamiento Intranet', 
+      description: 'Presentación oficial de la nueva intranet corporativa',
+      time: '10:00 AM',
+      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
+      category: 'Tecnología',
+      featured: true
+    },
+    { 
+      date: new Date(2025, 6, 15), 
+      title: 'Pago de Nómina', 
+      description: 'Depósito de nómina quincenal para todos los empleados',
+      time: '12:00 PM',
+      image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
+      category: 'Recursos Humanos'
+    },
+    { 
+      date: new Date(2025, 6, 30), 
+      title: 'Pago de Nómina', 
+      description: 'Depósito de nómina quincenal para todos los empleados',
+      time: '12:00 PM',
+      image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
+      category: 'Recursos Humanos'
+    },
+    { 
+      date: new Date(2025, 6, 30), 
+      title: 'Evento de Integración', 
+      description: 'Actividad de team building y convivencia corporativa',
+      time: '4:00 PM',
+      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
+      category: 'Eventos',
+      featured: true
+    },
   ];
 
 // Configuración del carrusel
