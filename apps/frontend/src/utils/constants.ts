@@ -49,11 +49,53 @@ export const DISABLED_CARDS: string[] = [
 
 // Eventos del calendario
 export const CURRENT_YEAR = new Date().getFullYear();
-export const CALENDAR_EVENTS: { date: Date; title: string }[] = [
-    { date: new Date(2025, 6, 11), title: 'Lanzamiento Intranet' },
-    { date: new Date(2025, 6, 15), title: 'Pago de Nómina' },
-    { date: new Date(2025, 6, 30), title: 'Pago de Nómina' },
-    { date: new Date(2025, 6, 30), title: 'Evento de Integración' },
+
+interface CalendarEvent {
+  date: Date;
+  title: string;
+  description?: string;
+  time?: string;
+  image?: string;
+  category?: string;
+  urgent?: boolean;
+  featured?: boolean;
+}
+
+export const CALENDAR_EVENTS: CalendarEvent[] = [
+    { 
+      date: new Date(2025, 6, 11), 
+      title: 'Lanzamiento Intranet', 
+      description: 'Presentación oficial de la nueva intranet corporativa',
+      time: '10:00 AM',
+      image: '/assets/banner_modelo.png',
+      category: 'Tecnología',
+      featured: true
+    },
+    { 
+      date: new Date(2025, 6, 15), 
+      title: 'Pago de Nómina', 
+      description: 'Depósito de nómina quincenal para todos los empleados',
+      time: '12:00 PM',
+      image: '/assets/banner_bono.png',
+      category: 'Recursos Humanos'
+    },
+    { 
+      date: new Date(2025, 6, 30), 
+      title: 'Pago de Nómina', 
+      description: 'Depósito de nómina quincenal para todos los empleados',
+      time: '12:00 PM',
+      image: '/assets/banner_bono.png',
+      category: 'Recursos Humanos'
+    },
+    { 
+      date: new Date(2025, 6, 30), 
+      title: 'Evento de Integración', 
+      description: 'Actividad de team building y convivencia corporativa',
+      time: '4:00 PM',
+      image: '/assets/banner_modelo.png',
+      category: 'Eventos',
+      featured: true
+    },
   ];
 
 // Configuración del carrusel
