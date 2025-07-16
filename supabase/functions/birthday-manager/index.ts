@@ -113,6 +113,7 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
       .select(`
         id,
         full_name,
+        last_name,
         title,
         birth_date,
         avatar_url,
@@ -143,15 +144,19 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
       departments?.map((dept: any) => [dept.id, dept.name]) || []
     )
 
-    const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => ({
-      id: String(profile.id),
-      name: String(profile.full_name || 'Sin nombre'),
-      position: String(profile.title || 'Sin cargo'),
-      department: String(departmentMap.get(String(profile.department_id)) || 'Sin departamento'),
-      date: String(profile.birth_date || ''),
-      avatar: profile.avatar_url ? String(profile.avatar_url) : null,
-      departmentId: profile.department_id ? String(profile.department_id) : null
-    })) || []
+    const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => {
+      const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
+      const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
+      return {
+        id: String(profile.id),
+        name: fullName,
+        position: String(profile.title || 'Sin cargo'),
+        department: departmentName,
+        date: String(profile.birth_date || ''),
+        avatar: profile.avatar_url ? String(profile.avatar_url) : null,
+        departmentId: profile.department_id ? String(profile.department_id) : null
+      };
+    }) || []
 
     birthdays.sort((a: Birthday, b: Birthday) => {
       const dayA = new Date(a.date).getDate()
@@ -202,6 +207,7 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
       .select(`
         id,
         full_name,
+        last_name,
         title,
         birth_date,
         avatar_url,
@@ -236,15 +242,19 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
     )
 
     // Transformar los datos al formato esperado por el frontend
-    const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => ({
-      id: String(profile.id),
-      name: String(profile.full_name || 'Sin nombre'),
-      position: String(profile.title || 'Sin cargo'),
-      department: String(departmentMap.get(String(profile.department_id)) || 'Sin departamento'),
-      date: String(profile.birth_date || ''),
-      avatar: profile.avatar_url ? String(profile.avatar_url) : null,
-      departmentId: profile.department_id ? String(profile.department_id) : null
-    })) || []
+    const birthdays: Birthday[] = filteredProfiles?.map((profile: Record<string, unknown>) => {
+      const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
+      const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
+      return {
+        id: String(profile.id),
+        name: fullName,
+        position: String(profile.title || 'Sin cargo'),
+        department: departmentName,
+        date: String(profile.birth_date || ''),
+        avatar: profile.avatar_url ? String(profile.avatar_url) : null,
+        departmentId: profile.department_id ? String(profile.department_id) : null
+      };
+    }) || []
 
     // Ordenar por fecha de cumpleaños (día del mes)
     birthdays.sort((a: Birthday, b: Birthday) => {
@@ -285,6 +295,7 @@ async function getAllBirthdays(supabaseClient: any) {
       .select(`
         id,
         full_name,
+        last_name,
         title,
         birth_date,
         avatar_url,
@@ -313,15 +324,19 @@ async function getAllBirthdays(supabaseClient: any) {
     )
 
     // Transformar los datos al formato esperado por el frontend
-    const birthdays: Birthday[] = profiles?.map((profile: Record<string, unknown>) => ({
-      id: String(profile.id),
-      name: String(profile.full_name || 'Sin nombre'),
-      position: String(profile.title || 'Sin cargo'),
-      department: String(departmentMap.get(String(profile.department_id)) || 'Sin departamento'),
-      date: String(profile.birth_date || ''),
-      avatar: profile.avatar_url ? String(profile.avatar_url) : null,
-      departmentId: profile.department_id ? String(profile.department_id) : null
-    })) || []
+    const birthdays: Birthday[] = profiles?.map((profile: Record<string, unknown>) => {
+      const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
+      const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
+      return {
+        id: String(profile.id),
+        name: fullName,
+        position: String(profile.title || 'Sin cargo'),
+        department: departmentName,
+        date: String(profile.birth_date || ''),
+        avatar: profile.avatar_url ? String(profile.avatar_url) : null,
+        departmentId: profile.department_id ? String(profile.department_id) : null
+      };
+    }) || []
 
     // Agrupar por mes
     const birthdaysByMonth: Record<number, Birthday[]> = birthdays.reduce((acc: Record<number, Birthday[]>, birthday: Birthday) => {
