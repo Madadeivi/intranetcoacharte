@@ -267,7 +267,6 @@ const BirthdaySlider: React.FC = () => {
         throw new Error('Error en la respuesta del servidor');
       }
       
-      // Validate that data is an array
       if (!Array.isArray(response.data)) {
         throw new Error('Datos de cumpleañeros inválidos');
       }
@@ -337,10 +336,7 @@ const BirthdaySlider: React.FC = () => {
     }
   };
 
-  // Function to get name initials
-  const getInitials = (name: string) => {
-    return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
-  };
+
 
   // If loading
   if (isLoading) {
@@ -420,7 +416,7 @@ const BirthdaySlider: React.FC = () => {
                           className="birthday-card-avatar-image"
                         />
                       ) : (
-                        getInitials(birthday.name)
+                        birthday.initial
                       )}
                     </div>
                     <div className="birthday-card-info">
@@ -487,13 +483,10 @@ const HomePage: React.FC = () => {
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const supportModalRef = useRef<HTMLDivElement>(null);
-  const birthdayPopupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const cardCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de tarjetas
   const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de enlaces rápidos
   const noticeCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de avisos
-  const birthdayCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de cumpleañeros
   const eventCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de eventos
 
   // Hook para cerrar el dropdown al hacer clic fuera
@@ -506,32 +499,9 @@ const HomePage: React.FC = () => {
   const [quicklinkCanScrollRight, setQuicklinkCanScrollRight] = useState(true); 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [birthdayCanScrollLeft, setBirthdayCanScrollLeft] = useState(false);
-  const [birthdayCanScrollRight, setBirthdayCanScrollRight] = useState(true);
   const [eventCanScrollLeft, setEventCanScrollLeft] = useState(false);
   const [eventCanScrollRight, setEventCanScrollRight] = useState(true);
-  const [currentMonthBirthdays, setCurrentMonthBirthdays] = useState<Birthday[]>([]);
-  const [birthdaysLoading, setBirthdaysLoading] = useState(true);
   const [showBirthdayPopup, setShowBirthdayPopup] = useState(false);
-
-  // Cargar cumpleañeros del mes actual
-  useEffect(() => {
-    const fetchBirthdays = async () => {
-      try {
-        setBirthdaysLoading(true);
-        const response = await birthdayService.getCurrentMonthBirthdays();
-        if (response.success) {
-          setCurrentMonthBirthdays(response.data);
-        }
-      } catch (error) {
-        console.error('Error loading birthdays:', error);
-      } finally {
-        setBirthdaysLoading(false);
-      }
-    };
-
-    fetchBirthdays();
-  }, []);
 
   // Verificar si es el cumpleaños del usuario y mostrar popup
   useEffect(() => {
@@ -593,16 +563,6 @@ const HomePage: React.FC = () => {
     }
   }, 50);
 
-  // Lógica de scroll para el carrusel de cumpleañeros
-  const handleBirthdayScroll = debounce(() => {
-    const el = birthdayCarouselRef.current;
-    if (el) {
-      const { canScrollLeft: newCanScrollLeft, canScrollRight: newCanScrollRight } = checkCarouselScrollability(el);
-      setBirthdayCanScrollLeft(newCanScrollLeft);
-      setBirthdayCanScrollRight(newCanScrollRight);
-    }
-  }, 50);
-
   // Lógica de scroll para el carrusel de eventos (vertical)
   const handleEventScroll = debounce(() => {
     const el = eventCarouselRef.current;
@@ -628,12 +588,6 @@ const HomePage: React.FC = () => {
     scrollCarousel(quicklinkCarouselRef, offset);
     // Actualizar estado inmediatamente para mejor UX
     setTimeout(() => handleQuicklinkScroll(), 100);
-  };
-
-  const scrollBirthdayCarouselBy = (offset: number) => {
-    scrollCarousel(birthdayCarouselRef, offset);
-    // Actualizar estado inmediatamente para mejor UX
-    setTimeout(() => handleBirthdayScroll(), 100);
   };
 
   const scrollEventCarouselBy = (offset: number) => {
@@ -699,26 +653,6 @@ const HomePage: React.FC = () => {
       el.removeEventListener('scroll', handleQuicklinkScroll);
     };
   }, [handleQuicklinkScroll]);
-
-  // useEffect para el carrusel de cumpleañeros
-  useEffect(() => {
-    const el = birthdayCarouselRef.current;
-    if (!el) return;
-    
-    el.addEventListener('scroll', handleBirthdayScroll);
-    
-    // Comprobar estado inicial con un pequeño delay para asegurar que el DOM esté listo
-    const checkInitialState = () => {
-      handleBirthdayScroll();
-    };
-    
-    checkInitialState();
-    setTimeout(checkInitialState, 100);
-    
-    return () => {
-      el.removeEventListener('scroll', handleBirthdayScroll);
-    };
-  }, [handleBirthdayScroll]);
 
   // useEffect para el carrusel de eventos
   useEffect(() => {
@@ -1198,78 +1132,6 @@ const HomePage: React.FC = () => {
           </div>
       </section>
 
-      {/* Banner de cumpleañeros del mes */}
-      {!birthdaysLoading && currentMonthBirthdays.length > 0 && (
-        <section className="home-birthdays">
-          <div className="birthdays-header">
-            <div className="birthdays-title">
-              <CakeIcon className="birthdays-icon" />
-              <h2>Cumpleañeros de {new Date().toLocaleDateString('es-ES', { month: 'long' })}</h2>
-            </div>
-            <p className="birthdays-subtitle">¡Celebremos juntos a nuestros compañeros!</p>
-          </div>
-          <div className="birthday-carousel-wrapper">
-            <button 
-              onClick={() => scrollBirthdayCarouselBy(-CAROUSEL_SCROLL_OFFSET)} 
-              disabled={!birthdayCanScrollLeft} 
-              className="carousel-nav-button prev birthday-carousel-nav" 
-              aria-label="Cumpleañeros anteriores"
-            >
-              <ArrowBackIosNewIcon />
-            </button>
-            <div className="birthday-carousel" ref={birthdayCarouselRef}>
-              {currentMonthBirthdays.map((birthday: Birthday) => (
-                <div key={birthday.id} className="birthday-card">
-                  <div className="birthday-avatar">
-                    {birthday.avatar ? (
-                      <Image 
-                        src={birthday.avatar} 
-                        alt={birthday.name} 
-                        width={60} 
-                        height={60}
-                        className="birthday-avatar-img"
-                      />
-                    ) : (
-                      <span className="birthday-avatar-initials">
-                        {generateInitials(birthday.name)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="birthday-info">
-                    <h3 className="birthday-name">{birthday.name}</h3>
-                    <p className="birthday-position">{birthday.position}</p>
-                    <p className="birthday-department">{birthday.department}</p>
-                    <div className="birthday-date">
-                      <CakeIcon className="birthday-date-icon" />
-                      <span>{new Date(birthday.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button 
-              onClick={() => scrollBirthdayCarouselBy(CAROUSEL_SCROLL_OFFSET)} 
-              disabled={!birthdayCanScrollRight} 
-              className="carousel-nav-button next birthday-carousel-nav" 
-              aria-label="Siguientes cumpleañeros"
-            >
-              <ArrowForwardIosIcon />
-            </button>
-          </div>
-        </section>
-      )}
-      
-      {birthdaysLoading && (
-        <section className="home-birthdays">
-          <div className="birthdays-header">
-            <div className="birthdays-title">
-              <CakeIcon className="birthdays-icon" />
-              <h2>Cargando cumpleañeros...</h2>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Slider de Cumpleañeros */}
       <BirthdaySlider />
 
@@ -1323,7 +1185,6 @@ const HomePage: React.FC = () => {
         <BirthdayPopup
           userInfo={{ firstName: firstName || displayName, displayName }}
           onClose={() => setShowBirthdayPopup(false)}
-          ref={birthdayPopupRef}
         />
       )}
 
@@ -1332,7 +1193,6 @@ const HomePage: React.FC = () => {
         <SupportModal
           userInfo={{ firstName: firstName || displayName, lastName: lastName, email: userEmail }}
           onClose={() => setIsSupportModalOpen(false)}
-          ref={supportModalRef} // Pasar el ref aquí
         />
       )}
     </div>

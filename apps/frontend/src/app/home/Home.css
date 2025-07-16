@@ -2683,8 +2683,17 @@ code {
 
 .birthday-slider-track {
   display: flex;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   gap: var(--space-4);
+  width: 100%;
+}
+
+.birthday-slider-slide {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--space-4);
+  justify-content: flex-start;
 }
 
 .birthday-card {
