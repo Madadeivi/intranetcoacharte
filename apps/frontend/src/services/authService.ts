@@ -73,17 +73,40 @@ function mapBackendUserToFrontend(backendUser: {
   department_id?: string;
   avatar_url?: string;
 }): User {
-  // Obtener los nombres por separado
-  const firstName = backendUser.full_name || '';
-  const lastName = backendUser.last_name || '';
+  // Obtener los nombres del backend
+  const backendFullName = backendUser.full_name || '';
+  const backendLastName = backendUser.last_name || '';
   
-  // Para el nombre completo, combinar full_name y last_name
-  let displayName = `${firstName} ${lastName}`.trim();
-  if (!displayName) {
-    displayName = backendUser.email.split('@')[0]; // Fallback al email
+  // Si full_name contiene nombre y apellido separados por espacio
+  let firstName = '';
+  let lastName = '';
+  let displayName = '';
+  
+  if (backendFullName && backendLastName) {
+    // Caso 1: Tenemos both full_name y last_name
+    firstName = backendFullName;
+    lastName = backendLastName;
+    displayName = `${firstName} ${lastName}`.trim();
+  } else if (backendFullName) {
+    // Caso 2: Solo tenemos full_name, intentar dividir por espacio
+    const nameParts = backendFullName.trim().split(' ');
+    if (nameParts.length >= 2) {
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(' ');
+      displayName = backendFullName;
+    } else {
+      firstName = backendFullName;
+      lastName = '';
+      displayName = backendFullName;
+    }
+  } else {
+    // Caso 3: Fallback al email
+    firstName = '';
+    lastName = '';
+    displayName = backendUser.email.split('@')[0];
   }
-
-  return {
+  
+  const mappedUser = {
     id: backendUser.id,
     email: backendUser.email,
     name: displayName,
@@ -93,6 +116,7 @@ function mapBackendUserToFrontend(backendUser: {
     department: backendUser.department_id,
     avatar: backendUser.avatar_url
   };
+  return mappedUser;
 }
 
 /**
@@ -311,7 +335,8 @@ class UnifiedAuthService {
         return {
           success: true,
           user: mappedUser,
-          session: this.currentSession || undefined
+          session: this.currentSession || undefined,
+          requiresPasswordChange: response.data.password_change_required
         };
       }
 
@@ -449,7 +474,7 @@ class UnifiedAuthService {
     try {
       const userStr = localStorage.getItem(this.USER_KEY);
       const sessionStr = localStorage.getItem(this.SESSION_KEY);
-
+      
       if (userStr) {
         this.currentUser = JSON.parse(userStr);
       }

@@ -557,6 +557,7 @@ async function handleValidateToken(
       id: user.id,
       email: user.email,
       full_name: user.full_name,
+      last_name: user.last_name || '',
       role: user.role,
       title: user.title || '',
       avatar_url: user.avatar_url || '',

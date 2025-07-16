@@ -40,12 +40,9 @@ export const birthdayService = {
         }
       );
       
-      // customFetch envuelve la respuesta en ApiResponse
-      if (response.success && response.data) {
-        return response.data;
-      } else {
-        throw new Error(response.error || 'Error al obtener cumpleañeros');
-      }
+      // customFetch detecta que el servidor ya devuelve el formato correcto
+      // y lo devuelve directamente sin envolverlo
+      return response as unknown as BirthdayResponse;
     } catch (error) {
       console.error('Error fetching current month birthdays:', error);
       throw error;
@@ -73,12 +70,9 @@ export const birthdayService = {
         }
       );
       
-      // customFetch envuelve la respuesta en ApiResponse
-      if (response.success && response.data) {
-        return response.data;
-      } else {
-        throw new Error(response.error || 'Error al obtener cumpleañeros');
-      }
+      // customFetch detecta que el servidor ya devuelve el formato correcto
+      // y lo devuelve directamente sin envolverlo
+      return response as unknown as BirthdayResponse;
     } catch (error) {
       console.error('Error fetching month birthdays:', error);
       throw error;
@@ -97,12 +91,9 @@ export const birthdayService = {
         }
       );
       
-      // customFetch envuelve la respuesta en ApiResponse
-      if (response.success && response.data) {
-        return response.data;
-      } else {
-        throw new Error(response.error || 'Error al obtener cumpleañeros');
-      }
+      // customFetch detecta que el servidor ya devuelve el formato correcto
+      // y lo devuelve directamente sin envolverlo
+      return response as unknown as AllBirthdaysResponse;
     } catch (error) {
       console.error('Error fetching all birthdays:', error);
       throw error;
