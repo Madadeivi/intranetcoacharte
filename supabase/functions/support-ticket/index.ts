@@ -25,7 +25,7 @@ async function initializeJWTKey(): Promise<void> {
     jwtCryptoKey = await crypto.subtle.importKey(
       "raw",
       keyData,
-      { name: "HMAC", hash: "SHA-256" }, // SHA-256 igual que profile-manager
+      { name: "HMAC", hash: "SHA-512" },
       false,
       ["sign", "verify"]
     );
@@ -202,9 +202,31 @@ serve(async (req) => {
 
 
   // Buscar JWT en Authorization (estándar) o X-User-Token (compatibilidad)
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   let userTokenHeader = req.headers.get('Authorization') || req.headers.get('X-User-Token');
-  const userId = await getUserFromToken(userTokenHeader);
+  console.log('[support-ticket] Authorization:', req.headers.get('Authorization'));
+  console.log('[support-ticket] X-User-Token:', req.headers.get('X-User-Token'));
+  console.log('[support-ticket] anonKey:', anonKey);
+  if (userTokenHeader) {
+    console.log('[support-ticket] userTokenHeader:', userTokenHeader);
+  }
+  // Si Authorization contiene el anon key, rechazar (solo se acepta JWT de usuario real)
+  if (userTokenHeader && anonKey && userTokenHeader.includes(anonKey)) {
+    console.log('[support-ticket] Rechazado por uso de anon key');
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Invalid token',
+      message: 'No se permite el uso del anon key para este endpoint'
+    }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  const { valid, payload } = userTokenHeader ? await verifyCustomJWT(userTokenHeader.startsWith('Bearer ') ? userTokenHeader.substring(7) : userTokenHeader) : { valid: false };
+  console.log('[support-ticket] JWT valid:', valid, 'payload:', payload);
+  const userId = valid && payload?.sub ? payload.sub : null;
   if (!userId) {
+    console.log('[support-ticket] Token inválido o sin sub');
     return new Response(JSON.stringify({
       success: false,
       error: 'Invalid token',
