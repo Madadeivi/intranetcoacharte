@@ -87,15 +87,6 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
       category: 'Recursos Humanos'
     },
-    { 
-      date: new Date(2025, 6, 30), 
-      title: 'Evento de Integración', 
-      description: 'Actividad de team building y convivencia corporativa',
-      time: '4:00 PM',
-      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
-      category: 'Eventos',
-      featured: true
-    },
   ];
 
 // Configuración del carrusel
