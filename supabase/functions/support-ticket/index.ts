@@ -5,19 +5,52 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
-var ZohoDeskTicketPriority;
-(function(ZohoDeskTicketPriority) {
-  ZohoDeskTicketPriority["LOW"] = "Low";
-  ZohoDeskTicketPriority["MEDIUM"] = "Medium";
-  ZohoDeskTicketPriority["HIGH"] = "High";
-  ZohoDeskTicketPriority["URGENT"] = "Urgent";
-})(ZohoDeskTicketPriority || (ZohoDeskTicketPriority = {}));
+
+enum ZohoDeskTicketPriority {
+  LOW = "Low",
+  MEDIUM = "Medium",
+  HIGH = "High",
+  URGENT = "Urgent"
+}
+
+// ===== JWT UTILS (igual que profile-manager) =====
+import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
+let jwtCryptoKey: CryptoKey | null = null;
+async function initializeJWTKey(): Promise<void> {
+  try {
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) return;
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecret);
+    jwtCryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+  } catch (_error) {
+    jwtCryptoKey = null;
+  }
+}
+await initializeJWTKey();
+
+async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: { sub: string } }> {
+  try {
+    if (!jwtCryptoKey) return { valid: false };
+    const payload = await verify(token, jwtCryptoKey) as { sub: string };
+    return { valid: true, payload };
+  } catch (_error) {
+    return { valid: false };
+  }
+}
 // Cache para el token de acceso
 let accessToken = null;
 let tokenExpiryTime = null;
 /**
  * Obtiene un token de acceso de Zoho OAuth
- */ async function getZohoAccessToken() {
+ */
+async function getZohoAccessToken() {
   const ZOHO_REFRESH_TOKEN = Deno.env.get("ZOHO_REFRESH_TOKEN");
   const ZOHO_CLIENT_ID = Deno.env.get("ZOHO_CLIENT_ID");
   const ZOHO_CLIENT_SECRET = Deno.env.get("ZOHO_CLIENT_SECRET");
@@ -55,7 +88,8 @@ let tokenExpiryTime = null;
 }
 /**
  * Crea un ticket en Zoho Desk
- */ async function createZohoDeskTicket(ticketData) {
+ */
+async function createZohoDeskTicket(ticketData) {
   const token = await getZohoAccessToken();
   const ZOHO_DESK_API_URL = Deno.env.get("ZOHO_DESK_API_URL");
   const ZOHO_DESK_ORG_ID = Deno.env.get("ZOHO_DESK_ORG_ID");
@@ -91,7 +125,8 @@ let tokenExpiryTime = null;
 }
 /**
  * Genera el HTML del email de confirmación
- */ function generateTicketConfirmationEmail(data) {
+ */
+function generateTicketConfirmationEmail(data) {
   return `
 <!DOCTYPE html>
 <html>
@@ -143,13 +178,45 @@ let tokenExpiryTime = null;
 </body>
 </html>`;
 }
-serve(async (req)=>{
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: corsHeaders
     });
   }
+
+
+  // Buscar JWT en Authorization (estándar) o X-User-Token (compatibilidad)
+  let userTokenHeader = req.headers.get('Authorization');
+  if (userTokenHeader && userTokenHeader.startsWith('Bearer ')) {
+    userTokenHeader = userTokenHeader.replace('Bearer ', '').trim();
+  } else {
+    userTokenHeader = req.headers.get('X-User-Token');
+  }
+  if (!userTokenHeader) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'User token missing',
+      message: 'Token de usuario requerido'
+    }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  // Validar JWT
+  const { valid, payload } = await verifyCustomJWT(userTokenHeader);
+  if (!valid || !payload?.sub) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Invalid token',
+      message: 'Token de autorización inválido'
+    }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
   try {
     const { userEmail, userName, subject, message, priority, category } = await req.json();
     if (!userEmail || !userName || !subject || !message) {

@@ -219,7 +219,7 @@ export const customFetch = async <T>(
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
       // Agregar el JWT personalizado como header personalizado para profile-manager
-      if (url.includes('profile-manager') && typeof window !== 'undefined') {
+      if (url.includes('profile-manager') || url.includes('support-ticket') && typeof window !== 'undefined') {
         const userToken = localStorage.getItem('coacharte_auth_token');
         if (userToken) {
           defaultHeaders['X-User-Token'] = userToken;
