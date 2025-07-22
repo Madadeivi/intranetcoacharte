@@ -13,7 +13,7 @@ enum ZohoDeskTicketPriority {
   URGENT = "Urgent"
 }
 
-// ===== JWT UTILS (igual que profile-manager) =====
+// ===== JWT UTILS (igual que profile-manager, SHA-256) =====
 import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
 let jwtCryptoKey: CryptoKey | null = null;
 async function initializeJWTKey(): Promise<void> {
@@ -25,7 +25,7 @@ async function initializeJWTKey(): Promise<void> {
     jwtCryptoKey = await crypto.subtle.importKey(
       "raw",
       keyData,
-      { name: "HMAC", hash: "SHA-512" },
+      { name: "HMAC", hash: "SHA-256" }, // SHA-256 igual que profile-manager
       false,
       ["sign", "verify"]
     );
@@ -43,6 +43,19 @@ async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload
   } catch (_error) {
     return { valid: false };
   }
+}
+
+async function getUserFromToken(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  let token = authHeader;
+  if (authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  }
+  const { valid, payload } = await verifyCustomJWT(token);
+  if (valid && payload?.sub) {
+    return payload.sub;
+  }
+  return null;
 }
 // Cache para el token de acceso
 let accessToken = null;
@@ -187,26 +200,11 @@ serve(async (req) => {
   }
 
 
+
   // Buscar JWT en Authorization (estándar) o X-User-Token (compatibilidad)
-  let userTokenHeader = req.headers.get('Authorization');
-  if (userTokenHeader && userTokenHeader.startsWith('Bearer ')) {
-    userTokenHeader = userTokenHeader.replace('Bearer ', '').trim();
-  } else {
-    userTokenHeader = req.headers.get('X-User-Token');
-  }
-  if (!userTokenHeader) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'User token missing',
-      message: 'Token de usuario requerido'
-    }), {
-      status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-  // Validar JWT
-  const { valid, payload } = await verifyCustomJWT(userTokenHeader);
-  if (!valid || !payload?.sub) {
+  let userTokenHeader = req.headers.get('Authorization') || req.headers.get('X-User-Token');
+  const userId = await getUserFromToken(userTokenHeader);
+  if (!userId) {
     return new Response(JSON.stringify({
       success: false,
       error: 'Invalid token',
