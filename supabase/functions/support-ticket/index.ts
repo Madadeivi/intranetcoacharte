@@ -13,7 +13,7 @@ enum ZohoDeskTicketPriority {
   URGENT = "Urgent"
 }
 
-// ===== JWT UTILS (igual que profile-manager) =====
+// ===== JWT UTILS (igual que profile-manager, SHA-256) =====
 import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
 let jwtCryptoKey: CryptoKey | null = null;
 async function initializeJWTKey(): Promise<void> {
@@ -43,6 +43,19 @@ async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload
   } catch (_error) {
     return { valid: false };
   }
+}
+
+async function getUserFromToken(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  let token = authHeader;
+  if (authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  }
+  const { valid, payload } = await verifyCustomJWT(token);
+  if (valid && payload?.sub) {
+    return payload.sub;
+  }
+  return null;
 }
 // Cache para el token de acceso
 let accessToken = null;
@@ -187,26 +200,33 @@ serve(async (req) => {
   }
 
 
+
   // Buscar JWT en Authorization (estándar) o X-User-Token (compatibilidad)
-  let userTokenHeader = req.headers.get('Authorization');
-  if (userTokenHeader && userTokenHeader.startsWith('Bearer ')) {
-    userTokenHeader = userTokenHeader.replace('Bearer ', '').trim();
-  } else {
-    userTokenHeader = req.headers.get('X-User-Token');
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  let userTokenHeader = req.headers.get('Authorization') || req.headers.get('X-User-Token');
+  console.log('[support-ticket] Authorization:', req.headers.get('Authorization'));
+  console.log('[support-ticket] X-User-Token:', req.headers.get('X-User-Token'));
+  console.log('[support-ticket] anonKey:', anonKey);
+  if (userTokenHeader) {
+    console.log('[support-ticket] userTokenHeader:', userTokenHeader);
   }
-  if (!userTokenHeader) {
+  // Si Authorization contiene el anon key, rechazar (solo se acepta JWT de usuario real)
+  if (userTokenHeader && anonKey && userTokenHeader.includes(anonKey)) {
+    console.log('[support-ticket] Rechazado por uso de anon key');
     return new Response(JSON.stringify({
       success: false,
-      error: 'User token missing',
-      message: 'Token de usuario requerido'
+      error: 'Invalid token',
+      message: 'No se permite el uso del anon key para este endpoint'
     }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-  // Validar JWT
-  const { valid, payload } = await verifyCustomJWT(userTokenHeader);
-  if (!valid || !payload?.sub) {
+  const { valid, payload } = userTokenHeader ? await verifyCustomJWT(userTokenHeader.startsWith('Bearer ') ? userTokenHeader.substring(7) : userTokenHeader) : { valid: false };
+  console.log('[support-ticket] JWT valid:', valid, 'payload:', payload);
+  const userId = valid && payload?.sub ? payload.sub : null;
+  if (!userId) {
+    console.log('[support-ticket] Token inválido o sin sub');
     return new Response(JSON.stringify({
       success: false,
       error: 'Invalid token',
