@@ -166,7 +166,7 @@ EMAIL_PASS=::youwouldnoguess::
 EMAIL_FROM=soporte@coacharte.mx
 
 # Seguridad (mismo JWT)
-JWT_SECRET=8ebe269973a8dafc3514a99489c59fbd8ee2e949797ffa0c634893ca113d683a25bce8513a59a5ee0b20d53880336751f7dace5461bc0eb33da170e823653cbc
+JWT_SECRET=
 ```
 
 ## Configuración de Dominios
