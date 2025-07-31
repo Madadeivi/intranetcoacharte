@@ -36,7 +36,7 @@ export interface Notice {
       id: 4,
       title: "INDUCCION INTEGRAL",
       detail: 'En los ultimos meses, nuestra familia Coacharte ha crecido con nuevos talentos y hemos implementado importantes mejoras en nuestra cultura y procesos. Para asegurar que todos estemos alineados y saquemos el máximo provecho de estos cambios, hemos organizado una inducción integral',
-      imageUrl: "/assets/induccion_integral.png",
+      imageUrl: "/assets/induccion_general.png",
       date: "04 Ago 2025",
       summary: "Inducción integral para nuevos colaboradores."
     },
@@ -93,6 +93,14 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
       image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
+      category: 'Recursos Humanos'
+    },
+    { 
+      date: new Date(2025, 7, 4), 
+      title: 'INDUCCION INTEGRAL', 
+      description: 'Inducción integral para nuevos colaboradores.',
+      time: '8:00 AM',
+      image: '/assets/induccion_general.png',
       category: 'Recursos Humanos'
     },
   ];
