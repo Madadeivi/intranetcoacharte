@@ -32,6 +32,14 @@ export interface Notice {
       date: "30 Jul 2025",
       summary: "Bono 2024 derivado de los resultados de la evaluación."
     },
+    {
+      id: 4,
+      title: "INDUCCION INTEGRAL",
+      detail: 'En los ultimos meses, nuestra familia Coacharte ha crecido con nuevos talentos y hemos implementado importantes mejoras en nuestra cultura y procesos. Para asegurar que todos estemos alineados y saquemos el máximo provecho de estos cambios, hemos organizado una inducción integral',
+      imageUrl: "/assets/induccion_integral.png",
+      date: "04 Ago 2025",
+      summary: "Inducción integral para nuevos colaboradores."
+    },
   ];
 
 /**
