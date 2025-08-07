@@ -13,13 +13,16 @@ enum ZohoDeskTicketPriority {
   URGENT = "Urgent"
 }
 
-// ===== JWT UTILS (igual que profile-manager, SHA-256) =====
+// ===== JWT UTILS (usa SHA-512 como unified-auth) =====
 import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
 let jwtCryptoKey: CryptoKey | null = null;
 async function initializeJWTKey(): Promise<void> {
   try {
     const jwtSecret = Deno.env.get("JWT_SECRET");
-    if (!jwtSecret) return;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET not found in environment variables');
+      return;
+    }
     const encoder = new TextEncoder();
     const keyData = encoder.encode(jwtSecret);
     jwtCryptoKey = await crypto.subtle.importKey(
@@ -29,7 +32,9 @@ async function initializeJWTKey(): Promise<void> {
       false,
       ["sign", "verify"]
     );
-  } catch (_error) {
+    console.log('JWT key initialized successfully');
+  } catch (error) {
+    console.error('Error initializing JWT key:', error);
     jwtCryptoKey = null;
   }
 }
@@ -37,10 +42,15 @@ await initializeJWTKey();
 
 async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: { sub: string } }> {
   try {
-    if (!jwtCryptoKey) return { valid: false };
+    if (!jwtCryptoKey) {
+      console.error('JWT crypto key is not initialized');
+      return { valid: false };
+    }
+    
     const payload = await verify(token, jwtCryptoKey) as { sub: string };
     return { valid: true, payload };
-  } catch (_error) {
+  } catch (error) {
+    console.error('JWT verification failed:', error instanceof Error ? error.message : String(error));
     return { valid: false };
   }
 }
@@ -199,28 +209,41 @@ serve(async (req) => {
     });
   }
 
-
-
-  // Buscar JWT en Authorization (estándar) o X-User-Token (compatibilidad)
+  // Validar JWT de usuario - usar header personalizado para evitar validación automática de Supabase
+  const authHeader = req.headers.get('Authorization');
+  const customAuthHeader = req.headers.get('X-User-Token'); // Header personalizado
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  let userTokenHeader = req.headers.get('Authorization') || req.headers.get('X-User-Token');
+  
+  // Usar el header personalizado si está presente, sino usar Authorization
+  const userTokenHeader = customAuthHeader || authHeader;
+  
+  // Rechazar si intentan usar anon key como token de autorización
   if (userTokenHeader && anonKey && userTokenHeader.includes(anonKey)) {
     return new Response(JSON.stringify({
       success: false,
       error: 'Invalid token',
-      message: 'No se permite el uso del anon key para este endpoint'
+      message: 'No se permite el uso del anon key como token de autorización'
     }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-  const { valid, payload } = userTokenHeader ? await verifyCustomJWT(userTokenHeader.startsWith('Bearer ') ? userTokenHeader.substring(7) : userTokenHeader) : { valid: false };
+  
+  // Extraer token del header
+  let userToken = userTokenHeader;
+  if (userTokenHeader && userTokenHeader.startsWith('Bearer ')) {
+    userToken = userTokenHeader.substring(7);
+  }
+  
+  // Verificar JWT de usuario
+  const { valid, payload } = userToken ? await verifyCustomJWT(userToken) : { valid: false };
   const userId = valid && payload?.sub ? payload.sub : null;
+  
   if (!userId) {
     return new Response(JSON.stringify({
       success: false,
       error: 'Invalid token',
-      message: 'Token de autorización inválido'
+      message: 'Token de autorización inválido o faltante'
     }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

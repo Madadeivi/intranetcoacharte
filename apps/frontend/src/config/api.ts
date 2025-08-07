@@ -214,13 +214,14 @@ export const customFetch = async <T>(
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
     } else if (url.includes('support-ticket') && typeof window !== 'undefined') {
-      // Para support-ticket: solo enviar JWT de usuario en Authorization, sin apikey ni anon key
+      // Para support-ticket: usar anon key en Authorization, JWT de usuario en X-User-Token
       const userToken = localStorage.getItem('coacharte_auth_token');
       if (userToken) {
-        defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+        if (supabaseAnonKey) {
+          defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`; // Anon key para Supabase
+        }
+        defaultHeaders['X-User-Token'] = userToken; // JWT de usuario para validación personalizada
       }
-      // Eliminar apikey si existe
-      delete defaultHeaders['apikey'];
     } else if (url.includes('birthday-manager') || url.includes('profile-manager')) {
       // birthday-manager y profile-manager: usan anon key para bypassing JWT validation
       if (supabaseAnonKey) {
