@@ -88,11 +88,15 @@ const isUserBirthday = (user: User | null): boolean => {
   const birthDateField = user.birth_date || user.birthday;
   if (!birthDateField) return false;
   
+  // Obtener fecha actual en zona horaria de México
   const today = new Date();
-  const birthday = new Date(birthDateField);
+  const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
   
-  return today.getMonth() === birthday.getMonth() && 
-         today.getDate() === birthday.getDate();
+  // Crear fecha de cumpleaños forzando zona horaria de México
+  const birthday = new Date(birthDateField + 'T00:00:00-06:00');
+  
+  return todayInMexico.getMonth() === birthday.getMonth() && 
+         todayInMexico.getDate() === birthday.getDate();
 };
 
 /**
@@ -302,21 +306,28 @@ const BirthdaySlider: React.FC = () => {
     fetchBirthdayData();
   }, []);
 
-  // Function to format date
+  // Function to format date - usando zona horaria de México
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
+    // Crear fecha asumiendo que viene en formato YYYY-MM-DD y forzar zona horaria de México
+    const date = new Date(dateString + 'T00:00:00-06:00');
+    return date.toLocaleDateString('es-MX', {
       day: 'numeric',
       month: 'long',
+      timeZone: 'America/Mexico_City'
     });
   };
 
-  // Function to check if today is birthday
+  // Function to check if today is birthday - usando zona horaria de México
   const isBirthdayToday = (dateString: string) => {
     const today = new Date();
-    const birthday = new Date(dateString);
-    return today.getDate() === birthday.getDate() && 
-           today.getMonth() === birthday.getMonth();
+    // Crear fecha de cumpleaños forzando zona horaria de México
+    const birthday = new Date(dateString + 'T00:00:00-06:00');
+    
+    // Obtener fecha actual en zona horaria de México
+    const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
+    
+    return todayInMexico.getDate() === birthday.getDate() && 
+           todayInMexico.getMonth() === birthday.getMonth();
   };
 
   // Function to navigate in slider

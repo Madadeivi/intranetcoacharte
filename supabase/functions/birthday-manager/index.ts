@@ -130,7 +130,9 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
 
     const filteredProfiles = profiles?.filter((profile: Record<string, unknown>) => {
       if (!profile.birth_date) return false
-      const birthDate = new Date(String(profile.birth_date))
+      // Crear fecha como string de solo fecha (YYYY-MM-DD) para evitar problemas de zona horaria
+      const birthDateString = String(profile.birth_date)
+      const birthDate = new Date(birthDateString + 'T00:00:00-06:00') // Forzar zona horaria de México
       return birthDate.getMonth() + 1 === currentMonth
     }) || []
 
@@ -163,8 +165,9 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
     }) || []
 
     birthdays.sort((a: Birthday, b: Birthday) => {
-      const dayA = new Date(a.date).getDate()
-      const dayB = new Date(b.date).getDate()
+      // Crear fechas con zona horaria de México para comparación correcta
+      const dayA = new Date(a.date + 'T00:00:00-06:00').getDate()
+      const dayB = new Date(b.date + 'T00:00:00-06:00').getDate()
       return dayA - dayB
     })
 
@@ -229,7 +232,9 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
     // Filtrar perfiles por mes específico
     const filteredProfiles = profiles?.filter((profile: Record<string, unknown>) => {
       if (!profile.birth_date) return false
-      const birthDate = new Date(String(profile.birth_date))
+      // Crear fecha como string de solo fecha (YYYY-MM-DD) para evitar problemas de zona horaria
+      const birthDateString = String(profile.birth_date)
+      const birthDate = new Date(birthDateString + 'T00:00:00-06:00') // Forzar zona horaria de México
       return birthDate.getMonth() + 1 === monthNum
     }) || []
 
@@ -265,8 +270,9 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
 
     // Ordenar por fecha de cumpleaños (día del mes)
     birthdays.sort((a: Birthday, b: Birthday) => {
-      const dayA = new Date(a.date).getDate()
-      const dayB = new Date(b.date).getDate()
+      // Crear fechas con zona horaria de México para comparación correcta
+      const dayA = new Date(a.date + 'T00:00:00-06:00').getDate()
+      const dayB = new Date(b.date + 'T00:00:00-06:00').getDate()
       return dayA - dayB
     })
 
