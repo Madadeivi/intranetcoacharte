@@ -1002,10 +1002,10 @@ const HomePage: React.FC = () => {
               <AccountCircleIcon className="quicklink-icon" />
               <h3>Mi Perfil</h3>
             </Link>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+            <Link href="/vacations" className="quicklink">
               <DescriptionIcon className="quicklink-icon" />
               <h3>Solicitud de Vacaciones</h3>
-            </a>
+            </Link>
             <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}} className="quicklink">
               <HeadsetMicIcon className="quicklink-icon" />
               <h3>Soporte Técnico</h3>

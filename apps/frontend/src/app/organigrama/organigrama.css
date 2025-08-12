@@ -1,0 +1,355 @@
+/* Organigrama Page Styles */
+.organigrama-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Header */
+.organigrama-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background: #f0f0f0;
+  color: #666;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.back-button:hover {
+  background: #e0e0e0;
+  color: #333;
+  transform: translateY(-2px);
+}
+
+.organigrama-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #333;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-icon {
+  font-size: 2.5rem !important;
+  color: #2196f3;
+}
+
+/* Introducción */
+.organigrama-intro {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.organigrama-intro p {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
+}
+
+/* Contenido del organigrama */
+.organigrama-content {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.organigrama-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.organigrama-actions h2 {
+  color: #333;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.download-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+}
+
+.download-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.download-button:active {
+  transform: translateY(0);
+}
+
+/* Contenedor del organigrama */
+.organigrama-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
+}
+
+.organigrama-image-wrapper {
+  width: 100%;
+  max-width: 1000px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.organigrama-image-wrapper:hover {
+  transform: scale(1.02);
+}
+
+.organigrama-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 15px;
+}
+
+/* Información adicional */
+.organigrama-info {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.organigrama-info h2 {
+  color: #333;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.info-item {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  border-left: 4px solid #2196f3;
+  transition: transform 0.3s ease;
+}
+
+.info-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.info-item h3 {
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.info-item p {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.organigrama-description {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.organigrama-description h3 {
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+}
+
+.organigrama-description p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.organigrama-description ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.organigrama-description li {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.organigrama-description li::before {
+  content: "•";
+  color: #2196f3;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+.organigrama-description li strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Estructura jerárquica */
+.jerarquia-info {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.jerarquia-info h4 {
+  color: #2196f3;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 15px 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.jerarquia-info h4:first-child {
+  margin-top: 0;
+}
+
+.jerarquia-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+}
+
+.jerarquia-info li {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  padding-left: 15px;
+  position: relative;
+}
+
+.jerarquia-info li::before {
+  content: "▶";
+  color: #2196f3;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  font-size: 0.8rem;
+}
+
+.jerarquia-info li strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .organigrama-page {
+    padding: 10px;
+  }
+  
+  .organigrama-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .organigrama-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .organigrama-actions {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .download-button {
+    justify-content: center;
+  }
+  
+  .organigrama-content,
+  .organigrama-intro,
+  .organigrama-info {
+    padding: 20px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .organigrama-image-wrapper {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .organigrama-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .page-icon {
+    font-size: 2rem !important;
+  }
+  
+  .organigrama-content,
+  .organigrama-intro,
+  .organigrama-info {
+    padding: 15px;
+  }
+}
