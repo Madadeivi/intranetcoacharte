@@ -142,8 +142,8 @@ export const birthdayService = {
   sortByDate: (birthdays: Birthday[]): Birthday[] => {
     return [...birthdays].sort((a, b) => {
       // Validar fechas antes de comparar
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
+      const dateA = new Date(a.date + 'T00:00:00-06:00'); // Forzar zona horaria de México
+      const dateB = new Date(b.date + 'T00:00:00-06:00'); // Forzar zona horaria de México
       
       // Verificar que las fechas son válidas
       if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
@@ -182,14 +182,20 @@ export const birthdayService = {
           return false;
         }
         
-        const birthdayDate = new Date(birthday.date);
+        // Crear fecha con zona horaria de México
+        const birthdayDate = new Date(birthday.date + 'T00:00:00-06:00');
         
         // Verificar que la fecha es válida
         if (isNaN(birthdayDate.getTime())) {
           console.warn(`Invalid date format for birthday: ${birthday.date}`);
           return false;
         }
-        const timeDiff = birthdayDate.getTime() - currentDate.getTime();
+        
+        // Obtener fecha actual en zona horaria de México
+        const today = new Date();
+        const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
+        
+        const timeDiff = birthdayDate.getTime() - todayInMexico.getTime();
         const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
         
         return daysDiff >= 0 && daysDiff <= days;
