@@ -24,11 +24,21 @@ class SupportService {
       if (response.success && response.data) {
         return response.data;
       } else {
-        throw new Error(response.error || 'Error al crear el ticket de soporte');
+        const errorMessage = response.error || 'Error al crear el ticket de soporte';
+        const isZohoAuthError = response.details === 'ZOHO_AUTH_ERROR';
+        
+        if (isZohoAuthError) {
+          throw new Error('Servicio temporalmente no disponible. El equipo técnico ha sido notificado.');
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Create ticket error:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Error de conexión al crear el ticket');
     }
   }
 
