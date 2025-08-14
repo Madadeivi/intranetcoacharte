@@ -894,11 +894,13 @@ const HomePage: React.FC = () => {
                 Mi Cuenta
               </Link>
             </div>
-            <div className={`main-card ${DISABLED_CARDS.includes('Recursos Humanos') ? 'disabled' : ''}`}>
+            <div className={`main-card ${DISABLED_CARDS.includes('Talento y Transformación') ? 'disabled' : ''}`}>
               <GroupsIcon className="main-card-icon" />
-              <h3>Recursos Humanos</h3>
+              <h3>Talento y Transformación</h3>
               <p>Nómina, vacaciones y prestaciones</p>
-              <a href="#" onClick={(e) => e.preventDefault()}>Acceder</a>
+              <Link href="/recursos-humanos" className="main-card-button">
+                Acceder
+              </Link>
             </div>
             <div className={`main-card ${DISABLED_CARDS.includes('Procesos y Documentación') ? 'disabled' : ''}`}>
               <DescriptionIcon className="main-card-icon" />

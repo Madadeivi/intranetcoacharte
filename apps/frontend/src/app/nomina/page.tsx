@@ -118,7 +118,7 @@ const NominaPage: React.FC = () => {
       <div className="nomina-header">
         <Link href="/recursos-humanos" className="back-button">
           <ArrowBackIcon />
-          <span>Volver</span>
+          <span>Volver a Talento y Transformación</span>
         </Link>
         <h1>
           <ReceiptIcon className="page-icon" />

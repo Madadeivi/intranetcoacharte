@@ -1,5 +1,6 @@
-/* Estilos para la página de Recursos Humanos */
+/* Estilos para la página de Talento y Transformación */
 
+.talento-transformacion-page,
 .recursos-humanos-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -223,6 +224,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .talento-transformacion-page,
   .recursos-humanos-page {
     padding: 16px;
   }

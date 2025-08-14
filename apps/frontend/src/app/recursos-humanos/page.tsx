@@ -49,7 +49,7 @@ const RecursosHumanosPage: React.FC = () => {
   ];
 
   return (
-    <div className="recursos-humanos-page">
+    <div className="talento-transformacion-page recursos-humanos-page">
       {/* Header */}
       <div className="rh-header">
         <Link href="/home" className="back-button">
@@ -58,14 +58,14 @@ const RecursosHumanosPage: React.FC = () => {
         </Link>
         <h1>
           <GroupsIcon className="page-icon" />
-          Recursos Humanos
+          Talento y Transformación
         </h1>
       </div>
 
       {/* Descripción */}
       <section className="rh-intro">
         <p>
-          Accede a todos los servicios de Recursos Humanos de Coacharte. 
+          Accede a todos los servicios de Talento y Transformación de Coacharte. 
           Aquí puedes gestionar tu información laboral, solicitudes y consultar 
           la estructura organizacional de la empresa.
         </p>
@@ -117,13 +117,13 @@ const RecursosHumanosPage: React.FC = () => {
             <p>Sábados: 9:00 AM - 2:00 PM</p>
           </div>
           <div className="info-card">
-            <h3>Contacto RRHH</h3>
-            <p>Email: rrhh@coacharte.mx</p>
+            <h3>Contacto T&T</h3>
+            <p>Email: talento@coacharte.mx</p>
             <p>Teléfono: (55) 1234-5678</p>
           </div>
           <div className="info-card">
             <h3>Políticas</h3>
-            <p>Consulta nuestras políticas de RRHH en el manual del empleado</p>
+            <p>Consulta nuestras políticas de T&T en el manual del empleado</p>
             <Link href="/documentos" className="info-link">
               Ver documentos
             </Link>

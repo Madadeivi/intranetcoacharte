@@ -48,7 +48,6 @@ export interface Notice {
 
 // Tarjetas deshabilitadas por defecto
 export const DISABLED_CARDS: string[] = [
-  'Recursos Humanos', 
   'Procesos y Documentación', 
   'Soporte y Comunicación', 
   'Calendario y Eventos', 
@@ -85,7 +84,7 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
       image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
-      category: 'Recursos Humanos'
+      category: 'Talento y Transformación'
     },
     { 
       date: new Date(2025, 6, 30), 
@@ -93,7 +92,7 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
       image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
-      category: 'Recursos Humanos'
+      category: 'Talento y Transformación'
     },
     { 
       date: new Date(2025, 7, 4), 
@@ -101,7 +100,7 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       description: 'Inducción integral para nuevos colaboradores.',
       time: '8:00 AM',
       image: '/assets/induccion_general.png',
-      category: 'Recursos Humanos'
+      category: 'Talento y Transformación'
     },
   ];
 
@@ -115,6 +114,6 @@ export const NOMINA_BASE_URL = 'https://nomina.coacharte.mx/user.php';
 export const navItems = [
     { label: 'Inicio', href: '/home' },
     { label: 'Mi Cuenta', href: '/profile' },
-    { label: 'Recursos Humanos', href: '#' },
+    { label: 'Talento y Transformación', href: '/recursos-humanos' },
     { label: 'Procesos', href: '#' },
   ];
