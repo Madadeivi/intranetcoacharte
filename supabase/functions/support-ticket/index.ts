@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-user-token",
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
 
@@ -55,21 +55,8 @@ async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload
   }
 }
 
-async function getUserFromToken(authHeader: string | null): Promise<string | null> {
-  if (!authHeader) return null;
-  let token = authHeader;
-  if (authHeader.startsWith('Bearer ')) {
-    token = authHeader.substring(7);
-  }
-  const { valid, payload } = await verifyCustomJWT(token);
-  if (valid && payload?.sub) {
-    return payload.sub;
-  }
-  return null;
-}
-// Cache para el token de acceso
-let accessToken = null;
-let tokenExpiryTime = null;
+let accessToken: string | null = null;
+let tokenExpiryTime: number | null = null;
 /**
  * Obtiene un token de acceso de Zoho OAuth
  */
@@ -80,7 +67,6 @@ async function getZohoAccessToken() {
   if (!ZOHO_REFRESH_TOKEN || !ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
     throw new Error("Faltan variables de entorno de Zoho para la autenticación");
   }
-  // Verificar si tenemos un token válido en cache
   if (accessToken && tokenExpiryTime && Date.now() < tokenExpiryTime) {
     return accessToken;
   }
@@ -97,22 +83,63 @@ async function getZohoAccessToken() {
         grant_type: "refresh_token"
       })
     });
+    
+    const responseText = await response.text();
+    
     if (!response.ok) {
-      throw new Error(`Zoho OAuth error: ${response.status} ${response.statusText}`);
+      console.error(`Zoho OAuth error: ${response.status} ${response.statusText}, Response: ${responseText}`);
+      throw new Error(`Zoho OAuth error: ${response.status} - Posible refresh token expirado`);
     }
-    const data = await response.json();
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (_parseError) {
+      console.error("Zoho response is not valid JSON:", responseText);
+      throw new Error("Zoho devolvió respuesta inválida - Posible refresh token expirado");
+    }
+    
+    if (!data.access_token) {
+      console.error("No access token in Zoho response:", data);
+      throw new Error("Zoho no devolvió access token válido");
+    }
+    
     accessToken = data.access_token;
-    tokenExpiryTime = Date.now() + (data.expires_in - 300) * 1000; // Renovar 5 min antes
+    tokenExpiryTime = Date.now() + (data.expires_in - 300) * 1000;
     return accessToken;
   } catch (error) {
     console.error("Error getting Zoho access token:", error);
+    accessToken = null;
+    tokenExpiryTime = null;
     throw error;
   }
 }
 /**
  * Crea un ticket en Zoho Desk
  */
-async function createZohoDeskTicket(ticketData) {
+interface ZohoDeskTicketData {
+  subject: string;
+  description: string;
+  priority: string;
+  contact: {
+    email: string;
+    lastName: string;
+  };
+  departmentId: string;
+}
+
+interface EmailConfirmationData {
+  userName: string;
+  ticketNumber: string;
+  subject: string;
+  category: string;
+  priority: string;
+  message: string;
+  webUrl: string;
+  userEmail: string;
+}
+
+async function createZohoDeskTicket(ticketData: ZohoDeskTicketData) {
   const token = await getZohoAccessToken();
   const ZOHO_DESK_API_URL = Deno.env.get("ZOHO_DESK_API_URL");
   const ZOHO_DESK_ORG_ID = Deno.env.get("ZOHO_DESK_ORG_ID");
@@ -149,7 +176,7 @@ async function createZohoDeskTicket(ticketData) {
 /**
  * Genera el HTML del email de confirmación
  */
-function generateTicketConfirmationEmail(data) {
+function generateTicketConfirmationEmail(data: EmailConfirmationData) {
   return `
 <!DOCTYPE html>
 <html>
@@ -289,52 +316,94 @@ serve(async (req) => {
       },
       departmentId: coacharteDepartmentId
     };
-    // Crear ticket en Zoho Desk
-    const ticketResult = await createZohoDeskTicket(ticketData);
-    // Generar email de confirmación
-    const confirmationSubject = `✅ Confirmación de Ticket de Soporte #${ticketResult.ticketNumber} - Coacharte`;
-    const confirmationHtml = generateTicketConfirmationEmail({
-      userName,
-      ticketNumber: ticketResult.ticketNumber,
-      subject,
-      category: category || "general",
-      priority: priority || "Medium",
-      message,
-      webUrl: ticketResult.webUrl,
-      userEmail
-    });
-    // Enviar email de confirmación llamando a la función email-service
-    const emailResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/email-service`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        to: userEmail,
-        subject: confirmationSubject,
-        html: confirmationHtml
-      })
-    });
-    if (!emailResponse.ok) {
-      console.error("Error sending confirmation email:", await emailResponse.text());
-    // No falla la operación, pero registra el error
-    }
-    return new Response(JSON.stringify({
-      success: true,
-      message: "Ticket de soporte creado exitosamente en Zoho Desk.",
-      ticketId: ticketResult.id,
-      ticketNumber: ticketResult.ticketNumber,
-      webUrl: ticketResult.webUrl,
-      categoryReceived: category,
-      timestamp: new Date().toISOString()
-    }), {
-      status: 201,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json"
+    try {
+      // Crear ticket en Zoho Desk
+      const ticketResult = await createZohoDeskTicket(ticketData);
+      
+      // Generar email de confirmación
+      const confirmationSubject = `✅ Confirmación de Ticket de Soporte #${ticketResult.ticketNumber} - Coacharte`;
+      const confirmationHtml = generateTicketConfirmationEmail({
+        userName,
+        ticketNumber: ticketResult.ticketNumber,
+        subject,
+        category: category || "general",
+        priority: priority || "Medium",
+        message,
+        webUrl: ticketResult.webUrl,
+        userEmail
+      });
+
+      const emailResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/email-service`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          to: userEmail,
+          subject: confirmationSubject,
+          html: confirmationHtml
+        })
+      });
+      
+      if (!emailResponse.ok) {
+        console.error("Error sending confirmation email:", await emailResponse.text());
       }
-    });
+      
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Ticket de soporte creado exitosamente en Zoho Desk.",
+        ticketId: ticketResult.id,
+        ticketNumber: ticketResult.ticketNumber,
+        webUrl: ticketResult.webUrl,
+        categoryReceived: category,
+        timestamp: new Date().toISOString()
+      }), {
+        status: 201,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
+    } catch (zohoError) {
+      console.error("Error con Zoho Desk:", zohoError);
+      
+      const isZohoAuthError = zohoError instanceof Error && 
+        (zohoError.message.includes("refresh token") || 
+         zohoError.message.includes("OAuth") ||
+         zohoError.message.includes("401") ||
+         zohoError.message.includes("403"));
+      
+      if (isZohoAuthError) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "Error de autenticación con Zoho",
+          message: "El servicio de tickets necesita renovación de credenciales. Contacta al administrador del sistema.",
+          details: "ZOHO_AUTH_ERROR",
+          userMessage: "Tu solicitud ha sido recibida pero no se pudo crear el ticket automáticamente. El equipo de soporte ha sido notificado."
+        }), {
+          status: 503,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json"
+          }
+        });
+      }
+      
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Error creando ticket en Zoho Desk",
+        message: "No se pudo crear el ticket en el sistema de soporte.",
+        details: zohoError instanceof Error ? zohoError.message : "Error desconocido",
+        userMessage: "Hubo un problema técnico. Por favor, intenta nuevamente o contacta directamente al equipo de soporte."
+      }), {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
+    }
   } catch (error) {
     console.error("Error al crear el ticket de soporte:", error);
     return new Response(JSON.stringify({

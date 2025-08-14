@@ -17,7 +17,7 @@ const OrganigramaPage: React.FC = () => {
       <div className="organigrama-header">
         <Link href="/recursos-humanos" className="back-button">
           <ArrowBackIcon />
-          <span>Volver</span>
+          <span>Volver a Talento y Transformación</span>
         </Link>
         <h1>
           <AccountTreeIcon className="page-icon" />
