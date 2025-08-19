@@ -21,6 +21,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../../components/Avatar';
 import { profileService } from '../../services/profileService';
+import profileDocumentsService, { ProfileDocument as ZohoProfileDocument } from '../../services/profileDocumentsService';
 
 // Interfaces locales para el perfil (ya no dependemos de collaboratorService)
 interface ProfileDocument {
@@ -56,8 +57,37 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingDocs, setDownloadingDocs] = useState<Set<string>>(new Set());
+  
+  // Estado específico para documentos
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<ProfileDocument[]>([]);
 
-  // Función auxiliar para formatear fechas
+  const loadDocuments = async () => {
+    try {
+      setDocumentsLoading(true);
+      setDocumentsError(null);
+      
+      const zohoDocuments = await profileDocumentsService.getProfileDocuments();
+      
+      const mappedDocuments: ProfileDocument[] = zohoDocuments.map((doc: ZohoProfileDocument) => ({
+        id: doc.id,
+        name: doc.name,
+        type: doc.category || doc.type,
+        url: doc.downloadUrl || '',
+        uploadDate: doc.uploadDate,
+        size: doc.size
+      }));
+      
+      setDocuments(mappedDocuments);
+    } catch (err) {
+      console.error('Error loading documents:', err);
+      setDocumentsError('Error al cargar documentos. Algunos documentos podrían no estar disponibles.');
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
   const formatJoinDate = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
@@ -81,21 +111,6 @@ export default function ProfilePage() {
     }
 
     return parts.length > 0 ? parts.join(' y ') : 'Menos de un mes';
-  };
-
-  // Función auxiliar para iconos de documentos
-  const getDocumentIcon = (type: string): string => {
-    const iconMap: Record<string, string> = {
-      'Contrato': '📋',
-      'CV': '👤',
-      'Certificación': '🏆',
-      'Evaluación': '📊',
-      'Referencia': '💌',
-      'Foto': '📷',
-      'Identificación': '🆔',
-      'default': '📄'
-    };
-    return iconMap[type] || iconMap.default;
   };
 
   useEffect(() => {
@@ -138,10 +153,12 @@ export default function ProfilePage() {
           internalRecord: mappedProfile.internalRecord,
           phone: mappedProfile.phone,
           status: mappedProfile.status,
-          documents: [], // TODO: Implementar documentos más adelante
+          documents: documents,
         };
         
         setProfile(profileData);
+        
+        loadDocuments();
       } catch (err) {
         console.error('Error loading profile:', err);
         setError('Error al cargar el perfil. Por favor, intenta nuevamente.');
@@ -187,7 +204,7 @@ export default function ProfilePage() {
         internalRecord: mappedProfile.internalRecord,
         phone: mappedProfile.phone,
         status: mappedProfile.status,
-        documents: [], // TODO: Implementar documentos más adelante
+        documents: [],
       };
       
       setProfile(profileData);
@@ -205,10 +222,12 @@ export default function ProfilePage() {
     try {
       setDownloadingDocs(prev => new Set(prev).add(doc.id));
       
-      // Por ahora solo mostramos un mensaje, luego se implementará la descarga real
-      alert(`Descargando: ${doc.name}`);
+      const success = await profileDocumentsService.downloadAndSaveDocument(doc.id, doc.name);
       
-      // await CollaboratorService.downloadDocument(doc.id, doc.name);
+      if (!success) {
+        throw new Error('Error al descargar el documento');
+      }
+      
     } catch (err) {
       console.error('Error downloading document:', err);
       alert('Error al descargar el documento. Por favor, intenta nuevamente.');
@@ -287,7 +306,6 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page-container">
-      {/* Header con navegación */}
       <header className="profile-header">
         <button onClick={() => router.back()} className="back-button" title="Volver atrás">
           <ArrowBackIcon />
@@ -295,7 +313,6 @@ export default function ProfilePage() {
         <h1>Mi Perfil</h1>
       </header>
 
-      {/* Información principal del perfil */}
       <section className="profile-main-info">
         <div className="profile-avatar-section">
           <Avatar 
@@ -373,36 +390,43 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Sección de documentos */}
       <section className="profile-documents-section">
         <div className="documents-header">
           <FolderIcon className="documents-icon" />
           <h3>Documentos Adjuntos</h3>
-          <span className="documents-count">({profile.documents.length})</span>
+          <span className="documents-count">({documents.length})</span>
+          {documentsLoading && <span className="documents-loading">Cargando...</span>}
         </div>
 
-        {profile.documents.length > 0 ? (
+        {documentsError && (
+          <div className="documents-error">
+            <p>{documentsError}</p>
+            <button onClick={loadDocuments} className="retry-documents-button">
+              Reintentar carga de documentos
+            </button>
+          </div>
+        )}
+
+        {documents.length > 0 ? (
           <div className="documents-list">
-            {profile.documents.map((doc: ProfileDocument) => (
+            {documents.map((doc: ProfileDocument) => (
               <div key={doc.id} className="document-item">
                 <div className="document-icon">
-                  {getDocumentIcon(doc.type)}
+                  {profileDocumentsService.getDocumentIcon(doc.type)}
                 </div>
                 <div className="document-info">
                   <h4>{doc.name}</h4>
                   <div className="document-meta">
                     <span className="document-type">{doc.type}</span>
                     {doc.size && <span className="document-size">{doc.size}</span>}
-                    <span className="document-date">
-                      Subido: {formatDate(doc.uploadDate)}
-                    </span>
+                    <span className="document-date">{formatDate(doc.uploadDate)}</span>
                   </div>
                 </div>
                 <button
                   onClick={() => handleDownloadDocument(doc)}
                   disabled={downloadingDocs.has(doc.id)}
                   className="document-download-btn"
-                  title="Descargar documento"
+                  title={`Descargar ${doc.name}`}
                 >
                   {downloadingDocs.has(doc.id) ? (
                     <div className="download-spinner"></div>
@@ -413,10 +437,20 @@ export default function ProfilePage() {
               </div>
             ))}
           </div>
-        ) : (
+        ) : !documentsLoading ? (
           <div className="no-documents">
             <DescriptionIcon className="no-docs-icon" />
             <p>No hay documentos adjuntos</p>
+            {documentsError && (
+              <button onClick={loadDocuments} className="retry-documents-button">
+                Cargar documentos
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="documents-loading-state">
+            <div className="loading-spinner"></div>
+            <p>Cargando documentos...</p>
           </div>
         )}
       </section>
