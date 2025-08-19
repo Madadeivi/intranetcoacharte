@@ -68,8 +68,10 @@ export const apiConfig: ApiConfig = (() => {
         createTicket: `${functionsBaseUrl}/support-ticket`,
       },
       zoho: {
-        sync: `${functionsBaseUrl}/zoho-crm`,
-      },
+      sync: `${functionsBaseUrl}/zoho-crm`,
+      profileDocuments: `${functionsBaseUrl}/zoho-crm/profile-documents`,
+      downloadDocument: `${functionsBaseUrl}/zoho-crm/download-document`,
+    },
       collaborator: {
         // Nota: getProfile ahora se maneja directamente con queries a la tabla 'profiles'
         // ya no se usa la función Edge collaborator-db

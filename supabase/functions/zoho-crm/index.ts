@@ -2,7 +2,6 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 
-// Interfaces para tipos
 interface ProfileData {
   id?: string;
   email: string;
@@ -44,7 +43,6 @@ interface ZohoContact {
   id: string;
   Email: string;
   
-  // Información Personal Básica
   'Nombre completo'?: string;
   'Apellidos'?: string;
   'Titulo'?: string;
@@ -54,33 +52,27 @@ interface ZohoContact {
   'Nacionalidad'?: string;
   'Dirección'?: string;
   
-  // Información de Contacto
   'Celular'?: string;
   'Correo electrónico personal'?: string;
   'Correo electrónico edenred'?: string;
   
-  // Información Laboral
   'Área de trabajo'?: string;
   'Fecha de ingreso'?: string;
   'Estatus'?: string;
   'Fecha de baja'?: string;
   
-  // Información Fiscal/Legal
   'CURP'?: string;
   'RFC'?: string;
   'NSS'?: string;
   
-  // Información Bancaria
   'Banco'?: string;
   'CLABE'?: string;
   'No. de tarjeta bancaria'?: string;
   'No. de tarjeta'?: string;
   
-  // Información Médica
   'Tipo de sangre'?: string;
   'Alergias'?: string;
   
-  // Contactos de Emergencia
   'Nombre contacto de emergencia principal'?: string;
   'Teléfono contacto de emergencia'?: string;
   'Parentesco principal'?: string;
@@ -88,7 +80,6 @@ interface ZohoContact {
   'Teléfono contacto de emergencia secundario'?: string;
   'Parentesco secundario'?: string;
   
-  // Información Interna
   'Registro interno'?: string;
   'Clientes'?: string;
   'Password Intranet'?: string;
@@ -99,12 +90,10 @@ interface ZohoContact {
   'Comentarios adicionales'?: string;
   'Locked'?: string;
   
-  // Fechas del sistema
   'Created Time'?: string;
   'Modified Time'?: string;
   'Last Activity Time'?: string;
   
-  // Campos originales para compatibilidad hacia atrás
   First_Name?: string;
   Last_Name?: string;
   Name?: string;
@@ -133,27 +122,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
 };
-// Cache para el token de acceso
+
 let accessToken: string | null = null;
 let tokenExpiryTime: number | null = null;
 
-// Cliente Supabase
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-/**
- * Obtiene un token de acceso de Zoho OAuth
- */ async function getZohoAccessToken() {
+async function getZohoAccessToken() {
   const ZOHO_REFRESH_TOKEN = Deno.env.get("ZOHO_REFRESH_TOKEN");
   const ZOHO_CLIENT_ID = Deno.env.get("ZOHO_CLIENT_ID");
   const ZOHO_CLIENT_SECRET = Deno.env.get("ZOHO_CLIENT_SECRET");
   if (!ZOHO_REFRESH_TOKEN || !ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
     throw new Error("Faltan variables de entorno de Zoho para la autenticación");
   }
-  // Verificar si tenemos un token válido en cache
+  
   if (accessToken && tokenExpiryTime && Date.now() < tokenExpiryTime) {
     return accessToken;
   }
+  
   try {
     const response = await fetch("https://accounts.zoho.com/oauth/v2/token", {
       method: "POST",
@@ -172,16 +159,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     }
     const data = await response.json();
     accessToken = data.access_token;
-    tokenExpiryTime = Date.now() + (data.expires_in - 300) * 1000; // Renovar 5 min antes
+    tokenExpiryTime = Date.now() + (data.expires_in - 300) * 1000;
     return accessToken;
   } catch (error) {
     console.error("Error getting Zoho access token:", error);
     throw error;
   }
 }
-/**
- * Obtiene colaboradores desde los perfiles de Supabase
- */ async function getCachedProfiles() {
+async function getCachedProfiles() {
   try {
     const { data, error } = await supabase.from('profiles').select(`
       id,
@@ -209,18 +194,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     throw error;
   }
 }
-/**
- * Sincroniza colaboradores desde Zoho CRM a los perfiles de Supabase
- */ async function syncProfilesFromZoho() {
+async function syncProfilesFromZoho() {
   try {
-    // Cambiar a usar el módulo de Colaboradores en lugar de Contacts
     const colaboradores = await getZohoCollaboradores(1, 200);
     const profiles = [];
     
     for (const colaborador of colaboradores){
       if (!colaborador.id || !colaborador.Email) continue;
       
-      // Función auxiliar para parsear fechas de Zoho
       const parseZohoDate = (dateStr?: string): string | null => {
         if (!dateStr) return null;
         try {
@@ -231,15 +212,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
         }
       };
 
-      // Función auxiliar para limpiar strings
       const cleanString = (str?: string): string | null => {
         if (!str || str.trim() === '' || str.toLowerCase() === 'na' || str.toLowerCase() === 'n/a') return null;
         return str.trim();
       };
 
-      // Mapear campos de Zoho CRM (módulo Colaboradores) a profiles con prioridad de campos
       const profileData = {
-        // Información básica - PRIORIZAR LOS EXISTENTES EN PRODUCCIÓN
         email: colaborador.Email.toLowerCase().trim(),
         full_name: cleanString(colaborador['Nombre completo']) || 
                   cleanString(colaborador.First_Name) || 
@@ -251,7 +229,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
                cleanString(colaborador.Designation) || 
                cleanString(colaborador.Position) || null,
         
-        // Información de contacto
         phone: cleanString(colaborador.Phone) || 
                cleanString(colaborador.Work_Phone) || null,
         mobile_phone: cleanString(colaborador['Celular']) || 
@@ -261,22 +238,18 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
                        cleanString(colaborador.Secondary_Email) || 
                        cleanString(colaborador.Personal_Email) || null,
         
-        // Información laboral
         hire_date: parseZohoDate(colaborador['Fecha de ingreso']) || 
                   parseZohoDate(colaborador.Joining_Date) || 
                   parseZohoDate(colaborador.Hire_Date),
         
-        // Status - PRIORIZAR LA DATA EXISTENTE, SOLO COMPLEMENTAR
         status: (() => {
           const zohoStatus = colaborador['Estatus'] || colaborador.Status;
           if (zohoStatus && (zohoStatus === 'Inactive' || zohoStatus === 'Inactivo')) {
             return 'inactive' as const;
           }
-          // Por defecto mantener activo para no afectar usuarios existentes
           return 'active' as const;
         })(),
         
-        // Información personal adicional
         birth_date: parseZohoDate(colaborador['Fecha de nacimiento']) || 
                    parseZohoDate(colaborador.Date_of_Birth) || 
                    parseZohoDate(colaborador.Birth_Date),
@@ -287,40 +260,30 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
                 cleanString(colaborador.Mailing_Street) || 
                 cleanString(colaborador.Address),
         
-        // Información fiscal/legal
         curp: cleanString(colaborador['CURP']),
         rfc: cleanString(colaborador['RFC']),
         nss: cleanString(colaborador['NSS']),
         
-        // Información bancaria
         bank: cleanString(colaborador['Banco']),
         clabe: cleanString(colaborador['CLABE']),
         bank_card_number: cleanString(colaborador['No. de tarjeta bancaria']) || 
                          cleanString(colaborador['No. de tarjeta']),
         
-        // Información médica
         blood_type: cleanString(colaborador['Tipo de sangre']),
         allergies: cleanString(colaborador['Alergias']),
         
-        // Contactos de emergencia
         emergency_contact_primary_name: cleanString(colaborador['Nombre contacto de emergencia principal']),
         emergency_contact_primary_phone: cleanString(colaborador['Teléfono contacto de emergencia']),
         emergency_contact_primary_relationship: cleanString(colaborador['Parentesco principal']),
         
-        // Información de sistema y metadatos
         zoho_record_id: colaborador.id,
         internal_registry: cleanString(colaborador['Registro interno']),
-        
-        // NO SOBRESCRIBIR password ni locked desde Zoho para preservar la seguridad
-        // locked: colaborador['Locked'] === 'true', // Solo si es absolutamente necesario
         
         updated_at: new Date().toISOString()
       };
       
-      // Estrategia de UPSERT inteligente que prioriza los datos existentes
       let result;
       
-      // Primero intentar por zoho_record_id
       const { data: existingByZoho } = await supabase
         .from('profiles')
         .select('id, email, full_name, last_name, status, locked, password')
@@ -328,10 +291,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
         .single();
       
       if (existingByZoho) {
-        // Para usuarios existentes por Zoho ID, ser más conservador
         const updateData: Partial<typeof profileData> = { ...profileData };
         
-        // NO sobrescribir información crítica si ya existe
         if (existingByZoho.full_name && existingByZoho.full_name.trim() !== '') {
           updateData.full_name = undefined;
         }
@@ -349,7 +310,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
           .select()
           .single();
       } else {
-        // Verificar si existe por email
         const { data: existingByEmail } = await supabase
           .from('profiles')
           .select('id, zoho_record_id, full_name, status, locked, password')
@@ -357,13 +317,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
           .single();
         
         if (existingByEmail && !existingByEmail.zoho_record_id) {
-          // Usuario existe por email pero sin Zoho ID - SOLO COMPLEMENTAR
           const complementData: Partial<typeof profileData> = {
             zoho_record_id: colaborador.id,
             updated_at: new Date().toISOString()
           };
           
-          // Solo agregar campos que están vacíos o son null
           Object.entries(profileData).forEach(([key, value]) => {
             if (key !== 'email' && key !== 'updated_at' && key !== 'zoho_record_id' && 
                 key !== 'status' && key !== 'full_name' && key !== 'last_name' &&
@@ -379,7 +337,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
             .select()
             .single();
         } else if (!existingByEmail) {
-          // Crear nuevo perfil solo si no existe
           result = await supabase
             .from('profiles')
             .insert(profileData)
@@ -408,14 +365,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     throw error;
   }
 }
-/**
- * Obtiene perfiles con estrategia de cache inteligente
- */ async function getProfilesWithCache(forceSync = false) {
+async function getProfilesWithCache(forceSync = false) {
   try {
-    // Si no se fuerza la sincronización, intentar usar cache
     if (!forceSync) {
       const cached = await getCachedProfiles();
-      // Si hay datos en cache y no son muy antiguos (verificar updated_at)
       if (cached.length > 0) {
         const oldestSync = cached.reduce((oldest: ProfileData, current: ProfileData) => {
           const currentSync = new Date(current.updated_at || 0);
@@ -425,7 +378,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
         const lastSyncTime = new Date(oldestSync.updated_at || 0);
         const hoursSinceSync = (Date.now() - lastSyncTime.getTime()) / (1000 * 60 * 60);
         
-        // Si la cache tiene menos de 24 horas, usarla
         if (hoursSinceSync < 24) {
           console.log(`Using cached profiles (${hoursSinceSync.toFixed(1)} hours old)`);
           return cached;
@@ -433,12 +385,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
       }
     }
     
-    // Si no hay cache o es muy antigua, sincronizar desde Zoho
     console.log("Syncing profiles from Zoho CRM...");
     return await syncProfilesFromZoho();
   } catch (error) {
     console.error("Error in getProfilesWithCache:", error);
-    // En caso de error, intentar devolver cache aunque sea antigua
     try {
       const cached = await getCachedProfiles();
       if (cached.length > 0) {
@@ -451,17 +401,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     throw error;
   }
 }
-/**
- * Obtiene colaboradores desde el módulo Colaboradores de Zoho CRM
- */ async function getZohoCollaboradores(page = 1, perPage = 200) {
+async function getZohoCollaboradores(page = 1, perPage = 200) {
   const token = await getZohoAccessToken();
   const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
   if (!ZOHO_API_URL) {
     throw new Error("ZOHO_API_URL no está configurado");
   }
   
-  // Usar el módulo custom "Colaboradores" - ajusta el nombre según tu configuración
-  const moduleName = "Colaboradores"; // o usa una variable de entorno: Deno.env.get("ZOHO_COLABORADORES_MODULE") || "Colaboradores"
+  const moduleName = "Colaboradores";
   const url = `${ZOHO_API_URL}/${moduleName}?page=${page}&per_page=${perPage}`;
   
   try {
@@ -485,9 +432,72 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
   }
 }
 
-/**
- * Obtiene contactos desde Zoho CRM
- */ async function getZohoCRMContacts(page = 1, perPage = 200) {
+async function getZohoRecordAttachments(recordId: string, moduleName = "Colaboradores") {
+  const token = await getZohoAccessToken();
+  const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
+  if (!ZOHO_API_URL) {
+    throw new Error("ZOHO_API_URL no está configurado");
+  }
+  
+  const url = `${ZOHO_API_URL}/${moduleName}/${recordId}/Attachments`;
+  
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Zoho-oauthtoken ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return [];
+      }
+      const errorText = await response.text();
+      console.error("Zoho CRM Attachments API error:", response.status, errorText);
+      throw new Error(`Error fetching attachments from Zoho CRM: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error("Error in getZohoRecordAttachments:", error);
+    throw error;
+  }
+}
+
+async function downloadZohoAttachment(recordId: string, attachmentId: string, moduleName = "Colaboradores") {
+  const token = await getZohoAccessToken();
+  const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
+  if (!ZOHO_API_URL) {
+    throw new Error("ZOHO_API_URL no está configurado");
+  }
+  
+  const url = `${ZOHO_API_URL}/${moduleName}/${recordId}/Attachments/${attachmentId}`;
+  
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Zoho-oauthtoken ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Zoho CRM Download API error:", response.status, errorText);
+      throw new Error(`Error downloading attachment from Zoho CRM: ${response.status}`);
+    }
+    
+    return response;
+  } catch (error) {
+    console.error("Error in downloadZohoAttachment:", error);
+    throw error;
+  }
+}
+
+async function getZohoCRMContacts(page = 1, perPage = 200) {
   const token = await getZohoAccessToken();
   const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
   if (!ZOHO_API_URL) {
@@ -514,9 +524,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     throw error;
   }
 }
-/**
- * Crea un contacto en Zoho CRM
- */ async function createZohoCRMContact(contactData: ZohoContact) {
+
+async function createZohoCRMContact(contactData: ZohoContact) {
   const token = await getZohoAccessToken();
   const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
   if (!ZOHO_API_URL) {
@@ -548,9 +557,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     throw error;
   }
 }
-/**
- * Obtiene leads desde Zoho CRM
- */ async function getZohoCRMLeads(page = 1, perPage = 200) {
+
+async function getZohoCRMLeads(page = 1, perPage = 200) {
   const token = await getZohoAccessToken();
   const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
   if (!ZOHO_API_URL) {
@@ -577,9 +585,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     throw error;
   }
 }
-/**
- * Crea un lead en Zoho CRM
- */ async function createZohoCRMLead(leadData: ZohoContact) {
+
+async function createZohoCRMLead(leadData: ZohoContact) {
   const token = await getZohoAccessToken();
   const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
   if (!ZOHO_API_URL) {
@@ -749,6 +756,105 @@ serve(async (req)=>{
           return new Response(JSON.stringify({
             success: false,
             error: "Error en mapeo de prueba",
+            details: error instanceof Error ? error.message : "Error desconocido"
+          }), {
+            status: 500,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        }
+      }
+
+      // GET /profile-documents/{zoho_record_id} - obtener documentos de un colaborador
+      if (path.includes("/profile-documents/")) {
+        const pathParts = path.split('/');
+        const zohoRecordId = pathParts[pathParts.length - 1];
+        
+        if (!zohoRecordId) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "zoho_record_id es requerido"
+          }), {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        }
+
+        try {
+          const attachments = await getZohoRecordAttachments(zohoRecordId);
+          
+          return new Response(JSON.stringify({
+            success: true,
+            data: {
+              zoho_record_id: zohoRecordId,
+              attachments: attachments,
+              total: attachments.length
+            },
+            message: "Documentos obtenidos exitosamente",
+            timestamp: new Date().toISOString()
+          }), {
+            status: 200,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        } catch (error) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "Error obteniendo documentos",
+            details: error instanceof Error ? error.message : "Error desconocido"
+          }), {
+            status: 500,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        }
+      }
+
+      // GET /download-document/{zoho_record_id}/{attachment_id} - descargar documento específico
+      if (path.includes("/download-document/")) {
+        const pathParts = path.split('/');
+        if (pathParts.length < 3) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "zoho_record_id y attachment_id son requeridos"
+          }), {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        }
+        
+        const zohoRecordId = pathParts[pathParts.length - 2];
+        const attachmentId = pathParts[pathParts.length - 1];
+
+        try {
+          const fileResponse = await downloadZohoAttachment(zohoRecordId, attachmentId);
+          
+          // Reenviar la respuesta del archivo directamente
+          return new Response(fileResponse.body, {
+            status: fileResponse.status,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": fileResponse.headers.get("Content-Type") || "application/octet-stream",
+              "Content-Disposition": fileResponse.headers.get("Content-Disposition") || "attachment",
+              "Content-Length": fileResponse.headers.get("Content-Length") || ""
+            }
+          });
+        } catch (error) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "Error descargando documento",
             details: error instanceof Error ? error.message : "Error desconocido"
           }), {
             status: 500,
