@@ -33,6 +33,8 @@ interface ApiConfig {
     };
     zoho: {
       sync: string;
+      profileDocuments: string;
+      downloadDocument: string;
     };
     collaborator: {
       // Nota: getProfile eliminado - ahora se usa directamente la tabla 'profiles'
@@ -68,10 +70,10 @@ export const apiConfig: ApiConfig = (() => {
         createTicket: `${functionsBaseUrl}/support-ticket`,
       },
       zoho: {
-      sync: `${functionsBaseUrl}/zoho-crm`,
-      profileDocuments: `${functionsBaseUrl}/zoho-crm/profile-documents`,
-      downloadDocument: `${functionsBaseUrl}/zoho-crm/download-document`,
-    },
+        sync: `${functionsBaseUrl}/zoho-crm`,
+        profileDocuments: `${functionsBaseUrl}/zoho-crm/profile-documents`,
+        downloadDocument: `${functionsBaseUrl}/zoho-crm/download-document`,
+      },
       collaborator: {
         // Nota: getProfile ahora se maneja directamente con queries a la tabla 'profiles'
         // ya no se usa la función Edge collaborator-db
@@ -236,6 +238,11 @@ export const customFetch = async <T>(
           defaultHeaders['X-User-Token'] = userToken;
         }
       }
+    } else if (url.includes('zoho-crm') && typeof window !== 'undefined') {
+      const userToken = localStorage.getItem('coacharte_auth_token');
+      if (userToken) {
+        defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+      }
     }
 
     const response = await fetch(url, {
@@ -252,12 +259,10 @@ export const customFetch = async <T>(
       throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
     }
 
-    // Si el servidor ya devuelve un formato ApiResponse, usarlo directamente
     if (data.hasOwnProperty('success') && data.hasOwnProperty('data')) {
       return data;
     }
 
-    // Si el servidor devuelve directamente los datos, envolverlos en ApiResponse
     return {
       success: true,
       data: data,

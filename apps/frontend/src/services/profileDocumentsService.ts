@@ -1,5 +1,6 @@
 import { customFetch } from '../config/api';
-import { apiConfig } from '../config/api';
+import { apiConfig, ApiResponse } from '../config/api';
+import { customFetchBinary } from '../utils/customFetchBinary';
 
 export interface ProfileDocument {
   id: string;
@@ -57,7 +58,7 @@ class ProfileDocumentsService {
       const profileResponse = await customFetch(
         apiConfig.endpoints.profile.get,
         { method: 'GET' }
-      );
+      ) as ApiResponse<unknown>;
 
       if (!profileResponse.success || !profileResponse.data) {
         throw new Error('No se pudo obtener el perfil del usuario');
@@ -73,9 +74,9 @@ class ProfileDocumentsService {
       }
 
       const documentsResponse = await customFetch<ProfileDocumentsResponse>(
-        `${apiConfig.endpoints.zoho.sync}/profile-documents/${zohoRecordId}`,
+        `${apiConfig.endpoints.zoho.profileDocuments}/${zohoRecordId}`,
         { method: 'GET' }
-      );
+      ) as ApiResponse<ProfileDocumentsResponse>;
 
       if (!documentsResponse.success || !documentsResponse.data) {
         return [];
@@ -93,7 +94,7 @@ class ProfileDocumentsService {
           size: this.formatFileSize(attachment.Size),
           description: '',
           category: this.categorizeDocument(attachment.File_Name),
-          downloadUrl: `${apiConfig.endpoints.zoho.sync}/download-document/${zohoRecordId}/${attachment.id}`
+          downloadUrl: `${apiConfig.endpoints.zoho.downloadDocument}/${zohoRecordId}/${attachment.id}`
         };
       });
 
@@ -110,7 +111,7 @@ class ProfileDocumentsService {
       const profileResponse = await customFetch(
         apiConfig.endpoints.profile.get,
         { method: 'GET' }
-      );
+      ) as ApiResponse<unknown>;
 
       if (!profileResponse.success || !profileResponse.data) {
         throw new Error('No se pudo obtener el perfil del usuario');
@@ -124,14 +125,9 @@ class ProfileDocumentsService {
         throw new Error('Usuario sin zoho_record_id asociado');
       }
 
-      const downloadUrl = `${apiConfig.endpoints.zoho.sync}/download-document/${zohoRecordId}/${documentId}`;
+      const downloadUrl = `${apiConfig.endpoints.zoho.downloadDocument}/${zohoRecordId}/${documentId}`;
 
-      const response = await fetch(downloadUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('coacharte_auth_token')}`
-        }
-      });
+      const response = await customFetchBinary(downloadUrl);
 
       if (!response.ok) {
         throw new Error(`Error al descargar: ${response.status} ${response.statusText}`);
