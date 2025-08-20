@@ -14,10 +14,9 @@ export const customFetchBinary = async (
     defaultHeaders['apikey'] = supabaseAnonKey;
   }
 
-  if (url.includes('zoho-crm') && typeof window !== 'undefined') {
-    const userToken = localStorage.getItem('coacharte_auth_token');
-    if (userToken) {
-      defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+  if (url.includes('zoho-crm')) {
+    if (supabaseAnonKey) {
+      defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
     }
   }
 
