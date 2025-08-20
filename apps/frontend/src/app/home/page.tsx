@@ -8,17 +8,12 @@ import Link from 'next/link';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
-// Store
 import { useAuthStore } from '../../store/authStore';
-
-// Hooks
 import { useClickOutside } from '../../hooks';
-
-// Components
 import SupportForm from '../../components/SupportForm';
 import NoticeDetailModal from '../../components/NoticeDetailModal/NoticeDetailModal';
-
-// Interfaces
+import { CelebrationPopup } from '../../components/CelebrationPopup';
+import { AnniversarySlider } from '../../components/AnniversarySlider';
 
 interface BirthdayData {
   success: boolean;
@@ -76,36 +71,30 @@ import {
 
 // Servicios
 import { birthdayService, Birthday } from '../../services/birthdayService';
+
+import { 
+  getUserSpecialEvent, 
+  getCelebrationMessage, 
+  getCelebrationEmojis,
+  calculateUserYearsOfService
+} from '../../utils/celebrationUtils';
 import { User } from '../../config/api';
 
-/**
- * Función utilitaria para verificar si hoy es el cumpleaños del usuario
- */
 const isUserBirthday = (user: User | null): boolean => {
   if (!user) return false;
   
-  // El campo puede venir como birth_date o birthday dependiendo de la fuente
   const birthDateField = user.birth_date || user.birthday;
   if (!birthDateField) return false;
   
-  // Obtener fecha actual en zona horaria de México
   const today = new Date();
   const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
   
-  // Crear fecha de cumpleaños forzando zona horaria de México
   const birthday = new Date(birthDateField + 'T00:00:00-06:00');
   
   return todayInMexico.getMonth() === birthday.getMonth() && 
          todayInMexico.getDate() === birthday.getDate();
 };
 
-/**
- * Función para simular que es el cumpleaños del usuario (solo para pruebas)
- * Descomenta la línea siguiente para probar la funcionalidad
- */
-// const isUserBirthday = (user: any): boolean => true;
-
-// Interfaces y tipos
 interface SupportModalProps {
   userInfo: { firstName: string; lastName: string; email: string } | null;
   onClose: () => void;
@@ -129,24 +118,22 @@ interface UserData {
  * Los datos ya vienen procesados desde la edge function
  */
 const getUserNames = (user: UserData | null | undefined): UserNameData => {
-  // Ajuste: usar full_name y last_name del backend para construir el nombre completo
-  // Si el backend ya envía name, úsalo, si no, concatena full_name y last_name
-  const firstName = user?.firstName || '';
-  const lastName = user?.lastName || '';
-  // Preferir el campo name si existe, si no, concatenar full_name y last_name
-  const fullName = user?.name || `${firstName} ${lastName}`.trim();
-  // El displayName será el nombre completo, o el nombre, o 'Usuario'
-  const displayName = fullName || firstName || 'Usuario';
+  if (!user) {
+    return { firstName: '', lastName: '', displayName: 'Usuario', fullName: 'Usuario' };
+  }
 
+  const firstName = user.firstName || '';
+  const lastName = user.lastName || '';
+  const fullName = `${firstName} ${lastName}`.trim() || 'Sin nombre';
+  const displayName = fullName || 'Usuario';
+  
   return {
     firstName,
     lastName,
-    fullName,
-    displayName
+    displayName,
+    fullName
   };
 };
-
-// SupportModal (adaptado, usando forwardRef para el ref)
 
 const SupportModal = React.forwardRef<HTMLDivElement, SupportModalProps>(
   ({ userInfo, onClose }, ref) => {
@@ -183,7 +170,6 @@ const SupportModal = React.forwardRef<HTMLDivElement, SupportModalProps>(
 );
 SupportModal.displayName = 'SupportModal';
 
-// Componente para el popup de cumpleaños
 const BirthdayPopup = React.forwardRef<HTMLDivElement, { userInfo: { firstName: string; displayName: string } | null; onClose: () => void }>(
   ({ userInfo, onClose }, ref) => {
     const modalContentRef = useRef<HTMLDivElement>(null);
@@ -203,42 +189,28 @@ const BirthdayPopup = React.forwardRef<HTMLDivElement, { userInfo: { firstName: 
     if (!userInfo) return null;
 
     return (
-      <div className="birthday-popup-backdrop">
-        <div className="birthday-popup-content" ref={modalContentRef}>
-          <button className="birthday-popup-close-button" onClick={onClose} aria-label="Cerrar">
-            <CloseIcon />
-          </button>
-          <div className="birthday-popup-body">
-            <div className="birthday-popup-icon">
-              🎉
-            </div>
-            <h2 className="birthday-popup-title">¡Feliz Cumpleaños!</h2>
-            <p className="birthday-popup-message">
-              <strong>{userInfo.firstName || userInfo.displayName}</strong>, 
-              <br />
-              Te desea Coacharte un día lleno de alegría y bendiciones.
-            </p>
-            <div className="birthday-popup-decoration">
-              🎂🎈🎊
-            </div>
-            <button className="birthday-popup-button" onClick={onClose}>
-              ¡Gracias!
-            </button>
-          </div>
-        </div>
-      </div>
+      <CelebrationPopup
+        userInfo={{
+          firstName: userInfo.firstName,
+          displayName: userInfo.displayName
+        }}
+        eventType="birthday"
+        onClose={onClose}
+        ref={ref}
+      />
     );
   }
 );
 BirthdayPopup.displayName = 'BirthdayPopup';
 
-// Componente para el slider de cumpleañeros
 const BirthdaySlider: React.FC = () => {
   const [birthdayData, setBirthdayData] = useState<BirthdayData | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   const sliderRef = useRef<HTMLDivElement>(null);
+  const birthdayPopupRef = useRef<HTMLDivElement>(null);
 
   // Update transform when currentSlide changes
   useEffect(() => {
@@ -301,7 +273,6 @@ const BirthdaySlider: React.FC = () => {
     }
   };
 
-  // Load data when component mounts
   useEffect(() => {
     fetchBirthdayData();
   }, []);
@@ -493,8 +464,71 @@ const HomePage: React.FC = () => {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
+  // Estados para celebraciones
+  const [celebrations, setCelebrations] = useState<User[]>([]);
+  const [celebrationPopup, setCelebrationPopup] = useState<{ user: User; eventType: 'birthday' | 'anniversary' } | null>(null);
+  const [showBirthdayPopup, setShowBirthdayPopup] = useState(false);
+  const [birthdayUserInfo, setBirthdayUserInfo] = useState<{ firstName: string; displayName: string } | null>(null);
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const celebrationPopupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Detectar celebraciones del usuario actual
+  useEffect(() => {
+    if (!user) return;
+
+    const specialEvent = getUserSpecialEvent(user);
+    if (specialEvent) {
+      // Agregar al estado de celebraciones si no está ya
+      setCelebrations(prev => {
+        if (!prev.find(u => u.id === user.id)) {
+          return [...prev, user];
+        }
+        return prev;
+      });
+
+      // Mostrar popup de celebración
+      const eventType = specialEvent === 'important-anniversary' ? 'anniversary' : specialEvent;
+      setCelebrationPopup({
+        user: user,
+        eventType: eventType
+      });
+    }
+  }, [user]);
+
+  // Función para cerrar popup de celebración
+  const closeCelebrationPopup = () => {
+    setCelebrationPopup(null);
+  };
+
+  // Función para determinar clases CSS del avatar basado en celebraciones
+  const getAvatarClasses = () => {
+    if (!user) return 'user-avatar';
+    
+    const specialEvent = getUserSpecialEvent(user);
+    if (specialEvent === 'birthday') {
+      return 'user-avatar birthday-doodle';
+    } else if (specialEvent === 'anniversary' || specialEvent === 'important-anniversary') {
+      return 'user-avatar anniversary-doodle';
+    }
+    
+    return 'user-avatar';
+  };
+
+  // Función para obtener el icono de celebración
+  const getCelebrationIcon = () => {
+    if (!user) return null;
+    
+    const specialEvent = getUserSpecialEvent(user);
+    if (specialEvent === 'birthday') {
+      return <span className="birthday-doodle-icon">🎂</span>;
+    } else if (specialEvent === 'anniversary' || specialEvent === 'important-anniversary') {
+      return <span className="anniversary-doodle-icon">🎉</span>;
+    }
+    
+    return null;
+  };
   const cardCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de tarjetas
   const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de enlaces rápidos
   const noticeCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de avisos
@@ -512,9 +546,7 @@ const HomePage: React.FC = () => {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [eventCanScrollLeft, setEventCanScrollLeft] = useState(false);
   const [eventCanScrollRight, setEventCanScrollRight] = useState(true);
-  const [showBirthdayPopup, setShowBirthdayPopup] = useState(false);
 
-  // Verificar si es el cumpleaños del usuario y mostrar popup
   useEffect(() => {
     if (user && isUserBirthday(user) && !showBirthdayPopup) {
       // Mostrar popup después de un pequeño delay para que se cargue la página
@@ -768,12 +800,12 @@ const HomePage: React.FC = () => {
           >
             <span 
               id="user-avatar"
-              className={`user-avatar ${isUserBirthday(user) ? 'birthday-doodle' : ''}`}
+              className={getAvatarClasses()}
             >
               {userInitials}
+              {getCelebrationIcon()}
               {isUserBirthday(user) && (
                 <>
-                  <span className="birthday-doodle-icon">🎂</span>
                   <span className="birthday-streamers">
                     <span className="streamer streamer-1">🎊</span>
                     <span className="streamer streamer-2">🎉</span>
@@ -1147,6 +1179,9 @@ const HomePage: React.FC = () => {
 
       {/* Slider de Cumpleañeros */}
       <BirthdaySlider />
+      
+      {/* Slider de aniversarios laborales */}
+      <AnniversarySlider />
 
       {/* Footer */}
       <footer className="home-footer">
@@ -1198,6 +1233,19 @@ const HomePage: React.FC = () => {
         <BirthdayPopup
           userInfo={{ firstName: firstName || displayName, displayName }}
           onClose={() => setShowBirthdayPopup(false)}
+        />
+      )}
+
+      {/* Modal de celebraciones (aniversarios y cumpleaños) */}
+      {celebrationPopup && (
+        <CelebrationPopup
+          userInfo={{
+            firstName: getUserNames(celebrationPopup.user).firstName,
+            displayName: getUserNames(celebrationPopup.user).displayName
+          }}
+          eventType={celebrationPopup.eventType}
+          onClose={closeCelebrationPopup}
+          ref={celebrationPopupRef}
         />
       )}
 

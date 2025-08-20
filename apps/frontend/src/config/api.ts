@@ -10,6 +10,7 @@ export interface User {
   updated_at?: string;
   birth_date?: string;
   birthday?: string;
+  hire_date?: string;
 }
 
 export interface Session {
@@ -44,6 +45,11 @@ interface ApiConfig {
       get: string;
     };
     birthday: {
+      getCurrentMonth: string;
+      getMonth: string;
+      getAll: string;
+    };
+    anniversary: {
       getCurrentMonth: string;
       getMonth: string;
       getAll: string;
@@ -84,6 +90,11 @@ export const apiConfig: ApiConfig = (() => {
         getCurrentMonth: `${functionsBaseUrl}/birthday-manager`,
         getMonth: `${functionsBaseUrl}/birthday-manager`,
         getAll: `${functionsBaseUrl}/birthday-manager`,
+      },
+      anniversary: {
+        getCurrentMonth: `${functionsBaseUrl}/anniversary-manager`,
+        getMonth: `${functionsBaseUrl}/anniversary-manager`,
+        getAll: `${functionsBaseUrl}/anniversary-manager`,
       },
     },
   };
@@ -217,13 +228,13 @@ export const customFetch = async <T>(
         }
         defaultHeaders['X-User-Token'] = userToken; // JWT de usuario para validación personalizada
       }
-    } else if (url.includes('birthday-manager') || url.includes('profile-manager')) {
-      // birthday-manager y profile-manager: usan anon key para bypassing JWT validation
+    } else if (url.includes('birthday-manager') || url.includes('anniversary-manager') || url.includes('profile-manager')) {
+      // birthday-manager, anniversary-manager y profile-manager: usan anon key para bypassing JWT validation
       if (supabaseAnonKey) {
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
       // Agregar el JWT personalizado como header personalizado para profile-manager
-      if (url.includes('profile-manager') && typeof window !== 'undefined') {
+      if ((url.includes('profile-manager') || url.includes('anniversary-manager')) && typeof window !== 'undefined') {
         const userToken = localStorage.getItem('coacharte_auth_token');
         if (userToken) {
           defaultHeaders['X-User-Token'] = userToken;
