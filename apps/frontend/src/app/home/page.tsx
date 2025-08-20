@@ -73,10 +73,7 @@ import {
 import { birthdayService, Birthday } from '../../services/birthdayService';
 
 import { 
-  getUserSpecialEvent, 
-  getCelebrationMessage, 
-  getCelebrationEmojis,
-  calculateUserYearsOfService
+  getUserSpecialEvent
 } from '../../utils/celebrationUtils';
 import { User } from '../../config/api';
 
@@ -170,39 +167,6 @@ const SupportModal = React.forwardRef<HTMLDivElement, SupportModalProps>(
 );
 SupportModal.displayName = 'SupportModal';
 
-const BirthdayPopup = React.forwardRef<HTMLDivElement, { userInfo: { firstName: string; displayName: string } | null; onClose: () => void }>(
-  ({ userInfo, onClose }, ref) => {
-    const modalContentRef = useRef<HTMLDivElement>(null);
-
-    React.useImperativeHandle(ref, () => modalContentRef.current as HTMLDivElement);
-
-    useEffect(() => {
-      function handleClickOutside(event: MouseEvent) {
-        if (modalContentRef.current && !modalContentRef.current.contains(event.target as Node)) {
-          onClose();
-        }
-      }
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [onClose]);
-
-    if (!userInfo) return null;
-
-    return (
-      <CelebrationPopup
-        userInfo={{
-          firstName: userInfo.firstName,
-          displayName: userInfo.displayName
-        }}
-        eventType="birthday"
-        onClose={onClose}
-        ref={ref}
-      />
-    );
-  }
-);
-BirthdayPopup.displayName = 'BirthdayPopup';
-
 const BirthdaySlider: React.FC = () => {
   const [birthdayData, setBirthdayData] = useState<BirthdayData | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -210,7 +174,6 @@ const BirthdaySlider: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   const sliderRef = useRef<HTMLDivElement>(null);
-  const birthdayPopupRef = useRef<HTMLDivElement>(null);
 
   // Update transform when currentSlide changes
   useEffect(() => {
@@ -465,10 +428,8 @@ const HomePage: React.FC = () => {
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
   // Estados para celebraciones
-  const [celebrations, setCelebrations] = useState<User[]>([]);
+  const [celebrations, setCelebrations] = useState<User[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [celebrationPopup, setCelebrationPopup] = useState<{ user: User; eventType: 'birthday' | 'anniversary' } | null>(null);
-  const [showBirthdayPopup, setShowBirthdayPopup] = useState(false);
-  const [birthdayUserInfo, setBirthdayUserInfo] = useState<{ firstName: string; displayName: string } | null>(null);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const celebrationPopupRef = useRef<HTMLDivElement>(null);
@@ -479,7 +440,7 @@ const HomePage: React.FC = () => {
     if (!user) return;
 
     const specialEvent = getUserSpecialEvent(user);
-    if (specialEvent) {
+    if (specialEvent && !celebrationPopup) {
       // Agregar al estado de celebraciones si no está ya
       setCelebrations(prev => {
         if (!prev.find(u => u.id === user.id)) {
@@ -488,14 +449,18 @@ const HomePage: React.FC = () => {
         return prev;
       });
 
-      // Mostrar popup de celebración
-      const eventType = specialEvent === 'important-anniversary' ? 'anniversary' : specialEvent;
-      setCelebrationPopup({
-        user: user,
-        eventType: eventType
-      });
+      // Mostrar popup de celebración después de un delay
+      const timer = setTimeout(() => {
+        const eventType = specialEvent === 'important-anniversary' ? 'anniversary' : specialEvent;
+        setCelebrationPopup({
+          user: user,
+          eventType: eventType
+        });
+      }, 1500);
+      
+      return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, celebrationPopup]);
 
   // Función para cerrar popup de celebración
   const closeCelebrationPopup = () => {
@@ -546,17 +511,6 @@ const HomePage: React.FC = () => {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [eventCanScrollLeft, setEventCanScrollLeft] = useState(false);
   const [eventCanScrollRight, setEventCanScrollRight] = useState(true);
-
-  useEffect(() => {
-    if (user && isUserBirthday(user) && !showBirthdayPopup) {
-      // Mostrar popup después de un pequeño delay para que se cargue la página
-      const timer = setTimeout(() => {
-        setShowBirthdayPopup(true);
-      }, 1500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [user, showBirthdayPopup]);
 
   const handleLogout = () => {
     logout();
@@ -1227,14 +1181,6 @@ const HomePage: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} Coacharte. Todos los derechos reservados.</p>
         </div>
       </footer>
-
-      {/* Modal de felicitaciones de cumpleaños */}
-      {showBirthdayPopup && user && (
-        <BirthdayPopup
-          userInfo={{ firstName: firstName || displayName, displayName }}
-          onClose={() => setShowBirthdayPopup(false)}
-        />
-      )}
 
       {/* Modal de celebraciones (aniversarios y cumpleaños) */}
       {celebrationPopup && (
