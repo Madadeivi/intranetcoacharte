@@ -1,6 +1,52 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts"
 import { corsHeaders } from '../_shared/cors.ts'
+
+// ===== JWT UTILS (usa SHA-512 como unified-auth) =====
+let jwtCryptoKey: CryptoKey | null = null;
+
+async function initializeJWTKey(): Promise<void> {
+  try {
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) {
+      console.error('JWT_SECRET not found in environment variables');
+      return;
+    }
+    
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecret);
+    jwtCryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+  } catch (error) {
+    console.error('Error initializing JWT key:', error);
+    jwtCryptoKey = null;
+  }
+}
+
+// Inicializar la clave al cargar el módulo
+await initializeJWTKey();
+
+// ===== JWT VERIFICATION =====
+// deno-lint-ignore no-explicit-any
+async function verifyCustomJWT(token: string): Promise<any> {
+  try {
+    if (!jwtCryptoKey) {
+      throw new Error("JWT key not initialized");
+    }
+    
+    const payload = await verify(token, jwtCryptoKey);
+    return payload;
+  } catch (error) {
+    console.error('JWT verification failed:', error);
+    throw new Error('Invalid token');
+  }
+}
 
 interface Profile {
   id: string
@@ -22,6 +68,7 @@ interface Birthday {
   position: string
   department: string
   date: string
+  age: number
   avatar: string | null
   departmentId: string | null
 }
@@ -35,6 +82,39 @@ serve(async (req) => {
   }
 
   try {
+    // ===== VERIFICAR JWT TOKEN =====
+    const userToken = req.headers.get('X-User-Token')
+    
+    if (!userToken) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'User token missing',
+          message: 'Token de usuario requerido'
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    try {
+      await verifyCustomJWT(userToken)
+    } catch (_error) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid token',
+          message: 'Token de usuario inválido'
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -152,13 +232,17 @@ async function getCurrentMonthBirthdays(supabaseClient: any) {
       const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
       const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
       const initial = profile.initials || '';
+      const birthDate = String(profile.birth_date || '');
+      const age = calculateAge(birthDate);
+      
       return {
         id: String(profile.id),
         name: fullName,
         initial,
         position: String(profile.title || 'Sin cargo'),
         department: departmentName,
-        date: String(profile.birth_date || ''),
+        date: birthDate,
+        age,
         avatar: profile.avatar_url ? String(profile.avatar_url) : null,
         departmentId: profile.department_id ? String(profile.department_id) : null
       };
@@ -256,13 +340,17 @@ async function getMonthBirthdays(supabaseClient: any, month: string | null, year
       const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
       const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
       const initial = profile.initials || '';
+      const birthDate = String(profile.birth_date || '');
+      const age = calculateAge(birthDate);
+      
       return {
         id: String(profile.id),
         name: fullName,
         initial,
         position: String(profile.title || 'Sin cargo'),
         department: departmentName,
-        date: String(profile.birth_date || ''),
+        date: birthDate,
+        age,
         avatar: profile.avatar_url ? String(profile.avatar_url) : null,
         departmentId: profile.department_id ? String(profile.department_id) : null
       };
@@ -342,13 +430,17 @@ async function getAllBirthdays(supabaseClient: any) {
       const fullName = `${profile.full_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre';
       const departmentName = departmentMap.get(String(profile.department_id)) || 'Sin departamento';
       const initial = profile.initials || '';
+      const birthDate = String(profile.birth_date || '');
+      const age = calculateAge(birthDate);
+      
       return {
         id: String(profile.id),
         name: fullName,
         initial,
         position: String(profile.title || 'Sin cargo'),
         department: departmentName,
-        date: String(profile.birth_date || ''),
+        date: birthDate,
+        age,
         avatar: profile.avatar_url ? String(profile.avatar_url) : null,
         departmentId: profile.department_id ? String(profile.department_id) : null
       };
@@ -379,5 +471,28 @@ async function getAllBirthdays(supabaseClient: any) {
   } catch (error) {
     console.error('Error in getAllBirthdays:', error)
     throw error
+  }
+}
+
+/**
+ * Calcula la edad basada en la fecha de nacimiento
+ */
+function calculateAge(birthDate: string): number {
+  try {
+    // Crear fecha con zona horaria de México para cálculo correcto
+    const birth = new Date(birthDate + 'T00:00:00-06:00')
+    const today = new Date()
+    
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    
+    return Math.max(0, age)
+  } catch (error) {
+    console.error('Error calculating age:', error)
+    return 0
   }
 }

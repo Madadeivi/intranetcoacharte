@@ -3,6 +3,35 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts"
 import { corsHeaders } from '../_shared/cors.ts'
 
+// ===== JWT UTILS (usa SHA-512 como unified-auth) =====
+let jwtCryptoKey: CryptoKey | null = null;
+
+async function initializeJWTKey(): Promise<void> {
+  try {
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) {
+      console.error('JWT_SECRET not found in environment variables');
+      return;
+    }
+    
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecret);
+    jwtCryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+  } catch (error) {
+    console.error('Error initializing JWT key:', error);
+    jwtCryptoKey = null;
+  }
+}
+
+// Inicializar la clave al cargar el módulo
+await initializeJWTKey();
+
 interface Profile {
   id: string
   full_name: string | null
@@ -42,21 +71,12 @@ type SupabaseClient = any
 
 async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: JWTPayload }> {
   try {
-    const jwtSecret = Deno.env.get('JWT_SECRET');
-    if (!jwtSecret) {
-      console.error('JWT_SECRET not configured');
+    if (!jwtCryptoKey) {
+      console.error('JWT key not initialized');
       return { valid: false };
     }
 
-    const key = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(jwtSecret),
-      { name: 'HMAC', hash: 'SHA-512' },
-      false,
-      ['verify']
-    );
-
-    const payload = await verify(token, key);
+    const payload = await verify(token, jwtCryptoKey);
     return { valid: true, payload: payload as JWTPayload };
   } catch (error) {
     console.error('JWT verification failed:', error instanceof Error ? error.message : String(error));
