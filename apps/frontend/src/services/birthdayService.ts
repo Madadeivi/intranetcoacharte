@@ -7,6 +7,7 @@ export interface Birthday {
   position: string;
   department: string;
   date: string;
+  age: number;
   avatar: string | null;
   departmentId: string | null;
 }
