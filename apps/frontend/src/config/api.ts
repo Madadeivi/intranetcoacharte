@@ -75,8 +75,6 @@ export const apiConfig: ApiConfig = (() => {
         downloadDocument: `${functionsBaseUrl}/zoho-crm/download-document`,
       },
       collaborator: {
-        // Nota: getProfile ahora se maneja directamente con queries a la tabla 'profiles'
-        // ya no se usa la función Edge collaborator-db
         getDocuments: `${functionsBaseUrl}/document-manager`,
       },
       profile: {
@@ -115,13 +113,6 @@ export interface LoginResponse {
   usingDefaultPassword?: boolean;
   code?: string;
 }
-
-// DEPRECATED: Interfaces eliminadas que ya no son válidas
-// export interface CollaboratorLoginResponse { ... }
-// export interface ChangePasswordRequest { ... }
-// export interface ChangePasswordResponse { ... }
-// export interface UpdateProfileRequest { ... }
-// export interface UpdateProfileResponse { ... }
 
 export interface ResetPasswordResponse {
   success: boolean;
@@ -238,10 +229,9 @@ export const customFetch = async <T>(
           defaultHeaders['X-User-Token'] = userToken;
         }
       }
-    } else if (url.includes('zoho-crm') && typeof window !== 'undefined') {
-      const userToken = localStorage.getItem('coacharte_auth_token');
-      if (userToken) {
-        defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+    } else if (url.includes('zoho-crm')) {
+      if (supabaseAnonKey) {
+        defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
     }
 
