@@ -371,9 +371,18 @@ const BirthdaySlider: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="birthday-card-date">
-                    <EventIcon className="birthday-card-date-icon" />
-                    <p className="birthday-card-date-text">{formatDate(birthday.date)}</p>
+                  <div className="birthday-card-details">
+                    <div className="birthday-card-age">
+                      <CakeIcon className="birthday-card-age-icon" />
+                      <span className="birthday-card-age-text">
+                        {birthday.age} {birthday.age === 1 ? 'año' : 'años'}
+                      </span>
+                    </div>
+                    
+                    <div className="birthday-card-date">
+                      <EventIcon className="birthday-card-date-icon" />
+                      <p className="birthday-card-date-text">{formatDate(birthday.date)}</p>
+                    </div>
                   </div>
                 </div>
               ))}

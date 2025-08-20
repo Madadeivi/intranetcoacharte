@@ -232,7 +232,7 @@ export const customFetch = async <T>(
       if (supabaseAnonKey) {
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
-      if ((url.includes('profile-manager') || url.includes('anniversary-manager')) && typeof window !== 'undefined') {
+      if ((url.includes('profile-manager') || url.includes('anniversary-manager') || url.includes('birthday-manager')) && typeof window !== 'undefined') {
         const userToken = localStorage.getItem('coacharte_auth_token');
         if (userToken) {
           defaultHeaders['X-User-Token'] = userToken;

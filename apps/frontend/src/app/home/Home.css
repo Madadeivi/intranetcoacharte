@@ -3004,6 +3004,36 @@ code {
   border-top: 1px solid var(--color-border);
 }
 
+.birthday-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.birthday-card-age {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.birthday-card-age-icon {
+  font-size: var(--text-base);
+  color: var(--color-primary-100);
+}
+
+.birthday-card-age-text {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-body);
+}
+
+.birthday-card-date {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .birthday-card-date-icon {
   font-size: var(--text-base);
   color: var(--color-primary-100);
