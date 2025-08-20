@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts"
 import { corsHeaders } from '../_shared/cors.ts'
 
 interface Profile {
@@ -28,8 +29,40 @@ interface Anniversary {
   departmentId: string | null
 }
 
+interface JWTPayload {
+  sub: string;
+  email?: string;
+  role?: string;
+  exp?: number;
+  iat?: number;
+}
+
 // deno-lint-ignore no-explicit-any
 type SupabaseClient = any
+
+async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: JWTPayload }> {
+  try {
+    const jwtSecret = Deno.env.get('JWT_SECRET');
+    if (!jwtSecret) {
+      console.error('JWT_SECRET not configured');
+      return { valid: false };
+    }
+
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(jwtSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+
+    const payload = await verify(token, key);
+    return { valid: true, payload: payload as JWTPayload };
+  } catch (error) {
+    console.error('JWT verification failed:', error);
+    return { valid: false };
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -37,6 +70,36 @@ serve(async (req) => {
   }
 
   try {
+    const userTokenHeader = req.headers.get('X-User-Token');
+    
+    if (!userTokenHeader) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'User token missing',
+          message: 'Token de usuario requerido'
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const { valid, payload } = await verifyCustomJWT(userTokenHeader);
+    if (!valid || !payload?.sub) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid token',
+          message: 'Token de autorización inválido'
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',

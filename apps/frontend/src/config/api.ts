@@ -229,11 +229,9 @@ export const customFetch = async <T>(
         defaultHeaders['X-User-Token'] = userToken; // JWT de usuario para validación personalizada
       }
     } else if (url.includes('birthday-manager') || url.includes('anniversary-manager') || url.includes('profile-manager')) {
-      // birthday-manager, anniversary-manager y profile-manager: usan anon key para bypassing JWT validation
       if (supabaseAnonKey) {
         defaultHeaders['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
-      // Agregar el JWT personalizado como header personalizado para profile-manager
       if ((url.includes('profile-manager') || url.includes('anniversary-manager')) && typeof window !== 'undefined') {
         const userToken = localStorage.getItem('coacharte_auth_token');
         if (userToken) {
