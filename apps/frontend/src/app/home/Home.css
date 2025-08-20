@@ -283,6 +283,30 @@ code {
     0 0 60px rgba(255, 215, 0, 0.2);
 }
 
+/* Estilos para el avatar cuando es aniversario laboral */
+.user-avatar.anniversary-doodle {
+  position: relative;
+  animation: anniversary-pulse 2s infinite, anniversary-shimmer 4s ease-in-out infinite, anniversary-subtle-rotate 8s linear infinite;
+  overflow: visible;
+  z-index: 10;
+  box-shadow: 
+    0 0 20px rgba(78, 205, 196, 0.6),
+    0 0 40px rgba(78, 205, 196, 0.4),
+    0 0 60px rgba(78, 205, 196, 0.2);
+}
+
+/* Estilos para el avatar cuando es aniversario importante */
+.user-avatar.important-anniversary-doodle {
+  position: relative;
+  animation: important-anniversary-pulse 2s infinite, important-anniversary-shimmer 4s ease-in-out infinite, important-anniversary-subtle-rotate 8s linear infinite;
+  overflow: visible;
+  z-index: 10;
+  box-shadow: 
+    0 0 20px rgba(249, 202, 36, 0.8),
+    0 0 40px rgba(249, 202, 36, 0.6),
+    0 0 60px rgba(249, 202, 36, 0.4);
+}
+
 /* Rotación sutil y continua */
 @keyframes birthday-subtle-rotate {
   0% { transform: rotate(0deg); }
@@ -385,6 +409,76 @@ code {
   opacity: 0.8;
 }
 
+/* Efectos para el avatar de aniversario */
+.user-avatar.anniversary-doodle::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #4ecdc4, #45b7d1, #96ceb4, #74b9ff, #00cec9, #55a3ff);
+  background-size: 400% 400%;
+  border-radius: 50%;
+  z-index: -1;
+  animation: anniversary-rainbow 3s ease infinite;
+}
+
+.user-avatar.anniversary-doodle::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(78, 205, 196, 0.6) 50%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  border-radius: 50%;
+  z-index: -2;
+  animation: anniversary-shimmer 2.5s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+/* Efectos para el avatar de aniversario importante */
+.user-avatar.important-anniversary-doodle::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #f9ca24, #f0932b, #fdcb6e, #e17055, #d63031, #fd79a8);
+  background-size: 400% 400%;
+  border-radius: 50%;
+  z-index: -1;
+  animation: important-anniversary-rainbow 2s ease infinite;
+}
+
+.user-avatar.important-anniversary-doodle::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  background: linear-gradient(
+    45deg,
+    transparent 20%,
+    rgba(249, 202, 36, 0.8) 50%,
+    transparent 80%
+  );
+  background-size: 200% 200%;
+  border-radius: 50%;
+  z-index: -2;
+  animation: important-anniversary-shimmer 2s ease-in-out infinite;
+  opacity: 0.9;
+}
+
 @keyframes birthday-shimmer {
   0% { 
     background-position: -200% -200%;
@@ -414,12 +508,43 @@ code {
   100% { background-position: 0% 50%; }
 }
 
+@keyframes anniversary-rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes important-anniversary-rainbow {
+  0% { background-position: 0% 50%; }
+  33% { background-position: 100% 0%; }
+  66% { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
 .birthday-doodle-icon {
   position: absolute;
   top: -8px;
   right: -8px;
   font-size: 16px;
   animation: birthday-bounce 1.5s infinite;
+  z-index: 2;
+}
+
+.anniversary-doodle-icon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 16px;
+  animation: anniversary-bounce 1.5s infinite;
+  z-index: 2;
+}
+
+.important-anniversary-doodle-icon {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 18px;
+  animation: important-anniversary-bounce 1.2s infinite;
   z-index: 2;
 }
 
@@ -612,6 +737,96 @@ code {
   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
   40% { transform: translateY(-10px); }
   60% { transform: translateY(-5px); }
+}
+
+/* ==============================================
+   ANIMACIONES DE ANIVERSARIO
+   ============================================== */
+
+/* Rotación sutil para aniversario */
+@keyframes anniversary-subtle-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Animación de pulso para aniversario */
+@keyframes anniversary-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(78, 205, 196, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); }
+}
+
+/* Animación de brillo para aniversario */
+@keyframes anniversary-shimmer {
+  0% { 
+    background-position: -200% -200%;
+    transform: rotate(0deg);
+  }
+  25% { 
+    background-position: 200% -200%;
+    transform: rotate(90deg);
+  }
+  50% { 
+    background-position: 200% 200%;
+    transform: rotate(180deg);
+  }
+  75% { 
+    background-position: -200% 200%;
+    transform: rotate(270deg);
+  }
+  100% { 
+    background-position: -200% -200%;
+    transform: rotate(360deg);
+  }
+}
+
+/* Animaciones para aniversario importante */
+@keyframes important-anniversary-subtle-rotate {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes important-anniversary-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(249, 202, 36, 0.8); }
+  70% { box-shadow: 0 0 0 15px rgba(249, 202, 36, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(249, 202, 36, 0); }
+}
+
+@keyframes important-anniversary-shimmer {
+  0% { 
+    background-position: -200% -200%;
+    transform: rotate(0deg) scale(1);
+  }
+  25% { 
+    background-position: 200% -200%;
+    transform: rotate(90deg) scale(1.02);
+  }
+  50% { 
+    background-position: 200% 200%;
+    transform: rotate(180deg) scale(1.05);
+  }
+  75% { 
+    background-position: -200% 200%;
+    transform: rotate(270deg) scale(1.02);
+  }
+  100% { 
+    background-position: -200% -200%;
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* Animaciones de bounce para iconos de aniversario */
+@keyframes anniversary-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+
+@keyframes important-anniversary-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-10px) scale(1.1); }
+  60% { transform: translateY(-6px) scale(1.05); }
 }
 
 /* Contenedor principal de la información del usuario */
@@ -3853,6 +4068,569 @@ code {
   padding: var(--space-2);
   min-width: 120px;
   width: 120px;
+}
+
+/* ==============================================
+   SLIDER DE ANIVERSARIOS - ESTILOS ESPECÍFICOS
+   ============================================== */
+
+.anniversary-slider-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+  background: linear-gradient(135deg, var(--color-background-light) 0%, #e8f4f8 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-8);
+}
+
+.anniversary-slider-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.anniversary-slider-icon {
+  font-size: 2rem;
+  color: #4ecdc4;
+}
+
+.anniversary-slider-title {
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  font-size: var(--text-2xl);
+  color: var(--color-text-title);
+  margin: 0;
+  text-align: center;
+}
+
+.anniversary-slider-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+}
+
+.anniversary-slider-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.anniversary-slider-track {
+  display: flex;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.anniversary-slider-slide {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--space-4);
+  justify-content: flex-start;
+}
+
+.anniversary-card {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: calc(100% / 3 - var(--space-4) * 2 / 3);
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.anniversary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: #4ecdc4;
+}
+
+.anniversary-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.anniversary-card-avatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: #4ecdc4;
+  color: var(--color-text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.anniversary-card-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.anniversary-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.anniversary-card-name {
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  font-size: var(--text-lg);
+  color: var(--color-text-title);
+  margin: 0 0 var(--space-1) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.anniversary-card-position {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-1) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.anniversary-card-department {
+  font-size: var(--text-xs);
+  color: #4ecdc4;
+  background: #e8f4f8;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  margin: 0;
+}
+
+.anniversary-card-details {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.anniversary-card-years {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.anniversary-card-years-icon {
+  font-size: var(--text-base);
+  color: #4ecdc4;
+}
+
+.anniversary-card-years-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-title);
+  font-weight: 600;
+  margin: 0;
+}
+
+.anniversary-card-date {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.anniversary-card-date-icon {
+  font-size: var(--text-base);
+  color: #4ecdc4;
+}
+
+.anniversary-card-date-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.anniversary-card-milestone {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  font-size: var(--text-lg);
+  opacity: 0.8;
+  animation: anniversary-milestone-bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes anniversary-milestone-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
+  60% {
+    transform: translateY(-4px);
+  }
+}
+
+.anniversary-slider-navigation {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.anniversary-slider-nav-button {
+  background: #4ecdc4;
+  color: var(--color-text-on-primary);
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: var(--text-lg);
+  transition: all 0.3s ease-in-out;
+  box-shadow: var(--shadow-sm);
+}
+
+.anniversary-slider-nav-button:hover {
+  background: #45b7d1;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.anniversary-slider-nav-button:active {
+  transform: translateY(0);
+}
+
+.anniversary-slider-nav-button:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.anniversary-slider-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.anniversary-slider-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-border);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.anniversary-slider-dot.active {
+  background: #4ecdc4;
+  transform: scale(1.2);
+}
+
+.anniversary-slider-dot:hover {
+  background: #45b7d1;
+}
+
+.anniversary-no-data {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-secondary);
+}
+
+.anniversary-no-data-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+}
+
+.anniversary-no-data-text {
+  font-size: var(--text-base);
+  margin: 0;
+}
+
+/* Efectos especiales para aniversarios del día */
+.anniversary-card.today {
+  border: 2px solid #4ecdc4;
+  background: linear-gradient(135deg, var(--color-background-light) 0%, #e8f4f8 100%);
+  position: relative;
+}
+
+.anniversary-card.today::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(78, 205, 196, 0.1) 50%, transparent 70%);
+  animation: anniversary-shine 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes anniversary-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Efectos especiales para aniversarios hito */
+.anniversary-card.milestone {
+  border: 2px solid #f9ca24;
+  background: linear-gradient(135deg, var(--color-background-light) 0%, #fef7e0 100%);
+}
+
+.anniversary-card.milestone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(249, 202, 36, 0.1) 50%, transparent 70%);
+  animation: milestone-shine 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes milestone-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ==============================================
+   POPUP DE CELEBRACIÓN - ESTILOS UNIFICADOS
+   ============================================== */
+
+/* Popup general para celebraciones */
+.celebration-popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.celebration-popup-content {
+  background: var(--color-background-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  box-shadow: var(--shadow-2xl);
+  transform: scale(0.9);
+  animation: celebration-popup-enter 0.3s ease-out forwards;
+}
+
+/* Variantes del popup según el tipo de celebración */
+.celebration-popup-backdrop.birthday {
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.celebration-popup-backdrop.anniversary {
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.celebration-popup-backdrop.important-anniversary {
+  background: rgba(249, 202, 36, 0.1);
+}
+
+.celebration-popup-content.birthday {
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  background: linear-gradient(135deg, var(--color-background-light) 0%, rgba(255, 107, 107, 0.05) 100%);
+}
+
+.celebration-popup-content.anniversary {
+  border: 2px solid rgba(78, 205, 196, 0.3);
+  background: linear-gradient(135deg, var(--color-background-light) 0%, rgba(78, 205, 196, 0.05) 100%);
+}
+
+.celebration-popup-content.important-anniversary {
+  border: 2px solid rgba(249, 202, 36, 0.3);
+  background: linear-gradient(135deg, var(--color-background-light) 0%, rgba(249, 202, 36, 0.05) 100%);
+}
+
+@keyframes celebration-popup-enter {
+  0% { 
+    transform: scale(0.5) rotate(-180deg);
+    opacity: 0;
+  }
+  50% { 
+    transform: scale(1.1) rotate(5deg);
+    opacity: 0.8;
+  }
+  75% { 
+    transform: scale(0.95) rotate(-2deg);
+    opacity: 0.9;
+  }
+  100% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.celebration-popup-close-button {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: color 0.2s ease-in-out;
+}
+
+.celebration-popup-close-button:hover {
+  color: var(--color-text-title);
+}
+
+.celebration-popup-body {
+  text-align: center;
+}
+
+.celebration-popup-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+  animation: celebration-icon-bounce 1s infinite;
+}
+
+@keyframes celebration-icon-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-20px); }
+  60% { transform: translateY(-10px); }
+}
+
+.celebration-popup-title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+}
+
+.celebration-popup-title.birthday {
+  color: #ff6b6b;
+}
+
+.celebration-popup-title.anniversary {
+  color: #4ecdc4;
+}
+
+.celebration-popup-title.important-anniversary {
+  color: #f9ca24;
+}
+
+.celebration-popup-message {
+  font-size: var(--text-base);
+  color: var(--color-text-body);
+  margin-bottom: var(--space-6);
+  line-height: 1.6;
+}
+
+.celebration-popup-decoration {
+  font-size: 2rem;
+  margin-bottom: var(--space-6);
+  animation: celebration-decoration-sway 2s ease-in-out infinite;
+}
+
+@keyframes celebration-decoration-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.celebration-popup-button {
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+}
+
+.celebration-popup-button.birthday {
+  background: #ff6b6b;
+  color: white;
+}
+
+.celebration-popup-button.anniversary {
+  background: #4ecdc4;
+  color: white;
+}
+
+.celebration-popup-button.important-anniversary {
+  background: #f9ca24;
+  color: #333;
+}
+
+.celebration-popup-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.celebration-popup-button.birthday:hover {
+  background: #e55a5a;
+}
+
+.celebration-popup-button.anniversary:hover {
+  background: #45b7b8;
+}
+
+.celebration-popup-button.important-anniversary:hover {
+  background: #f6b93b;
+}
+
+.celebration-popup-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .celebration-popup-content {
+    padding: var(--space-6);
+    max-width: 350px;
+  }
+  
+  .celebration-popup-title {
+    font-size: var(--text-xl);
+  }
+  
+  .celebration-popup-icon {
+    font-size: 3rem;
+  }
 }
 
 
