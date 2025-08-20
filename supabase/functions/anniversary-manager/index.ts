@@ -455,7 +455,7 @@ async function getAllAnniversaries(supabaseClient: any) {
 
     // Agrupar por mes
     const anniversariesByMonth: Record<number, Anniversary[]> = anniversaries.reduce((acc: Record<number, Anniversary[]>, anniversary: Anniversary) => {
-      const month = new Date(anniversary.hireDate).getMonth() + 1
+      const month = new Date(anniversary.hireDate + 'T00:00:00-06:00').getMonth() + 1
       if (!acc[month]) {
         acc[month] = []
       }
