@@ -51,7 +51,7 @@ async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload
     const key = await crypto.subtle.importKey(
       'raw',
       new TextEncoder().encode(jwtSecret),
-      { name: 'HMAC', hash: 'SHA-256' },
+      { name: 'HMAC', hash: 'SHA-512' },
       false,
       ['verify']
     );
@@ -59,7 +59,7 @@ async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload
     const payload = await verify(token, key);
     return { valid: true, payload: payload as JWTPayload };
   } catch (error) {
-    console.error('JWT verification failed:', error);
+    console.error('JWT verification failed:', error instanceof Error ? error.message : String(error));
     return { valid: false };
   }
 }
@@ -87,6 +87,7 @@ serve(async (req) => {
     }
 
     const { valid, payload } = await verifyCustomJWT(userTokenHeader);
+    
     if (!valid || !payload?.sub) {
       return new Response(
         JSON.stringify({
