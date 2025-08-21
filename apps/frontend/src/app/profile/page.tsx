@@ -168,7 +168,7 @@ export default function ProfilePage() {
     };
 
     loadProfileData();
-  }, [isAuthenticated, router, user]);
+  }, [isAuthenticated, router, user, documents]);
 
   const retryLoadProfile = async () => {
     if (!user?.id) return;

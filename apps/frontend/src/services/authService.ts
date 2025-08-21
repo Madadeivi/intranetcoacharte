@@ -17,6 +17,7 @@ import {
   UnifiedAuthRequest, 
   UnifiedAuthResponse
 } from '../config/api';
+import { initializeCelebrationSession, clearAllCelebrations } from '../utils/celebrationStorage';
 
 // ===== INTERFACES UNIFICADAS =====
 
@@ -494,9 +495,6 @@ class UnifiedAuthService {
     }
   }
 
-  /**
-   * Guardar sesión
-   */
   private setSession(user: User, session?: AuthSession): void {
     this.currentUser = user;
     this.currentSession = session || null;
@@ -514,6 +512,8 @@ class UnifiedAuthService {
           localStorage.setItem(this.REFRESH_TOKEN_KEY, session.refresh_token);
         }
       }
+
+      initializeCelebrationSession();
     } catch (error) {
       console.error('Error guardando sesión:', error);
     }
@@ -534,9 +534,6 @@ class UnifiedAuthService {
     }
   }
 
-  /**
-   * Limpiar sesión
-   */
   private clearSession(): void {
     this.currentUser = null;
     this.currentSession = null;
@@ -549,12 +546,13 @@ class UnifiedAuthService {
       localStorage.removeItem(this.USER_KEY);
       localStorage.removeItem(this.SESSION_KEY);
       
-      // Limpiar también las claves legacy
       localStorage.removeItem('collaborator');
       localStorage.removeItem('collaboratorToken');
       localStorage.removeItem('intranet_access_token');
       localStorage.removeItem('intranet_refresh_token');
       localStorage.removeItem('intranet_user');
+
+      clearAllCelebrations();
     } catch (error) {
       console.error('Error limpiando sesión:', error);
     }

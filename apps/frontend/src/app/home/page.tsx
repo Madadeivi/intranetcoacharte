@@ -73,8 +73,13 @@ import {
 import { birthdayService, Birthday } from '../../services/birthdayService';
 
 import { 
-  getUserSpecialEvent
+  getUserSpecialEvent,
+  calculateUserYearsOfService
 } from '../../utils/celebrationUtils';
+import { 
+  wasCelebrationShown, 
+  markCelebrationShown 
+} from '../../utils/celebrationStorage';
 import { User } from '../../config/api';
 
 const isUserBirthday = (user: User | null): boolean => {
@@ -444,7 +449,6 @@ const HomePage: React.FC = () => {
   const celebrationPopupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Detectar celebraciones del usuario actual
   useEffect(() => {
     if (!user) return;
 
@@ -456,24 +460,43 @@ const HomePage: React.FC = () => {
     console.log('specialEvent:', specialEvent);
     
     if (specialEvent && !celebrationPopup) {
-      // Agregar al estado de celebraciones si no está ya
-      setCelebrations(prev => {
-        if (!prev.find(u => u.id === user.id)) {
-          return [...prev, user];
-        }
-        return prev;
-      });
-
-      // Mostrar popup de celebración después de un delay
-      const timer = setTimeout(() => {
-        const eventType = specialEvent === 'important-anniversary' ? 'anniversary' : specialEvent;
-        setCelebrationPopup({
-          user: user,
-          eventType: eventType
-        });
-      }, 1500);
+      let storageEventType: 'birthday' | 'anniversary' | 'importantAnniversary';
+      let popupEventType: 'birthday' | 'anniversary';
       
-      return () => clearTimeout(timer);
+      if (specialEvent === 'birthday') {
+        storageEventType = 'birthday';
+        popupEventType = 'birthday';
+      } else if (specialEvent === 'important-anniversary') {
+        storageEventType = 'importantAnniversary';
+        popupEventType = 'anniversary';
+      } else {
+        storageEventType = 'anniversary';
+        popupEventType = 'anniversary';
+      }
+
+      const alreadyShown = wasCelebrationShown(user.id, storageEventType);
+      console.log(`Celebración ${storageEventType} ya mostrada hoy:`, alreadyShown);
+      
+      if (!alreadyShown) {
+        setCelebrations(prev => {
+          if (!prev.find(u => u.id === user.id)) {
+            return [...prev, user];
+          }
+          return prev;
+        });
+
+        const timer = setTimeout(() => {
+          setCelebrationPopup({
+            user: user,
+            eventType: popupEventType
+          });
+          
+          markCelebrationShown(user.id, storageEventType);
+          console.log(`Celebración ${storageEventType} marcada como mostrada`);
+        }, 1500);
+        
+        return () => clearTimeout(timer);
+      }
     }
   }, [user, celebrationPopup]);
 
@@ -1197,12 +1220,12 @@ const HomePage: React.FC = () => {
         </div>
       </footer>
 
-      {/* Modal de celebraciones (aniversarios y cumpleaños) */}
       {celebrationPopup && (
         <CelebrationPopup
           userInfo={{
             firstName: getUserNames(celebrationPopup.user).firstName,
-            displayName: getUserNames(celebrationPopup.user).displayName
+            displayName: getUserNames(celebrationPopup.user).displayName,
+            yearsOfService: calculateUserYearsOfService(celebrationPopup.user)
           }}
           eventType={celebrationPopup.eventType}
           onClose={closeCelebrationPopup}
