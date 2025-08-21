@@ -160,15 +160,3 @@ export const getCelebrationTheme = (eventType: 'birthday' | 'anniversary' | 'imp
       };
   }
 };
-
-/**
- * Función para simular que es el cumpleaños del usuario (solo para pruebas)
- * Descomenta la línea siguiente para probar la funcionalidad
- */
-// export const isUserBirthday = (user: any): boolean => true;
-
-/**
- * Función para simular que es el aniversario del usuario (solo para pruebas)
- * Descomenta la línea siguiente para probar la funcionalidad
- */
-// export const isUserAnniversary = (user: any): boolean => true;

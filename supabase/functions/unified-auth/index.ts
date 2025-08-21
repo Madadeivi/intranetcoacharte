@@ -459,7 +459,9 @@ async function handleLogin(
       title: user.title || '',
       avatar_url: user.avatar_url || '',
       department_id: user.department_id || '',
-      status: user.status
+      status: user.status,
+      birth_date: user.birth_date || null,
+      hire_date: user.hire_date || null
     };
 
     const responseSession = {
@@ -562,7 +564,9 @@ async function handleValidateToken(
       title: user.title || '',
       avatar_url: user.avatar_url || '',
       department_id: user.department_id || '',
-      status: user.status
+      status: user.status,
+      birth_date: user.birth_date || null,
+      hire_date: user.hire_date || null
     };
 
     return new Response(

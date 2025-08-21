@@ -29,6 +29,8 @@ export interface User {
   role: string;
   department?: string;
   avatar?: string;
+  birth_date?: string;
+  hire_date?: string;
 }
 
 export interface AuthSession {
@@ -72,6 +74,8 @@ function mapBackendUserToFrontend(backendUser: {
   role: string;
   department_id?: string;
   avatar_url?: string;
+  birth_date?: string;
+  hire_date?: string;
 }): User {
   // Obtener los nombres del backend
   const backendFullName = backendUser.full_name || '';
@@ -114,7 +118,9 @@ function mapBackendUserToFrontend(backendUser: {
     lastName: lastName,
     role: backendUser.role,
     department: backendUser.department_id,
-    avatar: backendUser.avatar_url
+    avatar: backendUser.avatar_url,
+    birth_date: backendUser.birth_date,
+    hire_date: backendUser.hire_date
   };
   return mappedUser;
 }
