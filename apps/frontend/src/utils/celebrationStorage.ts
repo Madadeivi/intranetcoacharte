@@ -46,7 +46,7 @@ export function markCelebrationShown(userId: string, eventType: 'birthday' | 'an
     const key = getCelebrationKey(userId);
     const today = new Date().toISOString().split('T')[0];
     
-    let session = getCelebrationSession(userId) || {
+    const session = getCelebrationSession(userId) || {
       userId,
       date: today,
       events: {}
@@ -104,7 +104,7 @@ export function cleanupOldCelebrations(): void {
               keysToRemove.push(key);
             }
           }
-        } catch (error) {
+        } catch {
           keysToRemove.push(key);
         }
       }
@@ -116,6 +116,6 @@ export function cleanupOldCelebrations(): void {
   }
 }
 
-export function initializeCelebrationSession(userId: string): void {
+export function initializeCelebrationSession(): void {
   cleanupOldCelebrations();
 }

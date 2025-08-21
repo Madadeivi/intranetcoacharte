@@ -513,7 +513,7 @@ class UnifiedAuthService {
         }
       }
 
-      initializeCelebrationSession(user.id);
+      initializeCelebrationSession();
     } catch (error) {
       console.error('Error guardando sesión:', error);
     }
