@@ -3,6 +3,8 @@ import { User } from '../config/api';
 export const isUserBirthday = (user: User | null): boolean => {
   if (!user) return false;
   
+  return true;
+  
   const birthDateField = user.birth_date || user.birthday;
   if (!birthDateField) return false;
   

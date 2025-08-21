@@ -448,7 +448,13 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
+    console.log('USER DATA:', user);
+    console.log('birth_date:', user.birth_date);
+    console.log('hire_date:', user.hire_date);
+    
     const specialEvent = getUserSpecialEvent(user);
+    console.log('specialEvent:', specialEvent);
+    
     if (specialEvent && !celebrationPopup) {
       // Agregar al estado de celebraciones si no está ya
       setCelebrations(prev => {
