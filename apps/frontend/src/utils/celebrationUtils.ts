@@ -3,13 +3,22 @@ import { User } from '../config/api';
 export const isUserBirthday = (user: User | null): boolean => {
   if (!user) return false;
   
+  console.log('isUserBirthday check:', user);
+  
   const birthDateField = user.birth_date || user.birthday;
+  console.log('birthDateField:', birthDateField);
+  
   if (!birthDateField) return false;
   
   const today = new Date();
   const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
   
   const birthday = new Date(birthDateField + 'T00:00:00-06:00');
+  
+  console.log('todayInMexico:', todayInMexico);
+  console.log('birthday:', birthday);
+  console.log('months match:', todayInMexico.getMonth() === birthday.getMonth());
+  console.log('dates match:', todayInMexico.getDate() === birthday.getDate());
   
   return todayInMexico.getMonth() === birthday.getMonth() && 
          todayInMexico.getDate() === birthday.getDate();
@@ -18,7 +27,11 @@ export const isUserBirthday = (user: User | null): boolean => {
 export const isUserAnniversary = (user: User | null): boolean => {
   if (!user) return false;
   
+  console.log('isUserAnniversary check:', user);
+  
   const hireDateField = user.hire_date;
+  console.log('hireDateField:', hireDateField);
+  
   if (!hireDateField) return false;
   
   const today = new Date();
@@ -26,7 +39,12 @@ export const isUserAnniversary = (user: User | null): boolean => {
   
   const hireDate = new Date(hireDateField + 'T00:00:00-06:00');
   
+  console.log('hireDate >= todayInMexico:', hireDate >= todayInMexico);
+  
   if (hireDate >= todayInMexico) return false;
+  
+  console.log('hire months match:', todayInMexico.getMonth() === hireDate.getMonth());
+  console.log('hire dates match:', todayInMexico.getDate() === hireDate.getDate());
   
   return todayInMexico.getMonth() === hireDate.getMonth() && 
          todayInMexico.getDate() === hireDate.getDate();
