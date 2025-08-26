@@ -245,7 +245,24 @@ export default function ProfilePage() {
       
     } catch (err) {
       console.error('Error downloading document:', err);
-      alert('Error al descargar el documento. Por favor, intenta nuevamente.');
+      
+      let errorMessage = 'Error al descargar el documento. Por favor, intenta nuevamente.';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('Tiempo de espera agotado')) {
+          errorMessage = 'El documento es muy grande y tardó mucho en descargarse. Intenta nuevamente.';
+        } else if (err.message.includes('Error de conexión')) {
+          errorMessage = 'Problema de conexión a internet. Verifica tu conexión e intenta nuevamente.';
+        } else if (err.message.includes('servidor de documentos')) {
+          errorMessage = 'Error temporal del servidor. Intenta nuevamente en unos momentos.';
+        } else if (err.message.includes('zoho_record_id')) {
+          errorMessage = 'Tu perfil no está completamente configurado. Contacta a soporte.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
+      alert(errorMessage);
     } finally {
       setDownloadingDocs(prev => {
         const newSet = new Set(prev);
