@@ -62,13 +62,14 @@ export default function ProfilePage() {
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsError, setDocumentsError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<ProfileDocument[]>([]);
+  const [zohoRecordId, setZohoRecordId] = useState<string | null>(null);
 
-  const loadDocuments = async () => {
+  const loadDocuments = async (recordId?: string) => {
     try {
       setDocumentsLoading(true);
       setDocumentsError(null);
       
-      const zohoDocuments = await profileDocumentsService.getProfileDocuments();
+      const zohoDocuments = await profileDocumentsService.getProfileDocuments(recordId || zohoRecordId || undefined);
       
       const mappedDocuments: ProfileDocument[] = zohoDocuments.map((doc: ZohoProfileDocument) => ({
         id: doc.id,
@@ -119,16 +120,16 @@ export default function ProfilePage() {
       return;
     }
 
-  const loadProfileData = async () => {
-    if (!user?.id) return;
+    const loadProfileData = async () => {
+      if (!user?.id) return;
 
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Obtener datos reales del perfil usando el servicio
-      const profileResponse = await profileService.getProfile();
+      try {
+        setLoading(true);
+        setError(null);
         
+        // Obtener datos reales del perfil usando el servicio
+        const profileResponse = await profileService.getProfile();
+          
         if (!profileResponse.success || !profileResponse.data) {
           throw new Error(profileResponse.error || 'No se pudo obtener el perfil');
         }
@@ -153,12 +154,14 @@ export default function ProfilePage() {
           internalRecord: mappedProfile.internalRecord,
           phone: mappedProfile.phone,
           status: mappedProfile.status,
-          documents: documents,
+          documents: [],
         };
         
         setProfile(profileData);
         
-        loadDocuments();
+        const profileZohoId = profileResponse.data.profile.zoho_record_id || null;
+        setZohoRecordId(profileZohoId);
+        await loadDocuments(profileZohoId || undefined);
       } catch (err) {
         console.error('Error loading profile:', err);
         setError('Error al cargar el perfil. Por favor, intenta nuevamente.');
@@ -168,7 +171,7 @@ export default function ProfilePage() {
     };
 
     loadProfileData();
-  }, [isAuthenticated, router, user, documents]);
+  }, [isAuthenticated, router, user?.id]);
 
   const retryLoadProfile = async () => {
     if (!user?.id) return;
@@ -222,7 +225,11 @@ export default function ProfilePage() {
     try {
       setDownloadingDocs(prev => new Set(prev).add(doc.id));
       
-      const success = await profileDocumentsService.downloadAndSaveDocument(doc.id, doc.name);
+      const success = await profileDocumentsService.downloadAndSaveDocument(
+        doc.id, 
+        doc.name, 
+        zohoRecordId || undefined
+      );
       
       if (!success) {
         throw new Error('Error al descargar el documento');
@@ -238,6 +245,10 @@ export default function ProfilePage() {
         return newSet;
       });
     }
+  };
+
+  const handleRetryDocuments = () => {
+    loadDocuments(zohoRecordId || undefined);
   };
 
   const formatDate = (dateString: string): string => {
@@ -401,7 +412,7 @@ export default function ProfilePage() {
         {documentsError && (
           <div className="documents-error">
             <p>{documentsError}</p>
-            <button onClick={loadDocuments} className="retry-documents-button">
+            <button onClick={handleRetryDocuments} className="retry-documents-button">
               Reintentar carga de documentos
             </button>
           </div>
@@ -442,7 +453,7 @@ export default function ProfilePage() {
             <DescriptionIcon className="no-docs-icon" />
             <p>No hay documentos adjuntos</p>
             {documentsError && (
-              <button onClick={loadDocuments} className="retry-documents-button">
+              <button onClick={handleRetryDocuments} className="retry-documents-button">
                 Cargar documentos
               </button>
             )}

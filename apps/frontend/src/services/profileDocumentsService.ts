@@ -52,29 +52,37 @@ export interface DocumentDownloadResponse {
 }
 
 class ProfileDocumentsService {
+  private cachedZohoRecordId: string | null = null;
   
-  async getProfileDocuments(): Promise<ProfileDocument[]> {
+  async getProfileDocuments(zohoRecordId?: string): Promise<ProfileDocument[]> {
     try {
-      const profileResponse = await customFetch(
-        apiConfig.endpoints.profile.get,
-        { method: 'GET' }
-      ) as ApiResponse<unknown>;
+      let recordId = zohoRecordId || this.cachedZohoRecordId;
+      
+      if (!recordId) {
+        const profileResponse = await customFetch(
+          apiConfig.endpoints.profile.get,
+          { method: 'GET' }
+        ) as ApiResponse<unknown>;
 
-      if (!profileResponse.success || !profileResponse.data) {
-        throw new Error('No se pudo obtener el perfil del usuario');
+        if (!profileResponse.success || !profileResponse.data) {
+          throw new Error('No se pudo obtener el perfil del usuario');
+        }
+
+        const profileData = profileResponse.data as any;
+        recordId = profileData.profile?.zoho_record_id;
+        
+        if (recordId) {
+          this.cachedZohoRecordId = recordId;
+        }
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const profileData = profileResponse.data as any;
-      const zohoRecordId = profileData.profile?.zoho_record_id;
-
-      if (!zohoRecordId) {
+      if (!recordId) {
         console.warn('Usuario sin zoho_record_id, no hay documentos disponibles');
         return [];
       }
 
       const documentsResponse = await customFetch<ProfileDocumentsResponse>(
-        `${apiConfig.endpoints.zoho.profileDocuments}/${zohoRecordId}`,
+        `${apiConfig.endpoints.zoho.profileDocuments}/${recordId}`,
         { method: 'GET' }
       ) as ApiResponse<ProfileDocumentsResponse>;
 
@@ -82,7 +90,6 @@ class ProfileDocumentsService {
         return [];
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const responseData = documentsResponse.data as any;
       const attachments = responseData.attachments || [];
       const mappedDocuments = attachments.map((attachment: ZohoAttachment): ProfileDocument => {
@@ -94,7 +101,7 @@ class ProfileDocumentsService {
           size: this.formatFileSize(attachment.Size),
           description: '',
           category: this.categorizeDocument(attachment.File_Name),
-          downloadUrl: `${apiConfig.endpoints.zoho.downloadDocument}/${zohoRecordId}/${attachment.id}`
+          downloadUrl: `${apiConfig.endpoints.zoho.downloadDocument}/${recordId}/${attachment.id}`
         };
       });
 
@@ -106,26 +113,33 @@ class ProfileDocumentsService {
     }
   }
 
-  async downloadDocument(documentId: string, filename: string): Promise<DocumentDownloadResponse> {
+  async downloadDocument(documentId: string, filename: string, zohoRecordId?: string): Promise<DocumentDownloadResponse> {
     try {
-      const profileResponse = await customFetch(
-        apiConfig.endpoints.profile.get,
-        { method: 'GET' }
-      ) as ApiResponse<unknown>;
+      let recordId = zohoRecordId || this.cachedZohoRecordId;
+      
+      if (!recordId) {
+        const profileResponse = await customFetch(
+          apiConfig.endpoints.profile.get,
+          { method: 'GET' }
+        ) as ApiResponse<unknown>;
 
-      if (!profileResponse.success || !profileResponse.data) {
-        throw new Error('No se pudo obtener el perfil del usuario');
+        if (!profileResponse.success || !profileResponse.data) {
+          throw new Error('No se pudo obtener el perfil del usuario');
+        }
+
+        const profileData = profileResponse.data as any;
+        recordId = profileData.profile?.zoho_record_id;
+        
+        if (recordId) {
+          this.cachedZohoRecordId = recordId;
+        }
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const profileData = profileResponse.data as any;
-      const zohoRecordId = profileData.profile?.zoho_record_id;
-
-      if (!zohoRecordId) {
+      if (!recordId) {
         throw new Error('Usuario sin zoho_record_id asociado');
       }
 
-      const downloadUrl = `${apiConfig.endpoints.zoho.downloadDocument}/${zohoRecordId}/${documentId}`;
+      const downloadUrl = `${apiConfig.endpoints.zoho.downloadDocument}/${recordId}/${documentId}`;
 
       const response = await customFetchBinary(downloadUrl);
 
@@ -150,9 +164,9 @@ class ProfileDocumentsService {
     }
   }
 
-  async downloadAndSaveDocument(documentId: string, filename: string): Promise<boolean> {
+  async downloadAndSaveDocument(documentId: string, filename: string, zohoRecordId?: string): Promise<boolean> {
     try {
-      const downloadResponse = await this.downloadDocument(documentId, filename);
+      const downloadResponse = await this.downloadDocument(documentId, filename, zohoRecordId);
       
       if (!downloadResponse.success || !downloadResponse.blob) {
         throw new Error(downloadResponse.error || 'Error al descargar el documento');
@@ -265,6 +279,10 @@ class ProfileDocumentsService {
     const extension = filename.split('.').pop()?.toLowerCase();
     const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt'];
     return previewableTypes.includes(extension || '');
+  }
+
+  clearCache(): void {
+    this.cachedZohoRecordId = null;
   }
 }
 
