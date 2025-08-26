@@ -82,6 +82,13 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     height: 20,
   },
+  signatureLabel: {
+    fontSize: 10,
+  },
+  signatureDate: {
+    fontSize: 8,
+    marginTop: 5,
+  },
   footer: {
     position: 'absolute',
     bottom: 30,
@@ -163,6 +170,17 @@ const VacationPDFDocument = ({ data }: { data: VacationPDFData }) => (
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>DÍAS SOLICITADOS</Text>
+        <View style={styles.table}>
+          {generateRequestedDatesList(data.startDate, data.endDate).map((date, index) => (
+            <View key={index} style={styles.tableRow}>
+              <Text style={styles.tableCell}>{date}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
       <View style={styles.signature}>
         <View style={styles.signatureBox}>
           <View style={styles.signatureLine} />
@@ -185,12 +203,55 @@ const VacationPDFDocument = ({ data }: { data: VacationPDFData }) => (
 );
 
 const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
+  if (!dateString) return '';
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+  const date = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(dateString);
   return date.toLocaleDateString('es-MX', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   });
+};
+
+const sanitizeFileName = (name: string): string => {
+  return name
+    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+};
+
+const generateRequestedDatesList = (startDate: string, endDate: string): string[] => {
+  const dates: string[] = [];
+  if (!startDate || !endDate) return dates;
+  
+  const startMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(startDate);
+  const endMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(endDate);
+  
+  const currentDate = startMatch
+    ? new Date(Number(startMatch[1]), Number(startMatch[2]) - 1, Number(startMatch[3]))
+    : new Date(startDate);
+    
+  const finalDate = endMatch
+    ? new Date(Number(endMatch[1]), Number(endMatch[2]) - 1, Number(endMatch[3]))
+    : new Date(endDate);
+  
+  while (currentDate <= finalDate) {
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      dates.push(currentDate.toLocaleDateString('es-MX', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }));
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return dates;
 };
 
 class VacationPDFService {
@@ -198,15 +259,21 @@ class VacationPDFService {
     const doc = <VacationPDFDocument data={data} />;
     const asPdf = pdf(doc);
     const blob = await asPdf.toBlob();
-    
-    const fileName = `Solicitud_Vacaciones_${data.employeeName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-    
+
+    const fileName = `Solicitud_Vacaciones_${sanitizeFileName(data.employeeName)}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
+    document.body.appendChild(link);
     link.click();
-    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+    setTimeout(() => window.URL.revokeObjectURL(url), 0);
   }
 
   async generatePDFWithUserData(
