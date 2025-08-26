@@ -1,12 +1,8 @@
 /// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
-};
+import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
 // Cliente Supabase
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -16,6 +12,46 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Cache para el token de acceso de Zoho
 let accessToken: string | null = null;
 let tokenExpiryTime: number | null = null;
+
+// Inicializar la clave criptográfica una vez a nivel de módulo
+let jwtCryptoKey: CryptoKey | null = null;
+
+async function initializeJWTKey(): Promise<void> {
+  try {
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) {
+      return;
+    }
+
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecret);
+    jwtCryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["sign", "verify"]
+    );
+  } catch (_error) {
+    jwtCryptoKey = null;
+  }
+}
+
+// Inicializar la clave al cargar el módulo
+await initializeJWTKey();
+
+async function verifyCustomJWT(token: string): Promise<{ valid: boolean; payload?: { sub: string } }> {
+  try {
+    if (!jwtCryptoKey) {
+      return { valid: false };
+    }
+
+    const payload = await verify(token, jwtCryptoKey) as { sub: string };
+    return { valid: true, payload };
+  } catch (_error) {
+    return { valid: false };
+  }
+}
 
 /**
  * Obtiene un token de acceso de Zoho OAuth
@@ -236,14 +272,41 @@ serve(async (req) => {
   }
 
   try {
+    // Validar token de usuario para endpoints protegidos
+    const userTokenHeader = req.headers.get('X-User-Token');
+    
+    if (!userTokenHeader) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'User token missing',
+        message: 'Token de usuario requerido'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const { valid, payload } = await verifyCustomJWT(userTokenHeader);
+    if (!valid || !payload?.sub) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid token',
+        message: 'Token de autorización inválido'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const authenticatedUserId = payload.sub;
     const url = new URL(req.url);
     const path = url.pathname;
 
     // GET /vacation-balance/{userId} - obtener saldo de vacaciones
     if (req.method === "GET" && path.includes("/vacation-balance/")) {
-      const userId = path.split("/vacation-balance/")[1];
+      const requestedUserId = path.split("/vacation-balance/")[1];
       
-      if (!userId) {
+      if (!requestedUserId) {
         return new Response(JSON.stringify({
           success: false,
           error: "User ID es requerido"
@@ -253,11 +316,22 @@ serve(async (req) => {
         });
       }
 
+      // Verificar que el usuario autenticado coincida con el solicitado
+      if (authenticatedUserId !== requestedUserId) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "No autorizado para acceder a este recurso"
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
       // Obtener el email del usuario desde profiles
       const { data: userProfile, error: profileError } = await supabase
         .from('profiles')
         .select('email')
-        .eq('id', userId)
+        .eq('id', authenticatedUserId)
         .single();
 
       if (profileError || !userProfile) {
@@ -283,9 +357,9 @@ serve(async (req) => {
 
     // GET /requests/{userId} - obtener solicitudes de vacaciones
     if (req.method === "GET" && path.includes("/requests/")) {
-      const userId = path.split("/requests/")[1];
+      const requestedUserId = path.split("/requests/")[1];
       
-      if (!userId) {
+      if (!requestedUserId) {
         return new Response(JSON.stringify({
           success: false,
           error: "User ID es requerido"
@@ -295,7 +369,18 @@ serve(async (req) => {
         });
       }
 
-      const requests = await getVacationRequests(userId);
+      // Verificar que el usuario autenticado coincida con el solicitado
+      if (authenticatedUserId !== requestedUserId) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "No autorizado para acceder a este recurso"
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const requests = await getVacationRequests(authenticatedUserId);
 
       return new Response(JSON.stringify({
         success: true,
@@ -311,15 +396,18 @@ serve(async (req) => {
       const requestData = await req.json();
 
       // Validar datos requeridos
-      if (!requestData.userId || !requestData.startDate || !requestData.endDate || !requestData.reason) {
+      if (!requestData.startDate || !requestData.endDate || !requestData.reason) {
         return new Response(JSON.stringify({
           success: false,
-          error: "Faltan campos requeridos: userId, startDate, endDate, reason"
+          error: "Faltan campos requeridos: startDate, endDate, reason"
         }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
+
+      // Usar el userId autenticado
+      requestData.userId = authenticatedUserId;
 
       // Calcular días laborables
       requestData.days = calculateWorkingDays(requestData.startDate, requestData.endDate);
