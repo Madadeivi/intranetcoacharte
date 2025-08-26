@@ -64,6 +64,10 @@ export default function ProfilePage() {
   const [documents, setDocuments] = useState<ProfileDocument[]>([]);
   const [zohoRecordId, setZohoRecordId] = useState<string | null>(null);
 
+  useEffect(() => {
+    profileDocumentsService.clearCache();
+  }, [user?.id]);
+
   const loadDocuments = useCallback(async (recordId?: string) => {
     try {
       setDocumentsLoading(true);

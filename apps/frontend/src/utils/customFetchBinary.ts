@@ -29,12 +29,11 @@ export const customFetchBinary = async (
       },
     });
 
-    if (!response.ok) {
+    if (!response.ok && process.env.NODE_ENV !== 'production') {
       console.error('Error en customFetchBinary:', {
         url,
         status: response.status,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
       });
     }
 

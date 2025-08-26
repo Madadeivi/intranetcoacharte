@@ -87,6 +87,9 @@ class ProfileDocumentsService {
       ) as ApiResponse<ProfileDocumentsResponse>;
 
       if (!documentsResponse.success || !documentsResponse.data) {
+        if (documentsResponse.error && (documentsResponse.error.includes('401') || documentsResponse.error.includes('404'))) {
+          this.clearCache();
+        }
         return [];
       }
 
@@ -144,6 +147,9 @@ class ProfileDocumentsService {
       const response = await customFetchBinary(downloadUrl);
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 404) {
+          this.clearCache();
+        }
         throw new Error(`Error al descargar: ${response.status} ${response.statusText}`);
       }
 
