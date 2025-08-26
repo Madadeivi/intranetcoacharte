@@ -64,6 +64,10 @@ export default function ProfilePage() {
   const [documents, setDocuments] = useState<ProfileDocument[]>([]);
   const [zohoRecordId, setZohoRecordId] = useState<string | null>(null);
 
+  const navigateToLogin = useCallback(() => {
+    router.push('/login');
+  }, [router]);
+
   useEffect(() => {
     profileDocumentsService.clearCache();
   }, [user?.id]);
@@ -120,7 +124,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/login');
+      navigateToLogin();
       return;
     }
 
@@ -175,7 +179,7 @@ export default function ProfilePage() {
     };
 
     loadProfileData();
-  }, [isAuthenticated, router, user?.id, loadDocuments]);
+  }, [isAuthenticated, navigateToLogin, user?.id, loadDocuments]);
 
   const retryLoadProfile = async () => {
     if (!user?.id) return;
