@@ -1,15 +1,12 @@
 import jsPDF from 'jspdf';
-
-// Importar autotable y extender jsPDF
 import 'jspdf-autotable';
 
-// Declaración de tipos para jspdf-autotable
 declare module 'jspdf' {
   interface jsPDF {
     lastAutoTable: {
       finalY: number;
     };
-    autoTable: (options: Record<string, unknown>) => void;
+    autoTable: (options: any) => void;
   }
 }
 
@@ -89,7 +86,7 @@ class VacationPDFService {
     });
     
     // Historial de vacaciones
-    yPosition = doc.lastAutoTable.finalY + 15;
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -124,7 +121,7 @@ class VacationPDFService {
     });
     
     // Detalles de la solicitud
-    yPosition = doc.lastAutoTable.finalY + 15;
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -157,7 +154,7 @@ class VacationPDFService {
     });
     
     // Calendario de días solicitados
-    yPosition = doc.lastAutoTable.finalY + 15;
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -187,7 +184,7 @@ class VacationPDFService {
     });
     
     // Firma y aprobación
-    yPosition = doc.lastAutoTable.finalY + 20;
+    yPosition = (doc as any).lastAutoTable.finalY + 20;
     
     // Asegurar que no se salga de la página
     if (yPosition > 250) {
