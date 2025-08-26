@@ -707,22 +707,79 @@ async function downloadZohoAttachment(recordId: string, attachmentId: string, mo
   
   const url = `${ZOHO_API_URL}/${moduleName}/${recordId}/Attachments/${attachmentId}`;
   
+  console.log(`Downloading from Zoho URL: ${url}`);
+  
+  // Crear un AbortController para timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+  
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Authorization": `Zoho-oauthtoken ${token}`
-      }
+      },
+      signal: controller.signal
     });
+    
+    // Limpiar el timeout si la petición se completa
+    clearTimeout(timeoutId);
+    
+    console.log(`Zoho API response status: ${response.status}`);
+    console.log(`Zoho API response headers:`, Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Zoho CRM Download API error:", response.status, errorText);
-      throw new Error(`Error downloading attachment from Zoho CRM: ${response.status}`);
+      
+      if (response.status === 401) {
+        console.log("Token might be expired, attempting to refresh...");
+        accessToken = null;
+        tokenExpiryTime = null;
+        const newToken = await getZohoAccessToken();
+        
+        const retryController = new AbortController();
+        const retryTimeoutId = setTimeout(() => retryController.abort(), 30000);
+        
+        try {
+          const retryResponse = await fetch(url, {
+            method: "GET",
+            headers: {
+              "Authorization": `Zoho-oauthtoken ${newToken}`
+            },
+            signal: retryController.signal
+          });
+          
+          clearTimeout(retryTimeoutId);
+          
+          if (!retryResponse.ok) {
+            const retryErrorText = await retryResponse.text();
+            console.error("Retry failed:", retryResponse.status, retryErrorText);
+            throw new Error(`Error downloading attachment from Zoho CRM after retry: ${retryResponse.status}`);
+          }
+          
+          return retryResponse;
+        } catch (retryError) {
+          clearTimeout(retryTimeoutId);
+          if (retryError instanceof Error && retryError.name === 'AbortError') {
+            throw new Error('Request timeout after token refresh');
+          }
+          throw retryError;
+        }
+      }
+      
+      throw new Error(`Error downloading attachment from Zoho CRM: ${response.status} - ${errorText}`);
     }
     
     return response;
   } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error("Request timeout:", error);
+      throw new Error('Request timeout - the download took too long');
+    }
+    
     console.error("Error in downloadZohoAttachment:", error);
     throw error;
   }
@@ -1414,24 +1471,62 @@ serve(async (req)=>{
         const zohoRecordId = pathParts[pathParts.length - 2];
         const attachmentId = pathParts[pathParts.length - 1];
 
+        console.log(`Attempting to download document: zohoRecordId=${zohoRecordId}, attachmentId=${attachmentId}`);
+
         try {
           const fileResponse = await downloadZohoAttachment(zohoRecordId, attachmentId);
           
-          // Reenviar la respuesta del archivo directamente
-          return new Response(fileResponse.body, {
-            status: fileResponse.status,
+          console.log(`Download response status: ${fileResponse.status}`);
+          console.log(`Download response headers:`, Object.fromEntries(fileResponse.headers.entries()));
+          
+          if (!fileResponse.ok) {
+            const errorText = await fileResponse.text();
+            console.error(`Download failed with status ${fileResponse.status}:`, errorText);
+            
+            return new Response(JSON.stringify({
+              success: false,
+              error: `Error descargando documento: ${fileResponse.status}`,
+              details: errorText,
+              zoho_record_id: zohoRecordId,
+              attachment_id: attachmentId
+            }), {
+              status: fileResponse.status >= 500 ? 500 : fileResponse.status,
+              headers: {
+                ...corsHeaders,
+                "Content-Type": "application/json"
+              }
+            });
+          }
+          
+          // Leer el contenido como ArrayBuffer para asegurar transferencia correcta
+          const fileBuffer = await fileResponse.arrayBuffer();
+          const contentType = fileResponse.headers.get("Content-Type") || "application/octet-stream";
+          const contentDisposition = fileResponse.headers.get("Content-Disposition") || "attachment";
+          
+          console.log(`File downloaded successfully, size: ${fileBuffer.byteLength} bytes, type: ${contentType}`);
+          
+          return new Response(fileBuffer, {
+            status: 200,
             headers: {
               ...corsHeaders,
-              "Content-Type": fileResponse.headers.get("Content-Type") || "application/octet-stream",
-              "Content-Disposition": fileResponse.headers.get("Content-Disposition") || "attachment",
-              "Content-Length": fileResponse.headers.get("Content-Length") || ""
+              "Content-Type": contentType,
+              "Content-Disposition": contentDisposition,
+              "Content-Length": fileBuffer.byteLength.toString(),
+              // Añadir cabeceras adicionales para la descarga
+              "Cache-Control": "no-cache",
+              "X-Content-Type-Options": "nosniff"
             }
           });
         } catch (error) {
+          console.error("Error in download-document endpoint:", error);
+          
           return new Response(JSON.stringify({
             success: false,
             error: "Error descargando documento",
-            details: error instanceof Error ? error.message : "Error desconocido"
+            details: error instanceof Error ? error.message : "Error desconocido",
+            zoho_record_id: zohoRecordId,
+            attachment_id: attachmentId,
+            timestamp: new Date().toISOString()
           }), {
             status: 500,
             headers: {

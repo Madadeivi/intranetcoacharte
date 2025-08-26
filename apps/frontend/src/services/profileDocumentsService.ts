@@ -144,22 +144,39 @@ class ProfileDocumentsService {
 
       const downloadUrl = `${apiConfig.endpoints.zoho.downloadDocument}/${recordId}/${documentId}`;
 
-      const response = await customFetchBinary(downloadUrl);
+      try {
+        const response = await customFetchBinary(downloadUrl);
 
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 404) {
-          this.clearCache();
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 404) {
+            this.clearCache();
+          }
+          
+          if (response.status === 504) {
+            throw new Error('Tiempo de espera agotado. El documento puede ser muy grande. Intenta nuevamente.');
+          }
+          
+          if (response.status === 546) {
+            throw new Error('Error en el servidor de documentos. Intenta nuevamente en unos momentos.');
+          }
+          
+          const errorText = await response.text().catch(() => 'Error de respuesta');
+          throw new Error(`Error al descargar (${response.status}): ${errorText}`);
         }
-        throw new Error(`Error al descargar: ${response.status} ${response.statusText}`);
-      }
 
-      const blob = await response.blob();
-      
-      return {
-        success: true,
-        blob,
-        filename: filename || `documento_${documentId}`
-      };
+        const blob = await response.blob();
+        
+        return {
+          success: true,
+          blob,
+          filename: filename || `documento_${documentId}`
+        };
+      } catch (networkError) {
+        if (networkError instanceof TypeError && networkError.message.includes('Failed to fetch')) {
+          throw new Error('Error de conexión. Verifica tu internet y intenta nuevamente.');
+        }
+        throw networkError;
+      }
 
     } catch (error) {
       console.error('Error descargando documento:', error);
