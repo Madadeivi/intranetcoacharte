@@ -12,6 +12,7 @@
 
 import { create } from 'zustand';
 import authService, { User, LoginCredentials, AuthResult } from '../services/authService';
+import { profileDocumentsService } from '../services/profileDocumentsService';
 
 // ===== INTERFACES =====
 
@@ -119,6 +120,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await authService.logout();
       
+      profileDocumentsService.clearCache();
+      
       set({
         user: null,
         isLoading: false,
@@ -129,7 +132,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al cerrar sesión.';
       
-      // Aunque haya error, limpiar el estado local
+      profileDocumentsService.clearCache();
+      
       set({
         user: null,
         isLoading: false,
@@ -265,6 +269,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           error: null
         });
       } else {
+        profileDocumentsService.clearCache();
+        
         set({
           user: null,
           isLoading: false,
@@ -275,6 +281,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch (error: unknown) {
       const errorMessage = (error as { message?: string })?.message || 'Error al validar sesión.';
+      
+      profileDocumentsService.clearCache();
       
       set({
         user: null,

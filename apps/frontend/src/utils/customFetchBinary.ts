@@ -20,11 +20,26 @@ export const customFetchBinary = async (
     }
   }
 
-  return await fetch(url, {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  });
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok && process.env.NODE_ENV !== 'production') {
+      console.error('Error en customFetchBinary:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+      });
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Error de red en customFetchBinary:', error);
+    throw error;
+  }
 };
