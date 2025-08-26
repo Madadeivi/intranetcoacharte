@@ -68,8 +68,8 @@ class ProfileDocumentsService {
           throw new Error('No se pudo obtener el perfil del usuario');
         }
 
-        const profileData = profileResponse.data as any;
-        recordId = profileData.profile?.zoho_record_id;
+        const profileData = profileResponse.data as { profile?: { zoho_record_id?: string } };
+        recordId = profileData.profile?.zoho_record_id || null;
         
         if (recordId) {
           this.cachedZohoRecordId = recordId;
@@ -90,7 +90,7 @@ class ProfileDocumentsService {
         return [];
       }
 
-      const responseData = documentsResponse.data as any;
+      const responseData = documentsResponse.data as { attachments?: ZohoAttachment[] };
       const attachments = responseData.attachments || [];
       const mappedDocuments = attachments.map((attachment: ZohoAttachment): ProfileDocument => {
         return {
@@ -127,8 +127,8 @@ class ProfileDocumentsService {
           throw new Error('No se pudo obtener el perfil del usuario');
         }
 
-        const profileData = profileResponse.data as any;
-        recordId = profileData.profile?.zoho_record_id;
+        const profileData = profileResponse.data as { profile?: { zoho_record_id?: string } };
+        recordId = profileData.profile?.zoho_record_id || null;
         
         if (recordId) {
           this.cachedZohoRecordId = recordId;

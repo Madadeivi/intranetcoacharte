@@ -1,7 +1,7 @@
 'use client';
 import './profile.css';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -64,7 +64,7 @@ export default function ProfilePage() {
   const [documents, setDocuments] = useState<ProfileDocument[]>([]);
   const [zohoRecordId, setZohoRecordId] = useState<string | null>(null);
 
-  const loadDocuments = async (recordId?: string) => {
+  const loadDocuments = useCallback(async (recordId?: string) => {
     try {
       setDocumentsLoading(true);
       setDocumentsError(null);
@@ -87,7 +87,7 @@ export default function ProfilePage() {
     } finally {
       setDocumentsLoading(false);
     }
-  };
+  }, [zohoRecordId]);
 
   const formatJoinDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -171,7 +171,7 @@ export default function ProfilePage() {
     };
 
     loadProfileData();
-  }, [isAuthenticated, router, user?.id]);
+  }, [isAuthenticated, router, user?.id, loadDocuments]);
 
   const retryLoadProfile = async () => {
     if (!user?.id) return;
