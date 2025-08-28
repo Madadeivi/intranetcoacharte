@@ -44,7 +44,7 @@ export interface Notice {
       id: 5,
       title: "Dias no laborables",
       detail: 'Los días de asueto en la empresa corresponden a las fechas oficiales establecidas por la ley Federal del Trabajo y a aquellos que la organización determine de manera interna. Durante estos días no se labora y se busca promover el equilibrio entre la vida personal y profesional, fomentando el descanso y la convivencia.',
-      imageUrl: "/assets/tabla_vacaciones.png",
+      imageUrl: "/assets/dias_no_laborables.png",
       date: "01 Ago 2025",
       summary: "Tabla de vacaciones colaboradores Coacharte."
     },
