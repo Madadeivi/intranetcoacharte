@@ -18,27 +18,35 @@ export interface Notice {
     },
     {
       id: 2,
-      title: "Ajuste Salarial",
-      detail: 'En reconocimiento a su compromiso y esfuerzo, les informamos que, **a partir de la segunda quincena del mes de MAYO 2025**, se realizará un ajuste salarial del **3.5%** derivado de la inflación correspondiente al año **2024** y al incremento recibido por nuestros clientes en el mismo mes.\n\nEste ajuste aplicará a todos los colaboradores que se han mantenido activos en nuestra nómina desde el **2024**.',
-      imageUrl: "/assets/banner_ajuste.png",
-      date: "10 Jul 2025",
-      summary: "Ajuste salarial derivado de la inflación 2024."
+      title: "Nuestro lema",
+      detail: 'Inspirados en transformar cualquier reto en logro, construimos nuestra Cultura Integral a partir de valores que son la brújula de nuestras decisiones y el motor de nuestras acciones. Reconocemos que las personas y las relaciones sanas son el eje central de nuestro trabajo, que la confianza se inspira con honestidad, comunicación clara y cumplimiento de acuerdos, y que la verdadera vocación de servicio se demuestra al escuchar, atender y proponer con empatía. Así, cada comportamiento se convierte en una acción concreta que nos acerca a nuestros objetivos. ',
+      imageUrl: "/assets/lema.png",
+      date: "01 Sep 2025",
+      summary: "Nuestro lema."
     },
     {
       id: 3,
-      title: "Bono 2024",
-      detail: 'A partir de junio de 2025, todos los colaboradores **evaluados durante el período 2024** que hayan obtenido una calificación satisfactoria, según las insignias establecidas, recibirán el depósito por concepto de BONO correspondiente al ejercicio fiscal 2024.',
-      imageUrl: "/assets/banner_bono.png",
-      date: "30 Jul 2025",
-      summary: "Bono 2024 derivado de los resultados de la evaluación."
+      title: "Nuestras oficinas",
+      detail: 'Con presencia en España, Houston y Ciudad de México, nuestros puntos estratégicos nos permiten conectar realidades diversas y ampliar nuestro impacto. En cada lugar, nuestros valores y comportamientos reflejan la misma esencia: transformar cada reto en logro y convertir cada desafío en una oportunidad de crecimiento.',
+      imageUrl: "/assets/oficinas.png",
+      date: "01 Sep 2025",
+      summary: "Oficinas Coacharte."
     },
     {
       id: 4,
-      title: "INDUCCION INTEGRAL",
-      detail: 'En los ultimos meses, nuestra familia Coacharte ha crecido con nuevos talentos y hemos implementado importantes mejoras en nuestra cultura y procesos. Para asegurar que todos estemos alineados y saquemos el máximo provecho de estos cambios, hemos organizado una inducción integral',
-      imageUrl: "/assets/induccion_general.png",
-      date: "04 Ago 2025",
-      summary: "Inducción integral para nuevos colaboradores."
+      title: "Tabla de vacaciones",
+      detail: 'Las vacaciones inician con 15 días desde el primer año y aumentan según la antigüedad. Deben programarse con anticipación, no son acumulables ni pagadas y requieren aprobación del jefe inmediato, para despúes hacerlas llegar al área de Talento y Transformación.',
+      imageUrl: "/assets/tabla_vacaciones.png",
+      date: "01 Ago 2025",
+      summary: "Tabla de vacaciones colaboradores Coacharte."
+    },
+    {
+      id: 5,
+      title: "Dias no laborables",
+      detail: 'Los días de asueto en la empresa corresponden a las fechas oficiales establecidas por la ley Federal del Trabajo y a aquellos que la organización determine de manera interna. Durante estos días no se labora y se busca promover el equilibrio entre la vida personal y profesional, fomentando el descanso y la convivencia.',
+      imageUrl: "/assets/tabla_vacaciones.png",
+      date: "01 Ago 2025",
+      summary: "Tabla de vacaciones colaboradores Coacharte."
     },
   ];
 
@@ -70,16 +78,7 @@ interface CalendarEvent {
 
 export const CALENDAR_EVENTS: CalendarEvent[] = [
     { 
-      date: new Date(2025, 6, 11), 
-      title: 'Lanzamiento Intranet', 
-      description: 'Presentación oficial de la nueva intranet corporativa',
-      time: '10:00 AM',
-      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
-      category: 'Tecnología',
-      featured: true
-    },
-    { 
-      date: new Date(2025, 6, 15), 
+      date: new Date(2025, 8, 12),
       title: 'Pago de Nómina', 
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
@@ -87,19 +86,19 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       category: 'Talento y Transformación'
     },
     { 
-      date: new Date(2025, 6, 30), 
+      date: new Date(2025, 8, 16),
+      title: 'Día no laborable', 
+      description: 'Independencia de México',
+      time: '12:00 PM',
+      image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
+      category: 'Talento y Transformación'
+    },
+    { 
+      date: new Date(2025, 8, 30),
       title: 'Pago de Nómina', 
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
       image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
-      category: 'Talento y Transformación'
-    },
-    { 
-      date: new Date(2025, 7, 4), 
-      title: 'INDUCCION INTEGRAL', 
-      description: 'Inducción integral para nuevos colaboradores.',
-      time: '8:00 AM',
-      image: '/assets/induccion_general.png',
       category: 'Talento y Transformación'
     },
   ];
