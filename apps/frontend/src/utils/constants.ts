@@ -37,7 +37,7 @@ export interface Notice {
       title: "Tabla de vacaciones",
       detail: 'Las vacaciones inician con 15 días desde el primer año y aumentan según la antigüedad. Deben programarse con anticipación, no son acumulables ni pagadas y requieren aprobación del jefe inmediato, para despúes hacerlas llegar al área de Talento y Transformación.',
       imageUrl: "/assets/tabla_vacaciones.png",
-      date: "01 Ago 2025",
+      date: "01 Sep 2025",
       summary: "Tabla de vacaciones colaboradores Coacharte."
     },
     {
@@ -45,7 +45,7 @@ export interface Notice {
       title: "Dias no laborables",
       detail: 'Los días de asueto en la empresa corresponden a las fechas oficiales establecidas por la ley Federal del Trabajo y a aquellos que la organización determine de manera interna. Durante estos días no se labora y se busca promover el equilibrio entre la vida personal y profesional, fomentando el descanso y la convivencia.',
       imageUrl: "/assets/dias_no_laborables.png",
-      date: "01 Ago 2025",
+      date: "01 Sep 2025",
       summary: "Tabla de vacaciones colaboradores Coacharte."
     },
   ];
