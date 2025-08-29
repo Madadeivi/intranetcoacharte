@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import './recursos-humanos.css';
 
 // Icons
@@ -10,6 +11,9 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ComputerIcon from '@mui/icons-material/Computer';
+import WallpaperIcon from '@mui/icons-material/Wallpaper';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const RecursosHumanosPage: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string>('');
@@ -47,6 +51,59 @@ const RecursosHumanosPage: React.FC = () => {
       available: true
     }
   ];
+
+  // Fondos de pantalla disponibles
+  const wallpapers = [
+    {
+      id: 1,
+      name: 'Fondo Coacharte 1',
+      filename: 'background_1.jpeg',
+      preview: '/assets/background_1.jpeg'
+    },
+    {
+      id: 2,
+      name: 'Fondo Coacharte 2',
+      filename: 'background_2.jpeg',
+      preview: '/assets/background_2.jpeg'
+    },
+    {
+      id: 3,
+      name: 'Fondo Coacharte 3',
+      filename: 'background_3.jpeg',
+      preview: '/assets/background_3.jpeg'
+    },
+    {
+      id: 4,
+      name: 'Fondo Coacharte 4',
+      filename: 'background_4.jpeg',
+      preview: '/assets/background_4.jpeg'
+    },
+    {
+      id: 5,
+      name: 'Fondo Coacharte 5',
+      filename: 'background_5.jpeg',
+      preview: '/assets/background_5.jpeg'
+    },
+    {
+      id: 6,
+      name: 'Fondo Coacharte 6',
+      filename: 'background_6.jpeg',
+      preview: '/assets/background_6.jpeg'
+    },
+    {
+      id: 7,
+      name: 'Fondo Coacharte 7',
+      filename: 'background_7.jpeg',
+      preview: '/assets/background_7.jpeg'
+    }
+  ];
+
+  const downloadWallpaper = (filename: string) => {
+    const link = document.createElement('a');
+    link.href = `/assets/${filename}`;
+    link.download = filename;
+    link.click();
+  };
 
   return (
     <div className="talento-transformacion-page recursos-humanos-page">
@@ -104,6 +161,54 @@ const RecursosHumanosPage: React.FC = () => {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Herramientas de Teletrabajo */}
+      <section className="rh-telework">
+        <h2>
+          <ComputerIcon className="section-icon" />
+          Herramientas de Teletrabajo
+        </h2>
+        
+        {/* Fondos de Pantalla */}
+        <div className="telework-category">
+          <h3>
+            <WallpaperIcon className="category-icon" />
+            Fondos de Pantalla
+          </h3>
+          <p className="category-description">
+            Descarga fondos de pantalla oficiales de Coacharte para personalizar tu espacio de trabajo virtual.
+          </p>
+          
+          <div className="wallpapers-grid">
+            {wallpapers.map((wallpaper) => (
+              <div key={wallpaper.id} className="wallpaper-card">
+                <div className="wallpaper-preview">
+                  <Image 
+                    src={wallpaper.preview} 
+                    alt={wallpaper.name}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    loading="lazy"
+                  />
+                  <div className="wallpaper-overlay">
+                    <button 
+                      className="download-btn"
+                      onClick={() => downloadWallpaper(wallpaper.filename)}
+                      title={`Descargar ${wallpaper.name}`}
+                    >
+                      <DownloadIcon />
+                    </button>
+                  </div>
+                </div>
+                <div className="wallpaper-info">
+                  <h4>{wallpaper.name}</h4>
+                  <span className="wallpaper-format">JPEG</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

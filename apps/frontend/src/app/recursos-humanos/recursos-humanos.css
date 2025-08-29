@@ -4,8 +4,8 @@
 .recursos-humanos-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: var(--space-6);
+  background: var(--neutral-background);
   min-height: 100vh;
 }
 
@@ -13,212 +13,399 @@
 .rh-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
 }
 
 .back-button {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  color: #666;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-text-secondary);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
 }
 
 .back-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #333;
+  background-color: var(--color-primary-5);
+  color: var(--color-text-title);
 }
 
 .rh-header h1 {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   margin: 0;
-  font-size: 2rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-title);
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
 }
 
 .page-icon {
-  color: #2196F3;
+  color: var(--color-primary-100);
   font-size: 2.2rem;
 }
 
 /* Introducción */
 .rh-intro {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--color-background-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
 }
 
 .rh-intro p {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   line-height: 1.6;
-  color: #555;
+  color: var(--color-text-secondary);
   text-align: center;
 }
 
 /* Servicios */
 .rh-services {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--color-background-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
 }
 
 .rh-services h2 {
-  margin: 0 0 24px 0;
-  font-size: 1.5rem;
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--text-2xl);
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-title);
   text-align: center;
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
 }
 
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .service-card {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 12px;
-  padding: 24px;
+  background: var(--color-background-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   text-align: center;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
 }
 
-.service-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: #2196F3;
+.service-card:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-100);
 }
 
 .service-card.disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  background-color: var(--neutral-background-disabled);
 }
 
 .service-card.disabled:hover {
   transform: none;
-  box-shadow: none;
-  border-color: transparent;
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-light);
 }
 
 .service-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .service-icon {
   font-size: 3rem;
-  color: #2196F3;
+  color: var(--color-primary-100);
 }
 
 .service-card h3 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-title);
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
 }
 
 .service-card p {
-  margin: 0 0 20px 0;
-  color: #666;
+  margin: 0 0 var(--space-5) 0;
+  color: var(--color-text-secondary);
   line-height: 1.5;
+  font-size: var(--text-base);
 }
 
 .service-button {
   display: inline-block;
-  padding: 12px 24px;
-  background: #2196F3;
-  color: white;
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-weight: 500;
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-base);
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  box-shadow: var(--shadow-sm);
 }
 
-.service-button:hover {
-  background: #1976D2;
+.service-button:hover:not(.disabled) {
+  background: var(--color-primary-80);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .service-button.disabled {
-  background: #ccc;
+  background: var(--button-background-disabled);
+  color: var(--button-text-disabled);
   cursor: not-allowed;
 }
 
 .service-button.disabled:hover {
-  background: #ccc;
+  background: var(--button-background-disabled);
   transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Herramientas de Teletrabajo */
+.rh-telework {
+  background: var(--color-background-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+}
+
+.rh-telework h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text-title);
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+}
+
+.section-icon {
+  color: var(--color-primary-100);
+  font-size: 2rem;
+}
+
+.telework-category {
+  margin-bottom: var(--space-8);
+}
+
+.telework-category:last-child {
+  margin-bottom: 0;
+}
+
+.telework-category h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text-title);
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+}
+
+.category-icon {
+  color: var(--color-primary-100);
+  font-size: 1.5rem;
+}
+
+.category-description {
+  margin: 0 0 var(--space-6) 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  font-size: var(--text-base);
+}
+
+/* Grid de fondos de pantalla siguiendo el estilo corporativo */
+.wallpapers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-6);
+}
+
+.wallpaper-card {
+  background: var(--color-background-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.wallpaper-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-100);
+}
+
+.wallpaper-preview {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+}
+
+.wallpaper-preview img {
+  transition: transform 0.3s ease;
+}
+
+.wallpaper-card:hover .wallpaper-preview img {
+  transform: scale(1.05);
+}
+
+.wallpaper-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.wallpaper-card:hover .wallpaper-overlay {
+  opacity: 1;
+}
+
+.download-btn {
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.download-btn:hover {
+  background: var(--color-primary-80);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+.wallpaper-info {
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.wallpaper-info h4 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-title);
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+}
+
+.wallpaper-format {
+  background: var(--color-primary-5);
+  color: var(--color-primary-100);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Información adicional */
 .rh-info {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--color-background-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
 }
 
 .rh-info h2 {
-  margin: 0 0 24px 0;
-  font-size: 1.5rem;
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--text-2xl);
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-title);
   text-align: center;
+  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
 }
 
 .info-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .info-card {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 20px;
-  border-left: 4px solid #2196F3;
+  background: var(--neutral-background-alt);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  border-left: 4px solid var(--color-primary-100);
+  transition: all 0.2s ease;
+}
+
+.info-card:hover {
+  background: var(--color-primary-5);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .info-card h3 {
-  margin: 0 0 12px 0;
-  font-size: 1.1rem;
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--text-lg);
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-title);
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
 }
 
 .info-card p {
-  margin: 0 0 8px 0;
-  color: #666;
-  font-size: 0.95rem;
+  margin: 0 0 var(--space-2) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
 }
 
 .info-link {
-  color: #2196F3;
+  color: var(--color-primary-100);
   text-decoration: none;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  transition: color 0.2s ease;
 }
 
 .info-link:hover {
+  color: var(--color-primary-80);
   text-decoration: underline;
 }
 
@@ -226,22 +413,80 @@
 @media (max-width: 768px) {
   .talento-transformacion-page,
   .recursos-humanos-page {
-    padding: 16px;
+    padding: var(--space-4);
+  }
+
+  .rh-header {
+    margin-bottom: var(--space-6);
   }
 
   .rh-header h1 {
-    font-size: 1.8rem;
+    font-size: var(--text-xl);
+  }
+
+  .rh-intro,
+  .rh-services,
+  .rh-telework,
+  .rh-info {
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .rh-intro p {
+    font-size: var(--text-base);
+  }
+
+  .rh-services h2,
+  .rh-telework h2,
+  .rh-info h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-4);
   }
 
   .services-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
 
   .info-cards {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
 
   .service-card {
-    padding: 20px;
+    padding: var(--space-5);
+  }
+
+  .wallpapers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .wallpaper-preview {
+    height: 140px;
+  }
+
+  .wallpaper-info {
+    padding: var(--space-3);
+  }
+
+  .telework-category h3 {
+    font-size: var(--text-lg);
+  }
+
+  .download-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+  }
+
+  .rh-telework {
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .rh-telework h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-4);
   }
 }
