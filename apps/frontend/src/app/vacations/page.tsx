@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { vacationService, VacationBalance, VacationRequest } from '@/services/vacationService';
 import { vacationPDFService } from '@/services/vacationPDFService';
@@ -17,6 +18,9 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
 import CancelIcon from '@mui/icons-material/Cancel';
+import InfoIcon from '@mui/icons-material/Info';
+import WorkOffIcon from '@mui/icons-material/WorkOff';
+import TableChartIcon from '@mui/icons-material/TableChart';
 
 const VacationsPage: React.FC = () => {
   const router = useRouter();
@@ -25,6 +29,25 @@ const VacationsPage: React.FC = () => {
   const [requests, setRequests] = useState<VacationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedImage) {
+        setSelectedImage(null);
+      }
+    };
+
+    if (selectedImage) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden'; // Prevenir scroll del fondo
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedImage]);
 
   const loadVacationData = useCallback(async () => {
     if (!user?.id) return;
@@ -103,6 +126,21 @@ const VacationsPage: React.FC = () => {
     } catch (err) {
       console.error('Error generating PDF:', err);
       setError('Error al generar el PDF');
+    }
+  };
+
+  const handleImageClick = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedImage(null);
+  };
+
+  const handleModalKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      setSelectedImage(null);
     }
   };
 
@@ -195,6 +233,57 @@ const VacationsPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Información de Vacaciones */}
+      <section className="vacation-info-section">
+        <h2>
+          <InfoIcon className="section-icon" />
+          Información de Vacaciones 2025
+        </h2>
+        <div className="info-cards-container">
+          <div className="info-card">
+            <div className="info-card-header">
+              <WorkOffIcon className="info-icon" />
+              <h3>Días No Laborables</h3>
+            </div>
+            <div className="info-card-content">
+              <p>Consulta los días festivos y no laborables del año 2025 para planificar mejor tus vacaciones.</p>
+              <div className="info-image-container">
+                <Image 
+                  src="/assets/dias_no_laborables.png" 
+                  alt="Días No Laborables 2025"
+                  width={800}
+                  height={600}
+                  className="info-image"
+                  onClick={() => handleImageClick("/assets/dias_no_laborables.png")}
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="info-card">
+            <div className="info-card-header">
+              <TableChartIcon className="info-icon" />
+              <h3>Tabla de Vacaciones</h3>
+            </div>
+            <div className="info-card-content">
+              <p>Conoce cuántos días de vacaciones te corresponden según tus años de antigüedad en la empresa.</p>
+              <div className="info-image-container">
+                <Image 
+                  src="/assets/tabla_vacaciones.png" 
+                  alt="Tabla de Vacaciones por Antigüedad"
+                  width={800}
+                  height={600}
+                  className="info-image"
+                  onClick={() => handleImageClick("/assets/tabla_vacaciones.png")}
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Historial de solicitudes */}
       <section className="vacation-requests-section">
         <h2>Mis Solicitudes</h2>
@@ -236,6 +325,40 @@ const VacationsPage: React.FC = () => {
           </div>
         )}
       </section>
+
+      {/* Modal para imagen ampliada */}
+      {selectedImage && (
+        <div 
+          className={`info-image-modal ${selectedImage ? 'active' : ''}`} 
+          onClick={handleCloseModal}
+          onKeyDown={handleModalKeyDown}
+          tabIndex={0}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+        >
+          <div id="modal-title" className="sr-only">Imagen ampliada</div>
+          <div id="modal-description" className="sr-only">
+            Presiona Escape o haz clic fuera de la imagen para cerrar el modal
+          </div>
+          <Image
+            src={selectedImage} 
+            alt="Imagen ampliada de información de vacaciones"
+            width={1200}
+            height={900}
+            className="modal-image"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+              }
+            }}
+            tabIndex={0}
+            unoptimized
+          />
+        </div>
+      )}
     </div>
   );
 };
