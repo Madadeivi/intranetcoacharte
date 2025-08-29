@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { vacationService, VacationRequest } from '@/services/vacationService';
 import { vacationPDFService } from '@/services/vacationPDFService';
@@ -14,6 +15,9 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SendIcon from '@mui/icons-material/Send';
 import WarningIcon from '@mui/icons-material/Warning';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import InfoIcon from '@mui/icons-material/Info';
+import WorkOffIcon from '@mui/icons-material/WorkOff';
+import TableChartIcon from '@mui/icons-material/TableChart';
 
 const VacationRequestPage: React.FC = () => {
   const router = useRouter();
@@ -28,6 +32,7 @@ const VacationRequestPage: React.FC = () => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -134,6 +139,14 @@ const VacationRequestPage: React.FC = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
+  };
+
+  const handleImageClick = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedImage(null);
   };
 
   return (
@@ -261,6 +274,57 @@ const VacationRequestPage: React.FC = () => {
         </form>
       </section>
 
+      {/* Información de Vacaciones */}
+      <section className="vacation-info-section">
+        <h2>
+          <InfoIcon className="section-icon" />
+          Consulta Información de Vacaciones
+        </h2>
+        <div className="info-cards-container">
+          <div className="info-card">
+            <div className="info-card-header">
+              <WorkOffIcon className="info-icon" />
+              <h3>Días No Laborables 2025</h3>
+            </div>
+            <div className="info-card-content">
+              <p>Revisa los días festivos para planificar mejor tus fechas de vacaciones.</p>
+              <div className="info-image-container">
+                <Image 
+                  src="/assets/dias_no_laborables.png" 
+                  alt="Días No Laborables 2025"
+                  width={800}
+                  height={600}
+                  className="info-image"
+                  onClick={() => handleImageClick("/assets/dias_no_laborables.png")}
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="info-card">
+            <div className="info-card-header">
+              <TableChartIcon className="info-icon" />
+              <h3>Días de Vacaciones por Antigüedad</h3>
+            </div>
+            <div className="info-card-content">
+              <p>Verifica cuántos días te corresponden según tu antigüedad en la empresa.</p>
+              <div className="info-image-container">
+                <Image 
+                  src="/assets/tabla_vacaciones.png" 
+                  alt="Tabla de Vacaciones por Antigüedad"
+                  width={800}
+                  height={600}
+                  className="info-image"
+                  onClick={() => handleImageClick("/assets/tabla_vacaciones.png")}
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Información adicional */}
       <section className="vacation-actions-section">
         <h2>Información Importante</h2>
@@ -279,6 +343,21 @@ const VacationRequestPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Modal para imagen ampliada */}
+      {selectedImage && (
+        <div className={`info-image-modal ${selectedImage ? 'active' : ''}`} onClick={handleCloseModal}>
+          <Image
+            src={selectedImage} 
+            alt="Imagen ampliada"
+            width={1200}
+            height={900}
+            className="modal-image"
+            onClick={(e) => e.stopPropagation()}
+            unoptimized
+          />
+        </div>
+      )}
     </div>
   );
 };

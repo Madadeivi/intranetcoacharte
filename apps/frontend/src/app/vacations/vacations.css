@@ -104,6 +104,7 @@
 /* Secciones */
 .vacation-balance-section,
 .vacation-actions-section,
+.vacation-info-section,
 .vacation-requests-section {
   background: white;
   border-radius: 12px;
@@ -114,11 +115,20 @@
 
 .vacation-balance-section h2,
 .vacation-actions-section h2,
+.vacation-info-section h2,
 .vacation-requests-section h2 {
   margin: 0 0 20px 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-icon {
+  color: #4CAF50;
+  font-size: 1.6rem;
 }
 
 /* Balance Cards */
@@ -455,6 +465,185 @@
   color: #2e7d32;
 }
 
+/* Sección de Información de Vacaciones */
+.vacation-info-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #dee2e6;
+}
+
+.info-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.info-icon {
+  color: #4CAF50;
+  font-size: 1.8rem;
+}
+
+.info-card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.info-card-content p {
+  margin: 0 0 16px 0;
+  color: #666;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.info-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  border: 2px dashed #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.info-image-container:hover {
+  background: #e9ecef;
+  border-color: #4CAF50;
+}
+
+.info-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.info-image:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive para imágenes */
+@media (max-width: 768px) {
+  .info-image {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .info-image:hover {
+    transform: scale(1.01);
+  }
+}
+
+/* Efecto de carga para imágenes */
+.info-image {
+  opacity: 0;
+  animation: fadeInImage 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeInImage {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal para imagen ampliada */
+.info-image-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.info-image-modal.active {
+  display: flex;
+  animation: fadeInModal 0.3s ease-in-out;
+}
+
+.info-image-modal img,
+.modal-image {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  cursor: default;
+  object-fit: contain;
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Indicador visual de que la imagen es clickeable */
+.info-image::after {
+  content: "🔍";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.info-image-container {
+  position: relative;
+}
+
+.info-image-container:hover .info-image::after {
+  opacity: 1;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .vacation-page {
@@ -482,5 +671,23 @@
   .action-button {
     justify-content: center;
     width: 100%;
+  }
+
+  /* Responsive para sección de información */
+  .info-cards-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .info-card {
+    padding: 16px;
+  }
+
+  .info-card-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .info-image-container {
+    padding: 12px;
   }
 }
