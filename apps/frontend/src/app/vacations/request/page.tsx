@@ -35,6 +35,24 @@ const VacationRequestPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedImage) {
+        setSelectedImage(null);
+      }
+    };
+
+    if (selectedImage) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden'; // Prevenir scroll del fondo
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedImage]);
+
+  useEffect(() => {
     if (!user) {
       router.push('/login');
       return;
@@ -147,6 +165,13 @@ const VacationRequestPage: React.FC = () => {
 
   const handleCloseModal = () => {
     setSelectedImage(null);
+  };
+
+  const handleModalKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      setSelectedImage(null);
+    }
   };
 
   return (
@@ -346,14 +371,33 @@ const VacationRequestPage: React.FC = () => {
 
       {/* Modal para imagen ampliada */}
       {selectedImage && (
-        <div className={`info-image-modal ${selectedImage ? 'active' : ''}`} onClick={handleCloseModal}>
+        <div 
+          className={`info-image-modal ${selectedImage ? 'active' : ''}`} 
+          onClick={handleCloseModal}
+          onKeyDown={handleModalKeyDown}
+          tabIndex={0}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+        >
+          <div id="modal-title" className="sr-only">Imagen ampliada</div>
+          <div id="modal-description" className="sr-only">
+            Presiona Escape o haz clic fuera de la imagen para cerrar el modal
+          </div>
           <Image
             src={selectedImage} 
-            alt="Imagen ampliada"
+            alt="Imagen ampliada de información de vacaciones"
             width={1200}
             height={900}
             className="modal-image"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+              }
+            }}
+            tabIndex={0}
             unoptimized
           />
         </div>
