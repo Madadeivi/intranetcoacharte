@@ -100,6 +100,49 @@ async function getZohoAccessToken() {
 }
 
 /**
+ * Obtiene el saldo de vacaciones desde la BD primero, Zoho como fallback
+ */
+async function getVacationBalance(userEmail: string) {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('vacation_days_available, vacation_days_taken, updated_at')
+      .eq('email', userEmail)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.log(`User ${userEmail} not found in DB, consulting Zoho CRM`);
+        return await getVacationBalanceFromZoho(userEmail);
+      }
+      
+      console.error(`Database error for ${userEmail}:`, error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    if (profile && profile.vacation_days_available !== null) {
+      return {
+        available: profile.vacation_days_available || 0,
+        taken: profile.vacation_days_taken || 0,
+        remaining: Math.max(0, (profile.vacation_days_available || 0) - (profile.vacation_days_taken || 0)),
+        userId: userEmail,
+        lastUpdated: profile.updated_at || new Date().toISOString()
+      };
+    }
+
+    console.log(`No vacation data in DB for ${userEmail}, consulting Zoho CRM`);
+    return await getVacationBalanceFromZoho(userEmail);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Database error')) {
+      throw error;
+    }
+    
+    console.error("Unexpected error in getVacationBalance:", error);
+    throw new Error("Internal server error while retrieving vacation balance");
+  }
+}
+
+/**
  * Obtiene el saldo de vacaciones de un usuario desde Zoho CRM
  */
 async function getVacationBalanceFromZoho(userEmail: string) {
@@ -111,7 +154,6 @@ async function getVacationBalanceFromZoho(userEmail: string) {
   }
 
   try {
-    // Buscar el usuario en el módulo Colaboradores por email
     const searchUrl = `${ZOHO_API_URL}/Colaboradores/search?criteria=Email:equals:${userEmail}`;
     
     const response = await fetch(searchUrl, {
@@ -123,18 +165,34 @@ async function getVacationBalanceFromZoho(userEmail: string) {
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching vacation data from Zoho: ${response.status}`);
+      console.error(`Zoho API error: ${response.status} ${response.statusText}`);
+      return {
+        available: 0,
+        taken: 0,
+        remaining: 0,
+        userId: userEmail,
+        lastUpdated: new Date().toISOString(),
+        error: "Zoho API unavailable"
+      };
     }
 
     const result = await response.json();
     
     if (!result.data || result.data.length === 0) {
-      throw new Error("Usuario no encontrado en Zoho CRM");
+      console.warn(`User ${userEmail} not found in Zoho CRM`);
+      return {
+        available: 0,
+        taken: 0,
+        remaining: 0,
+        userId: userEmail,
+        lastUpdated: new Date().toISOString(),
+        error: "User not found in Zoho CRM"
+      };
     }
 
     const colaborador = result.data[0];
-    const available = parseInt(colaborador['Vacaciones disponibles'] || '0');
-    const taken = parseInt(colaborador['Vacaciones tomadas'] || '0');
+    const available = parseInt(colaborador['Vacaciones_disponibles'] || '0');
+    const taken = parseInt(colaborador['Vacaciones_tomadas'] || '0');
 
     return {
       available,
@@ -145,7 +203,14 @@ async function getVacationBalanceFromZoho(userEmail: string) {
     };
   } catch (error) {
     console.error("Error in getVacationBalanceFromZoho:", error);
-    throw error;
+    return {
+      available: 0,
+      taken: 0,
+      remaining: 0,
+      userId: userEmail,
+      lastUpdated: new Date().toISOString(),
+      error: "Failed to retrieve vacation data from Zoho CRM"
+    };
   }
 }
 
@@ -344,7 +409,7 @@ serve(async (req) => {
         });
       }
 
-      const balance = await getVacationBalanceFromZoho(userProfile.email);
+      const balance = await getVacationBalance(userProfile.email);
 
       return new Response(JSON.stringify({
         success: true,

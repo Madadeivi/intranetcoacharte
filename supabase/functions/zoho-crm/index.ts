@@ -113,6 +113,8 @@ interface ZohoContact {
   'Password Personalizada Establecida'?: string;
   'Vacaciones disponibles'?: string;
   'Vacaciones tomadas'?: string;
+  'Vacaciones_disponibles'?: string;
+  'Vacaciones_tomadas'?: string;
   'Comentarios'?: string;
   'Comentarios adicionales'?: string;
   'Locked'?: string;
@@ -312,8 +314,8 @@ function mapZohoToProfile(colaborador: ZohoContact): Partial<ProfileData> {
     termination_date: parseZohoDate(colaborador['Fecha de baja']),
     
     // Vacaciones
-    vacation_days_available: parseInteger(colaborador['Vacaciones disponibles']),
-    vacation_days_taken: parseInteger(colaborador['Vacaciones tomadas']),
+    vacation_days_available: parseInteger(colaborador['Vacaciones_disponibles']),
+    vacation_days_taken: parseInteger(colaborador['Vacaciones_tomadas']),
     
     // Información de Zoho
     owner_name: cleanString(colaborador.Owner?.name),
