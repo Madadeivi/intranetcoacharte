@@ -5,6 +5,7 @@ export interface VacationBalance {
   remaining: number;
   userId: string;
   lastUpdated: string;
+  error?: string;
 }
 
 export interface VacationRequest {
