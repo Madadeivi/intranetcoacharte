@@ -100,6 +100,35 @@ async function getZohoAccessToken() {
 }
 
 /**
+ * Obtiene el saldo de vacaciones desde la BD primero, Zoho como fallback
+ */
+async function getVacationBalance(userEmail: string) {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('vacation_days_available, vacation_days_taken, updated_at')
+      .eq('email', userEmail)
+      .single();
+
+    if (!error && profile && profile.vacation_days_available !== null) {
+      return {
+        available: profile.vacation_days_available || 0,
+        taken: profile.vacation_days_taken || 0,
+        remaining: Math.max(0, (profile.vacation_days_available || 0) - (profile.vacation_days_taken || 0)),
+        userId: userEmail,
+        lastUpdated: profile.updated_at || new Date().toISOString()
+      };
+    }
+
+    console.log(`No vacation data in DB for ${userEmail}, consulting Zoho CRM`);
+    return await getVacationBalanceFromZoho(userEmail);
+  } catch (error) {
+    console.error("Error in getVacationBalance:", error);
+    return await getVacationBalanceFromZoho(userEmail);
+  }
+}
+
+/**
  * Obtiene el saldo de vacaciones de un usuario desde Zoho CRM
  */
 async function getVacationBalanceFromZoho(userEmail: string) {
@@ -133,8 +162,8 @@ async function getVacationBalanceFromZoho(userEmail: string) {
     }
 
     const colaborador = result.data[0];
-    const available = parseInt(colaborador['Vacaciones disponibles'] || '0');
-    const taken = parseInt(colaborador['Vacaciones tomadas'] || '0');
+    const available = parseInt(colaborador['Vacaciones_disponibles'] || '0');
+    const taken = parseInt(colaborador['Vacaciones_tomadas'] || '0');
 
     return {
       available,
@@ -344,7 +373,7 @@ serve(async (req) => {
         });
       }
 
-      const balance = await getVacationBalanceFromZoho(userProfile.email);
+      const balance = await getVacationBalance(userProfile.email);
 
       return new Response(JSON.stringify({
         success: true,
