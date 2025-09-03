@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import './organigrama.css';
 
-// Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -13,6 +12,26 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import CloseIcon from '@mui/icons-material/Close';
+
+const scrollLockManager = {
+  lockCount: 0,
+  originalOverflow: '',
+  
+  lock() {
+    if (this.lockCount === 0) {
+      this.originalOverflow = document.body.style.overflow || '';
+      document.body.style.overflow = 'hidden';
+    }
+    this.lockCount++;
+  },
+  
+  unlock() {
+    this.lockCount = Math.max(0, this.lockCount - 1);
+    if (this.lockCount === 0) {
+      document.body.style.overflow = this.originalOverflow;
+    }
+  }
+};
 
 const organigramas = [
   {
@@ -76,6 +95,9 @@ const organigramas = [
 const OrganigramaPage: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % organigramas.length);
@@ -113,32 +135,76 @@ const OrganigramaPage: React.FC = () => {
   };
 
   const openModal = () => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    if (previousFocusRef.current) {
+      previousFocusRef.current.focus();
+    }
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isModalOpen) {
+      if (!isModalOpen) return;
+      
+      if (e.key === 'Escape') {
         closeModal();
+        return;
+      }
+      
+      if (e.key === 'Tab') {
+        const modal = modalRef.current;
+        if (!modal) return;
+        
+        const focusableElements = modal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+        
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
     if (isModalOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
+      scrollLockManager.lock();
+      
+      setTimeout(() => {
+        closeButtonRef.current?.focus();
+      }, 100);
     } else {
-      document.body.style.overflow = 'unset';
+      scrollLockManager.unlock();
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      if (isModalOpen) {
+        scrollLockManager.unlock();
+      }
     };
   }, [isModalOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (isModalOpen) {
+        scrollLockManager.unlock();
+      }
+    };
+  }, []);
 
   return (
     <div className="organigrama-page">
@@ -277,13 +343,23 @@ const OrganigramaPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Modal para visualización ampliada */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="modal-overlay" 
+          onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div 
+            ref={modalRef}
+            className="modal-content" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h3>{organigramas[currentSlide].title}</h3>
+              <h3 id="modal-title">{organigramas[currentSlide].title}</h3>
               <button 
+                ref={closeButtonRef}
                 className="modal-close" 
                 onClick={closeModal}
                 aria-label="Cerrar modal"
