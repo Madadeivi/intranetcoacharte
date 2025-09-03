@@ -1,4 +1,3 @@
-/* Organigrama Page Styles */
 .organigrama-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -7,7 +6,6 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* Header */
 .organigrama-header {
   display: flex;
   align-items: center;
@@ -53,7 +51,6 @@
   color: #2196f3;
 }
 
-/* Introducción */
 .organigrama-intro {
   background: white;
   padding: 25px;
@@ -70,7 +67,6 @@
   text-align: center;
 }
 
-/* Contenido del organigrama */
 .organigrama-content {
   background: white;
   padding: 30px;
@@ -250,25 +246,13 @@
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  transition: all 0.5s ease;
-  cursor: zoom-in;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.organigrama-image-wrapper.zoomed {
-  cursor: zoom-out;
-  overflow: auto;
-  max-height: 80vh;
-}
-
-.organigrama-image-wrapper:not(.zoomed):hover {
+.organigrama-image-wrapper:hover {
   transform: scale(1.02);
-}
-
-.organigrama-image-wrapper.zoomed .organigrama-image {
-  transform: scale(1.3);
-  transform-origin: center;
-  width: 100%;
-  height: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .carousel-indicators {
@@ -366,7 +350,6 @@
   font-size: 0.9rem;
 }
 
-/* Información adicional */
 .organigrama-info {
   background: white;
   padding: 30px;
@@ -465,7 +448,6 @@
   font-weight: 600;
 }
 
-/* Estructura jerárquica */
 .jerarquia-info {
   background: white;
   padding: 20px;
@@ -515,7 +497,6 @@
   font-weight: 600;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .organigrama-page {
     padding: 10px;
@@ -581,10 +562,6 @@
     padding: 10px 50px;
   }
   
-  .organigrama-image-wrapper.zoomed {
-    max-height: 70vh;
-  }
-  
   .departments-grid {
     grid-template-columns: 1fr;
   }
@@ -613,14 +590,6 @@
     padding: 10px;
   }
   
-  .organigrama-image-wrapper.zoomed {
-    max-height: 60vh;
-  }
-  
-  .organigrama-image-wrapper.zoomed .organigrama-image {
-    transform: scale(1.2);
-  }
-  
   .carousel-controls {
     flex-direction: column;
     gap: 10px;
@@ -630,5 +599,179 @@
     width: 35px;
     height: 35px;
     font-size: 0.9rem;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@supports (backdrop-filter: blur(5px)) or (-webkit-backdrop-filter: blur(5px)) {
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  max-width: 95vw;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid #f0f0f0;
+  background: #f8f9fa;
+}
+
+.modal-header h3 {
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-close {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+  outline: none;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+  background: #e0e0e0;
+  color: #333;
+  transform: scale(1.1);
+}
+
+.modal-close:focus {
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+}
+
+.modal-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: auto;
+  background: #f8f9fa;
+}
+
+.modal-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-footer {
+  padding: 20px 25px;
+  border-top: 2px solid #f0f0f0;
+  display: flex;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 98vw;
+    max-height: 98vh;
+    margin: 1vh;
+  }
+  
+  .modal-header {
+    padding: 15px 20px;
+  }
+  
+  .modal-header h3 {
+    font-size: 1.3rem;
+  }
+  
+  .modal-image-container {
+    padding: 15px;
+  }
+  
+  .modal-footer {
+    padding: 15px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 10px 15px;
+  }
+  
+  .modal-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .modal-close {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .modal-image-container {
+    padding: 10px;
+  }
+  
+  .modal-footer {
+    padding: 10px 15px;
   }
 }
