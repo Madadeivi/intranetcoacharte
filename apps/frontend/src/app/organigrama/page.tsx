@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import './organigrama.css';
@@ -12,6 +12,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import CloseIcon from '@mui/icons-material/Close';
 
 const organigramas = [
   {
@@ -74,7 +75,7 @@ const organigramas = [
 
 const OrganigramaPage: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % organigramas.length);
@@ -111,9 +112,33 @@ const OrganigramaPage: React.FC = () => {
     }
   };
 
-  const toggleZoom = () => {
-    setIsZoomed(!isZoomed);
+  const openModal = () => {
+    setIsModalOpen(true);
   };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        closeModal();
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isModalOpen]);
 
   return (
     <div className="organigrama-page">
@@ -142,9 +167,9 @@ const OrganigramaPage: React.FC = () => {
             <p className="carousel-description">{organigramas[currentSlide].description}</p>
           </div>
           <div className="carousel-controls">
-            <button className="zoom-button" onClick={toggleZoom}>
+            <button className="zoom-button" onClick={openModal}>
               <ZoomInIcon />
-              <span>{isZoomed ? 'Reducir' : 'Ampliar'}</span>
+              <span>Ampliar</span>
             </button>
             <button className="download-button" onClick={downloadCurrentOrganigrama}>
               <DownloadIcon />
@@ -162,7 +187,7 @@ const OrganigramaPage: React.FC = () => {
             <ChevronLeftIcon />
           </button>
           
-          <div className={`organigrama-image-wrapper ${isZoomed ? 'zoomed' : ''}`}>
+          <div className="organigrama-image-wrapper">
             <Image
               src={organigramas[currentSlide].image}
               alt={`Organigrama ${organigramas[currentSlide].title}`}
@@ -170,7 +195,7 @@ const OrganigramaPage: React.FC = () => {
               height={700}
               className="organigrama-image"
               priority
-              onClick={toggleZoom}
+              onClick={openModal}
             />
           </div>
           
@@ -251,6 +276,40 @@ const OrganigramaPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Modal para visualización ampliada */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{organigramas[currentSlide].title}</h3>
+              <button 
+                className="modal-close" 
+                onClick={closeModal}
+                aria-label="Cerrar modal"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="modal-image-container">
+              <Image
+                src={organigramas[currentSlide].image}
+                alt={`Organigrama ampliado de ${organigramas[currentSlide].title}`}
+                width={1400}
+                height={980}
+                className="modal-image"
+                priority
+              />
+            </div>
+            <div className="modal-footer">
+              <button className="download-button" onClick={downloadCurrentOrganigrama}>
+                <DownloadIcon />
+                <span>Descargar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
