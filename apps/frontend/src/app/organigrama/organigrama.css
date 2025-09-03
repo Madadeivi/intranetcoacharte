@@ -82,17 +82,49 @@
 .organigrama-actions {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 25px;
   padding-bottom: 20px;
   border-bottom: 2px solid #f0f0f0;
 }
 
-.organigrama-actions h2 {
+.carousel-info h2 {
   color: #333;
   font-size: 1.8rem;
   font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.carousel-description {
+  color: #666;
+  font-size: 1rem;
   margin: 0;
+}
+
+.carousel-controls {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.zoom-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(33, 150, 243, 0.3);
+}
+
+.zoom-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
 }
 
 .download-button {
@@ -119,12 +151,57 @@
   transform: translateY(0);
 }
 
-/* Contenedor del organigrama */
-.organigrama-container {
+.carousel-container {
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 500px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.organigrama-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #2196f3;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.carousel-nav:hover {
+  background: #2196f3;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-nav.prev {
+  left: -25px;
+}
+
+.carousel-nav.next {
+  right: -25px;
+}
+
+.carousel-nav svg {
+  font-size: 24px;
 }
 
 .organigrama-image-wrapper {
@@ -133,18 +210,97 @@
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease;
+  transition: all 0.5s ease;
+  cursor: zoom-in;
+}
+
+.organigrama-image-wrapper.zoomed {
+  max-width: 1400px;
+  cursor: zoom-out;
+  transform: scale(1.05);
 }
 
 .organigrama-image-wrapper:hover {
   transform: scale(1.02);
 }
 
-.organigrama-image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  border-radius: 15px;
+.organigrama-image-wrapper.zoomed:hover {
+  transform: scale(1.08);
+}
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #e0e0e0;
+  background: white;
+  color: #666;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.indicator:hover {
+  border-color: #2196f3;
+  transform: scale(1.1);
+}
+
+.indicator.active {
+  background: #2196f3;
+  color: white;
+  border-color: #2196f3;
+  transform: scale(1.2);
+}
+
+.departments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.department-item {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  border-left: 4px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.department-item:hover {
+  border-left-color: #2196f3;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.department-item.current {
+  border-left-color: #4caf50;
+  background: #e8f5e8;
+}
+
+.department-item strong {
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.department-item span {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 /* Información adicional */
@@ -319,7 +475,15 @@
     align-items: stretch;
   }
   
-  .download-button {
+  .carousel-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .download-button,
+  .zoom-button {
+    padding: 10px 15px;
+    font-size: 0.9rem;
     justify-content: center;
   }
   
@@ -330,11 +494,28 @@
   }
   
   .info-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
   
   .organigrama-image-wrapper {
     max-width: 100%;
+  }
+  
+  .carousel-nav {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .carousel-nav.prev {
+    left: -15px;
+  }
+  
+  .carousel-nav.next {
+    right: -15px;
+  }
+  
+  .departments-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -351,5 +532,20 @@
   .organigrama-intro,
   .organigrama-info {
     padding: 15px;
+  }
+  
+  .carousel-nav {
+    display: none;
+  }
+  
+  .carousel-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .indicator {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9rem;
   }
 }
