@@ -88,11 +88,27 @@ const OrganigramaPage: React.FC = () => {
     setCurrentSlide(index);
   };
 
-  const downloadCurrentOrganigrama = () => {
-    const link = document.createElement('a');
-    link.href = organigramas[currentSlide].image;
-    link.download = `Organigrama_${organigramas[currentSlide].title.replace(/\s+/g, '_')}.png`;
-    link.click();
+  const downloadCurrentOrganigrama = async () => {
+    try {
+      const src = organigramas[currentSlide].image;
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Organigrama_${organigramas[currentSlide].title.replace(/\s+/g, '_')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading organigrama:', error);
+      const link = document.createElement('a');
+      link.href = organigramas[currentSlide].image;
+      link.download = `Organigrama_${organigramas[currentSlide].title.replace(/\s+/g, '_')}.png`;
+      link.click();
+    }
   };
 
   const toggleZoom = () => {
@@ -217,6 +233,16 @@ const OrganigramaPage: React.FC = () => {
                 key={org.id} 
                 className={`department-item ${index === currentSlide ? 'current' : ''}`}
                 onClick={() => goToSlide(index)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    goToSlide(index);
+                  }
+                }}
+                aria-current={index === currentSlide ? 'true' : undefined}
+                aria-label={`Ir al organigrama de ${org.title}`}
               >
                 <strong>{org.title}</strong>
                 <span>{org.description}</span>
