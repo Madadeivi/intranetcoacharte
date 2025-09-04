@@ -121,10 +121,13 @@ async function getVacationBalance(userEmail: string) {
     }
 
     if (profile && profile.vacation_days_available !== null) {
+      const totalAnnual = profile.vacation_days_available || 0;
+      const taken = profile.vacation_days_taken || 0;
+      
       return {
-        available: profile.vacation_days_available || 0,
-        taken: profile.vacation_days_taken || 0,
-        remaining: Math.max(0, (profile.vacation_days_available || 0) - (profile.vacation_days_taken || 0)),
+        available: totalAnnual,
+        taken: taken,
+        remaining: Math.max(0, totalAnnual - taken),
         userId: userEmail,
         lastUpdated: profile.updated_at || new Date().toISOString()
       };
@@ -191,13 +194,14 @@ async function getVacationBalanceFromZoho(userEmail: string) {
     }
 
     const colaborador = result.data[0];
-    const available = parseInt(colaborador['Vacaciones_disponibles'] || '0');
+    const totalAnnual = parseInt(colaborador['Vacaciones_al_anio'] || '0');
     const taken = parseInt(colaborador['Vacaciones_tomadas'] || '0');
+    const remaining = parseInt(colaborador['Vacaciones_disponibles'] || '0');
 
     return {
-      available,
+      available: totalAnnual,
       taken,
-      remaining: Math.max(0, available - taken),
+      remaining,
       userId: userEmail,
       lastUpdated: new Date().toISOString()
     };
