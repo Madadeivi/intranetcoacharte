@@ -113,6 +113,7 @@ interface ZohoContact {
   'Password Personalizada Establecida'?: string;
   'Vacaciones disponibles'?: string;
   'Vacaciones tomadas'?: string;
+  'Vacaciones_al_anio'?: string;
   'Vacaciones_disponibles'?: string;
   'Vacaciones_tomadas'?: string;
   'Comentarios'?: string;
@@ -273,6 +274,7 @@ function mapZohoToProfile(colaborador: ZohoContact): Partial<ProfileData> {
     
     status: (() => {
       const zohoStatus = colaborador['Estatus'];
+      
       if (zohoStatus === 'Desasignado') {
         return 'inactive' as const;
       } else if (zohoStatus === 'Asignado' || zohoStatus === null || zohoStatus === undefined) {
@@ -313,8 +315,7 @@ function mapZohoToProfile(colaborador: ZohoContact): Partial<ProfileData> {
     comments: cleanString(colaborador['Comentarios']) || cleanString(colaborador['Comentarios adicionales']),
     termination_date: parseZohoDate(colaborador['Fecha de baja']),
     
-    // Vacaciones
-    vacation_days_available: parseInteger(colaborador['Vacaciones_disponibles']),
+    vacation_days_available: parseInteger(colaborador['Vacaciones_al_anio']),
     vacation_days_taken: parseInteger(colaborador['Vacaciones_tomadas']),
     
     // Información de Zoho
@@ -345,11 +346,30 @@ async function syncProfilesFromZoho(differentialSync = true) {
       
       if (lastSyncLog) {
         lastSyncTime = new Date(lastSyncLog.created_at);
-        console.log(`Differential sync since: ${lastSyncTime.toISOString()}`);
       }
     }
 
-    const colaboradores = await getZohoCollaboradores(1, 200, lastSyncTime || undefined);
+    let allColaboradores: ZohoContact[] = [];
+    let page = 1;
+    let hasMore = true;
+
+    console.log('Iniciando sincronización de colaboradores de Zoho...');
+    
+    while (hasMore) {
+      const colaboradores = await getZohoCollaboradores(page, 200, lastSyncTime || undefined);
+      allColaboradores = allColaboradores.concat(colaboradores);
+      
+      console.log(`Página ${page}: ${colaboradores.length} colaboradores obtenidos. Total acumulado: ${allColaboradores.length}`);
+      
+      if (colaboradores.length < 200) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+
+    console.log(`Sincronización completa: ${allColaboradores.length} colaboradores obtenidos de Zoho CRM`);
+    
     const profiles = [];
     const _errors = [];
     
@@ -357,10 +377,10 @@ async function syncProfilesFromZoho(differentialSync = true) {
       sync_type: 'zoho_profiles_sync',
       status: 'running',
       records_processed: 0,
-      response_body: { message: 'Sync started', total_records: colaboradores.length }
+      response_body: { message: 'Sync started', total_records: allColaboradores.length }
     });
     
-    for (const colaborador of colaboradores){
+    for (const colaborador of allColaboradores){
       if (!colaborador.id || !colaborador.Email) continue;
       
       const profileData = {
@@ -450,7 +470,6 @@ async function syncProfilesFromZoho(differentialSync = true) {
             .select()
             .single();
         } else {
-          console.warn(`Conflicto: Email ya existe con Zoho ID diferente`);
           continue;
         }
       }
@@ -477,7 +496,7 @@ async function syncProfilesFromZoho(differentialSync = true) {
     try {
       // Crear un Set con los emails de usuarios en Zoho
       const zohoEmails = new Set(
-        colaboradores
+        allColaboradores
           .filter((c: ZohoContact) => c.Email)
           .map((c: ZohoContact) => c.Email!.toLowerCase().trim())
       );
@@ -505,7 +524,6 @@ async function syncProfilesFromZoho(differentialSync = true) {
           
           if (!error) {
             localDeactivatedCount++;
-            console.log(`Deactivated user not in Zoho: ${user.email}`);
           } else {
             _errors.push({ email: user.email, error: error.message });
           }
@@ -536,7 +554,6 @@ async function syncProfilesFromZoho(differentialSync = true) {
       }
     });
     
-    console.log(`Synchronized ${profiles.length} profiles from Zoho CRM (${_errors.length} errors, ${localDeactivatedCount} local users deactivated)`);
     return profiles;
   } catch (error) {
     console.error("Error in syncProfilesFromZoho:", error);
@@ -558,20 +575,17 @@ async function getProfilesWithCache(forceSync = false) {
         const hoursSinceSync = (Date.now() - lastSyncTime.getTime()) / (1000 * 60 * 60);
         
         if (hoursSinceSync < 24) {
-          console.log(`Using cached profiles (${hoursSinceSync.toFixed(1)} hours old)`);
           return cached;
         }
       }
     }
     
-    console.log("Syncing profiles from Zoho CRM...");
     return await syncProfilesFromZoho(true);
   } catch (error) {
     console.error("Error in getProfilesWithCache:", error);
     try {
       const cached = await getCachedProfiles();
       if (cached.length > 0) {
-        console.log("Falling back to cached data due to sync error");
         return cached;
       }
     } catch (cacheError) {
@@ -709,9 +723,6 @@ async function downloadZohoAttachment(recordId: string, attachmentId: string, mo
   
   const url = `${ZOHO_API_URL}/${moduleName}/${recordId}/Attachments/${attachmentId}`;
   
-  console.log(`Downloading from Zoho URL: ${url}`);
-  
-  // Crear un AbortController para timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
   
@@ -727,15 +738,11 @@ async function downloadZohoAttachment(recordId: string, attachmentId: string, mo
     // Limpiar el timeout si la petición se completa
     clearTimeout(timeoutId);
     
-    console.log(`Zoho API response status: ${response.status}`);
-    console.log(`Zoho API response headers:`, Object.fromEntries(response.headers.entries()));
-    
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Zoho CRM Download API error:", response.status, errorText);
       
       if (response.status === 401) {
-        console.log("Token might be expired, attempting to refresh...");
         accessToken = null;
         tokenExpiryTime = null;
         const newToken = await getZohoAccessToken();
@@ -793,7 +800,18 @@ async function getZohoCRMContacts(page = 1, perPage = 200) {
   if (!ZOHO_API_URL) {
     throw new Error("ZOHO_API_URL no está configurado");
   }
-  const url = `${ZOHO_API_URL}/Contacts?page=${page}&per_page=${perPage}`;
+  
+  const fields = [
+    "id", "Email", "Full_Name", "First_Name", "Last_Name", "Title", "Phone", "Mobile",
+    "Secondary_Email", "Date_of_Birth", "Locked__s", "Department", "Description",
+    "Mailing_Street", "Mailing_City", "Mailing_State", "Mailing_Country", "Mailing_Zip",
+    "Home_Phone", "Other_Phone", "Fax", "Lead_Source", "Owner", "Last_Activity_Time",
+    "Created_Time", "Modified_Time", "Created_By", "Modified_By", "Puesto", "Estatus",
+    "Email_Opt_Out", "$approved", "$approval_state", "$state"
+  ];
+  
+  const url = `${ZOHO_API_URL}/Colaboradores?fields=${fields.join(",")}&page=${page}&per_page=${perPage}`;
+  
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -940,6 +958,90 @@ serve(async (req)=>{
           }
         });
       }
+
+      // GET /debug-user/{email} - debug específico para un usuario
+      if (path.includes("/debug-user/")) {
+        const pathParts = path.split('/');
+        const email = pathParts[pathParts.length - 1];
+        
+        if (!email) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "email es requerido"
+          }), {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        }
+
+        try {
+          // Obtener TODOS los colaboradores de Zoho (todas las páginas)
+          let allColaboradores: ZohoContact[] = [];
+          let page = 1;
+          let hasMore = true;
+
+          while (hasMore) {
+            const colaboradores = await getZohoCollaboradores(page, 200);
+            allColaboradores = allColaboradores.concat(colaboradores);
+            
+            if (colaboradores.length < 200) {
+              hasMore = false;
+            } else {
+              page++;
+            }
+          }
+
+          // Buscar específicamente el usuario
+          const targetUser = allColaboradores.find(c => 
+            c.Email && c.Email.toLowerCase().trim() === email.toLowerCase().trim()
+          );
+
+          return new Response(JSON.stringify({
+            success: true,
+            data: {
+              searched_email: email.toLowerCase().trim(),
+              total_users_in_zoho: allColaboradores.length,
+              found_user: targetUser || null,
+              user_details: targetUser ? {
+                id: targetUser.id,
+                email: targetUser.Email,
+                name: targetUser['Nombre_completo'],
+                estatus: targetUser['Estatus'],
+                mapped_status: (() => {
+                  const zohoStatus = targetUser['Estatus'];
+                  if (zohoStatus === 'Desasignado') return 'inactive';
+                  else if (zohoStatus === 'Asignado' || zohoStatus === null || zohoStatus === undefined) return 'active';
+                  return 'active';
+                })()
+              } : null,
+              sample_emails: allColaboradores.slice(0, 5).map(c => c.Email)
+            },
+            message: "Debug completado",
+            timestamp: new Date().toISOString()
+          }), {
+            status: 200,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        } catch (error) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "Error en debug",
+            details: error instanceof Error ? error.message : "Error desconocido"
+          }), {
+            status: 500,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          });
+        }
+      }
       
       // GET /sync-status - obtener estado de la sincronización
       if (path.includes("/sync-status")) {
@@ -973,60 +1075,7 @@ serve(async (req)=>{
         });
       }
 
-      // GET /test-mapping - probar mapeo sin afectar datos (solo para desarrollo)
-      if (path.includes("/test-mapping")) {
-        const limit = parseInt(searchParams.get("limit") || "5");
-        try {
-          const colaboradores = await getZohoCollaboradores(1, limit);
-          
-          // Mapear sin guardar en base de datos
-          const mappedProfiles = colaboradores.map((colaborador: ZohoContact) => {
-            if (!colaborador.id || !colaborador.Email) return null;
-            
-            return {
-              zoho_id: colaborador.id,
-              original_data: {
-                email: colaborador.Email,
-                nombre_completo: colaborador['Nombre completo'],
-                apellidos: colaborador['Apellidos'],
-                name_field: colaborador.Name,
-                fecha_ingreso: colaborador['Fecha de ingreso'],
-                fecha_nacimiento: colaborador['Fecha de nacimiento']
-              },
-              mapped_data: mapZohoToProfile(colaborador)
-            };
-          }).filter(Boolean);
 
-          return new Response(JSON.stringify({
-            success: true,
-            data: {
-              mapped_profiles: mappedProfiles,
-              total_processed: mappedProfiles.length,
-              sample_fields_available: Object.keys(colaboradores[0] || {}).slice(0, 10)
-            },
-            message: "Mapeo de prueba completado (sin guardar en base de datos)",
-            timestamp: new Date().toISOString()
-          }), {
-            status: 200,
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json"
-            }
-          });
-        } catch (error) {
-          return new Response(JSON.stringify({
-            success: false,
-            error: "Error en mapeo de prueba",
-            details: error instanceof Error ? error.message : "Error desconocido"
-          }), {
-            status: 500,
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json"
-            }
-          });
-        }
-      }
 
       // GET /compare-status - comparar estados entre Zoho CRM y base de datos
       if (path.includes("/compare-status")) {
@@ -1978,66 +2027,7 @@ serve(async (req)=>{
         }
       }
 
-      if (path.includes("/test-password")) {
-        try {
-          const { email, password } = await req.json();
-          
-          if (!email || !password) {
-            return new Response(JSON.stringify({
-              success: false,
-              error: "Email y password requeridos"
-            }), {
-              status: 400,
-              headers: { ...corsHeaders, "Content-Type": "application/json" }
-            });
-          }
 
-          const { data: user } = await supabase
-            .from('profiles')
-            .select('id, email, password, status, locked')
-            .eq('email', email.toLowerCase().trim())
-            .single();
-
-          if (!user) {
-            return new Response(JSON.stringify({
-              success: false,
-              error: "Usuario no encontrado"
-            }), {
-              status: 404,
-              headers: { ...corsHeaders, "Content-Type": "application/json" }
-            });
-          }
-
-          const { data: passwordValid } = await supabase.rpc('verify_password_bcrypt', {
-            plain_password: password,
-            hashed_password: user.password
-          });
-
-          return new Response(JSON.stringify({
-            success: true,
-            user: {
-              email: user.email,
-              status: user.status,
-              locked: user.locked
-            },
-            passwordValid,
-            currentHash: user.password
-          }), {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" }
-          });
-
-        } catch (error) {
-          return new Response(JSON.stringify({
-            success: false,
-            error: "Error probando password",
-            details: error instanceof Error ? error.message : "Error desconocido"
-          }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" }
-          });
-        }
-      }
 
       if (path.includes("/fix-invalid-hashes")) {
         try {
@@ -2217,6 +2207,7 @@ serve(async (req)=>{
         });
       }
     }
+
     // Endpoint no encontrado
     return new Response(JSON.stringify({
       success: false,
