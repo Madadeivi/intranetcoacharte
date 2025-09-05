@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run copy-pdf-worker && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf .next out"
+    "clean": "rm -rf .next out",
+    "copy-pdf-worker": "node scripts/copy-pdf-worker.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
