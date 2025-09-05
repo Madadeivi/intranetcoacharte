@@ -88,8 +88,15 @@
   margin-bottom: var(--space-8);
 }
 
+.sections-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: var(--space-8);
+  align-items: start;
+}
+
 .document-section {
-  margin-bottom: var(--space-8);
+  margin-bottom: 0; /* Remove margin since we're using grid gap */
 }
 
 .section-header {
@@ -133,7 +140,8 @@
 .documents-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-6);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
 }
 
 /* ==============================================
@@ -535,6 +543,13 @@
    RESPONSIVE
    ============================================== */
 
+@media (max-width: 1200px) {
+  .sections-container {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+}
+
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
@@ -556,6 +571,11 @@
 
   .documents-container {
     padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
+  }
+
+  .sections-container {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
   }
 
   .documents-grid {

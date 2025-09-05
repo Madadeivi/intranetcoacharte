@@ -29,13 +29,20 @@ const initializePdfWorker = async () => {
   if (typeof window !== 'undefined' && !isWorkerInitialized) {
     try {
       const { pdfjs } = await import('react-pdf');
-      pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+      // Use exact version match to avoid version conflicts
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+      console.log(`PDF.js worker initialized with version: ${pdfjs.version}`);
       isWorkerInitialized = true;
     } catch (error) {
-      console.warn('Failed to initialize PDF worker locally, falling back to CDN:', error);
-      const { pdfjs } = await import('react-pdf');
-      pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-      isWorkerInitialized = true;
+      console.error('Failed to initialize PDF worker:', error);
+      // Fallback to local worker if available
+      try {
+        const { pdfjs } = await import('react-pdf');
+        pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+        isWorkerInitialized = true;
+      } catch (fallbackError) {
+        console.error('Fallback PDF worker initialization failed:', fallbackError);
+      }
     }
   }
 };
@@ -413,27 +420,29 @@ const ConoceCoachartePage: React.FC = () => {
       </section>
 
       <main className="documents-container">
-        {documentSections.map((section) => (
-          <section key={section.id} className="document-section">
-            <div className="section-header">
-              {section.icon}
-              <div className="section-info">
-                <h3>{section.title}</h3>
-                <p>{section.description}</p>
+        <div className="sections-container">
+          {documentSections.map((section) => (
+            <section key={section.id} className="document-section">
+              <div className="section-header">
+                {section.icon}
+                <div className="section-info">
+                  <h3>{section.title}</h3>
+                  <p>{section.description}</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="documents-grid">
-              {section.documents.map((document) => (
-                <DocumentCard
-                  key={document.id}
-                  document={document}
-                  onPreview={handlePreview}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+              
+              <div className="documents-grid">
+                {section.documents.map((document) => (
+                  <DocumentCard
+                    key={document.id}
+                    document={document}
+                    onPreview={handlePreview}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       </main>
 
       <section className="instructions-section">
