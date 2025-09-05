@@ -204,7 +204,7 @@ const OrganigramaPage: React.FC = () => {
         scrollLockManager.unlock();
       }
     };
-  }, []);
+  }, [isModalOpen]);
 
   return (
     <div className="organigrama-page">
