@@ -58,8 +58,7 @@ export interface Notice {
 export const DISABLED_CARDS: string[] = [
   'Procesos y Documentación', 
   'Soporte y Comunicación', 
-  'Calendario y Eventos', 
-  'Conoce Coacharte'
+  'Calendario y Eventos'
 ]; 
 
 // Eventos del calendario

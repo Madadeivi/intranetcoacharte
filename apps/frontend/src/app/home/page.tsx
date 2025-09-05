@@ -948,7 +948,9 @@ const HomePage: React.FC = () => {
               <InfoIcon className="main-card-icon" />
               <h3>Conoce Coacharte</h3>
               <p>Nuestra cultura y valores</p>
-              <a href="#" onClick={(e) => e.preventDefault()}>Acceder</a>
+              <Link href="/conoce-coacharte" className="main-card-button">
+                Acceder
+              </Link>
             </div>
           </div>
           <button 

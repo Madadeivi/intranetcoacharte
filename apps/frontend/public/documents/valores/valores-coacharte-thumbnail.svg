@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo profesional -->
+  <rect width="200" height="150" fill="url(#bgGradient)" stroke="#cbd5e1" stroke-width="1"/>
+  
+  <!-- Elementos decorativos sutiles -->
+  <circle cx="180" cy="25" r="15" fill="#f1f5f9" opacity="0.6"/>
+  <circle cx="25" cy="125" r="12" fill="#f1f5f9" opacity="0.4"/>
+  
+  <!-- Icono central profesional (escudo con corazón) -->
+  <g transform="translate(100, 45)">
+    <!-- Escudo base -->
+    <path d="M-20,-15 C-20,-20 -15,-25 0,-25 C15,-25 20,-20 20,-15 L20,10 C20,25 0,35 0,35 C0,35 -20,25 -20,10 Z" 
+          fill="url(#iconGradient)" opacity="0.9"/>
+    <!-- Corazón interior -->
+    <path d="M-8,-5 C-8,-10 -4,-12 0,-10 C4,-12 8,-10 8,-5 C8,0 0,8 0,8 C0,8 -8,0 -8,-5 Z" 
+          fill="white" opacity="0.95"/>
+  </g>
+  
+  <!-- Título con tipografía corporativa -->
+  <text x="100" y="95" text-anchor="middle" 
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" 
+        font-size="14" font-weight="600" 
+        fill="#1e293b">
+    Valores
+  </text>
+  
+  <!-- Subtítulo -->
+  <text x="100" y="110" text-anchor="middle" 
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" 
+        font-size="11" font-weight="400" 
+        fill="#64748b">
+    Coacharte
+  </text>
+  
+  <!-- Línea decorativa -->
+  <rect x="70" y="120" width="60" height="2" rx="1" fill="#3b82f6" opacity="0.3"/>
+  
+  <!-- Indicador de tipo de archivo -->
+  <rect x="10" y="10" width="35" height="16" rx="8" fill="#059669" opacity="0.9"/>
+  <text x="27.5" y="20" text-anchor="middle" 
+        font-family="system-ui, -apple-system, sans-serif" 
+        font-size="9" font-weight="600" 
+        fill="white">PNG</text>
+        
+  <!-- Puntos decorativos sutiles -->
+  <circle cx="40" cy="25" r="1.5" fill="#3b82f6" opacity="0.4"/>
+  <circle cx="160" cy="40" r="1.5" fill="#3b82f6" opacity="0.4"/>
+  <circle cx="30" cy="90" r="1.5" fill="#3b82f6" opacity="0.4"/>
+  <circle cx="170" cy="110" r="1.5" fill="#3b82f6" opacity="0.4"/>
+</svg>
