@@ -29,20 +29,13 @@ const initializePdfWorker = async () => {
   if (typeof window !== 'undefined' && !isWorkerInitialized) {
     try {
       const { pdfjs } = await import('react-pdf');
-      // Use exact version match to avoid version conflicts
-      pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-      console.log(`PDF.js worker initialized with version: ${pdfjs.version}`);
+      // Always use local worker to avoid CORS issues
+      pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+      console.log(`PDF.js worker initialized locally with API version: ${pdfjs.version}`);
       isWorkerInitialized = true;
     } catch (error) {
       console.error('Failed to initialize PDF worker:', error);
-      // Fallback to local worker if available
-      try {
-        const { pdfjs } = await import('react-pdf');
-        pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
-        isWorkerInitialized = true;
-      } catch (fallbackError) {
-        console.error('Fallback PDF worker initialization failed:', fallbackError);
-      }
+      throw new Error('PDF worker initialization failed');
     }
   }
 };
@@ -108,10 +101,12 @@ const DocumentModal: React.FC<{
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setPageNumber(1);
+    console.log(`PDF loaded successfully with ${numPages} pages`);
   };
 
   const onDocumentLoadError = (error: Error) => {
     console.error('Error loading PDF:', error);
+    // You could set an error state here if needed
   };
 
   const goToPrevPage = () => {
