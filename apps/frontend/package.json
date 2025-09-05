@@ -20,7 +20,6 @@
     "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "^2.4.3",
     "next": "15.3.3",
-    "pdfjs-dist": "^5.4.149",
     "react": "^19.0.0",
     "react-calendar": "^5.1.0",
     "react-dom": "^19.0.0",
