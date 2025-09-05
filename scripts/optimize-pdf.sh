@@ -38,21 +38,69 @@ gs -sDEVICE=pdfwrite \
 if [ $? -eq 0 ]; then
     echo "✅ PDF optimizado exitosamente: $OUTPUT_FILE"
     
-    # Mostrar información de tamaños
-    INPUT_SIZE=$(stat -f%z "$INPUT_FILE" 2>/dev/null || stat -c%s "$INPUT_FILE" 2>/dev/null)
-    OUTPUT_SIZE=$(stat -f%z "$OUTPUT_FILE" 2>/dev/null || stat -c%s "$OUTPUT_FILE" 2>/dev/null)
+    # Función portable para obtener tamaño de archivo
+    get_file_size() {
+        local file="$1"
+        if [ -f "$file" ]; then
+            # Intentar stat BSD (macOS)
+            stat -f%z "$file" 2>/dev/null || \
+            # Intentar stat GNU (Linux)
+            stat -c%s "$file" 2>/dev/null || \
+            # Fallback usando wc -c
+            wc -c < "$file" 2>/dev/null || \
+            echo "0"
+        else
+            echo "0"
+        fi
+    }
     
-    if [ ! -z "$INPUT_SIZE" ] && [ ! -z "$OUTPUT_SIZE" ]; then
-        INPUT_MB=$(echo "scale=2; $INPUT_SIZE / 1024 / 1024" | bc 2>/dev/null || python3 -c "print(f'{$INPUT_SIZE/1024/1024:.2f}')")
-        OUTPUT_MB=$(echo "scale=2; $OUTPUT_SIZE / 1024 / 1024" | bc 2>/dev/null || python3 -c "print(f'{$OUTPUT_SIZE/1024/1024:.2f}')")
+    # Función portable para calcular MB
+    bytes_to_mb() {
+        local bytes="$1"
+        if [ "$bytes" -eq 0 ]; then
+            echo "0.00"
+        elif command -v awk >/dev/null 2>&1; then
+            echo "$bytes" | awk '{printf "%.2f", $1/1024/1024}'
+        elif command -v bc >/dev/null 2>&1; then
+            echo "scale=2; $bytes / 1024 / 1024" | bc
+        elif command -v python3 >/dev/null 2>&1; then
+            python3 -c "print(f'{$bytes/1024/1024:.2f}')"
+        else
+            # Fallback básico con división entera
+            mb=$((bytes / 1048576))
+            echo "$mb.00"
+        fi
+    }
+    
+    # Obtener tamaños
+    INPUT_SIZE=$(get_file_size "$INPUT_FILE")
+    OUTPUT_SIZE=$(get_file_size "$OUTPUT_FILE")
+    
+    if [ "$INPUT_SIZE" -gt 0 ] && [ "$OUTPUT_SIZE" -gt 0 ]; then
+        INPUT_MB=$(bytes_to_mb "$INPUT_SIZE")
+        OUTPUT_MB=$(bytes_to_mb "$OUTPUT_SIZE")
         
         echo "📊 Tamaño original: ${INPUT_MB} MB"
         echo "📊 Tamaño optimizado: ${OUTPUT_MB} MB"
         
-        if [ ! -z "$INPUT_SIZE" ] && [ "$INPUT_SIZE" -gt 0 ]; then
-            REDUCTION=$(echo "scale=1; (($INPUT_SIZE - $OUTPUT_SIZE) * 100) / $INPUT_SIZE" | bc 2>/dev/null || python3 -c "print(f'{(($INPUT_SIZE - $OUTPUT_SIZE) * 100) / $INPUT_SIZE:.1f}')")
+        # Calcular reducción porcentual de forma portable
+        if [ "$INPUT_SIZE" -gt "$OUTPUT_SIZE" ]; then
+            DIFF=$((INPUT_SIZE - OUTPUT_SIZE))
+            if command -v awk >/dev/null 2>&1; then
+                REDUCTION=$(echo "$DIFF $INPUT_SIZE" | awk '{printf "%.1f", ($1 * 100) / $2}')
+            elif command -v bc >/dev/null 2>&1; then
+                REDUCTION=$(echo "scale=1; ($DIFF * 100) / $INPUT_SIZE" | bc)
+            elif command -v python3 >/dev/null 2>&1; then
+                REDUCTION=$(python3 -c "print(f'{($DIFF * 100) / $INPUT_SIZE:.1f}')")
+            else
+                REDUCTION=$((DIFF * 100 / INPUT_SIZE))
+            fi
             echo "🎯 Reducción: ${REDUCTION}%"
+        else
+            echo "🎯 Reducción: 0.0%"
         fi
+    else
+        echo "⚠️  No se pudo obtener información de tamaños"
     fi
 else
     echo "❌ Error al optimizar el PDF"

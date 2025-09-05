@@ -23,9 +23,22 @@ import './conoce-coacharte.css';
 const Document = dynamic(() => import('react-pdf').then(mod => ({ default: mod.Document })), { ssr: false });
 const Page = dynamic(() => import('react-pdf').then(mod => ({ default: mod.Page })), { ssr: false });
 
-import('react-pdf').then(mod => {
-  mod.pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${mod.pdfjs.version}/build/pdf.worker.min.js`;
-});
+let isWorkerInitialized = false;
+
+const initializePdfWorker = async () => {
+  if (typeof window !== 'undefined' && !isWorkerInitialized) {
+    try {
+      const { pdfjs } = await import('react-pdf');
+      pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+      isWorkerInitialized = true;
+    } catch (error) {
+      console.warn('Failed to initialize PDF worker locally, falling back to CDN:', error);
+      const { pdfjs } = await import('react-pdf');
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+      isWorkerInitialized = true;
+    }
+  }
+};
 
 interface DocumentItem {
   id: string;
@@ -304,6 +317,7 @@ const ConoceCoachartePage: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
+    initializePdfWorker();
   }, []);
 
   const documentSections: DocumentSection[] = [
