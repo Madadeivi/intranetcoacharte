@@ -1196,7 +1196,7 @@ const HomePage: React.FC = () => {
             <div className="footer-col">
               <h4>Enlaces Rápidos</h4>
               <div className="footer-links-list">
-                <Link href={`${NOMINA_BASE_URL}?email=${userEmail}`} legacyBehavior><a>Portal de Nómina</a></Link>
+                <a href="#" onClick={(e) => {e.preventDefault(); handleNominaAccess();}}>Portal de Nómina</a>
                 <Link href="/directorio" legacyBehavior><a>Directorio</a></Link>
                 <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}}>Soporte</a>
               </div>
