@@ -107,7 +107,7 @@ export const CAROUSEL_SCROLL_OFFSET = 300;
 export const CARD_CAROUSEL_SCROLL_OFFSET = 320;
 
 // URLs externas
-export const NOMINA_BASE_URL = 'https://nomina.coacharte.mx/user.php';
+export const NOMINA_BASE_URL = 'https://nomina.coacharte.mx';
 
 export const navItems = [
     { label: 'Inicio', href: '/home' },
