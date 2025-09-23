@@ -9,6 +9,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
 import { useAuthStore } from '../../store/authStore';
+import authService from '../../services/authService';
 import { useClickOutside } from '../../hooks';
 import SupportForm from '../../components/SupportForm';
 import NoticeDetailModal from '../../components/NoticeDetailModal/NoticeDetailModal';
@@ -555,6 +556,13 @@ const HomePage: React.FC = () => {
     router.push('/login');
   };
 
+  const handleNominaAccess = () => {
+    const token = authService.getToken();
+    if (token && user?.email) {
+      window.open(`${NOMINA_BASE_URL}/token_auth.php?token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`, '_blank');
+    }
+  };
+
   const currentMonthYearText = getCurrentMonthYear();
 
   const tileClassName = ({ date, view }: { date: Date; view: string }) => { // react-calendar pasa view
@@ -1049,7 +1057,7 @@ const HomePage: React.FC = () => {
               <HeadsetMicIcon className="quicklink-icon" />
               <h3>Soporte Técnico</h3>
             </a>
-            <a href={`${NOMINA_BASE_URL}?email=${userEmail}`} target="_blank" rel="noopener noreferrer" className="quicklink">
+            <a href="#" onClick={(e) => {e.preventDefault(); handleNominaAccess();}} className="quicklink">
               <SettingsIcon className="quicklink-icon" />
               <h3>Consulta Nómina</h3>
             </a>
