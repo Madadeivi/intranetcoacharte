@@ -1,7 +1,6 @@
 /// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 interface ProfileData {
   id?: string;
@@ -164,11 +163,23 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function generatePasswordHash(password: string): Promise<string> {
   try {
-    const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(password, salt);
+    const { data: hash, error } = await supabase.rpc('hash_password_bcrypt', { 
+      plain_password: password 
+    });
+    
+    if (error) {
+      console.error("Error with Supabase RPC hash:", error);
+      throw new Error(`RPC hash error: ${error.message}`);
+    }
+    
+    if (!hash) {
+      throw new Error("RPC returned null hash");
+    }
+    
+    return hash;
   } catch (error) {
-    console.error("Error generating bcrypt hash:", error);
-    throw new Error("Failed to generate password hash");
+    console.error("Error generating password hash:", error);
+    throw new Error(`Failed to generate password hash: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 async function getZohoAccessToken() {
@@ -353,13 +364,9 @@ async function syncProfilesFromZoho(differentialSync = true) {
     let page = 1;
     let hasMore = true;
 
-    console.log('Iniciando sincronización de colaboradores de Zoho...');
-    
     while (hasMore) {
       const colaboradores = await getZohoCollaboradores(page, 200, lastSyncTime || undefined);
       allColaboradores = allColaboradores.concat(colaboradores);
-      
-      console.log(`Página ${page}: ${colaboradores.length} colaboradores obtenidos. Total acumulado: ${allColaboradores.length}`);
       
       if (colaboradores.length < 200) {
         hasMore = false;
@@ -367,8 +374,6 @@ async function syncProfilesFromZoho(differentialSync = true) {
         page++;
       }
     }
-
-    console.log(`Sincronización completa: ${allColaboradores.length} colaboradores obtenidos de Zoho CRM`);
     
     const profiles = [];
     const _errors = [];
@@ -381,11 +386,17 @@ async function syncProfilesFromZoho(differentialSync = true) {
     });
     
     for (const colaborador of allColaboradores){
-      if (!colaborador.id || !colaborador.Email) continue;
+      if (!colaborador.id || !colaborador.Email) {
+        continue;
+      }
+      
+      const zohoStatus = colaborador['Estatus'];
+      if (zohoStatus !== 'Asignado' && zohoStatus !== null && zohoStatus !== undefined) {
+        continue;
+      }
       
       const profileData = {
         ...mapZohoToProfile(colaborador),
-        // Campos opcionales para password (se asignarán según sea necesario)
         password: undefined as string | undefined,
         password_changed_at: undefined as string | undefined,
       };
@@ -399,17 +410,14 @@ async function syncProfilesFromZoho(differentialSync = true) {
         .single();
       
       if (existingByZoho) {
-        // Actualizar todos los campos siempre, incluyendo el status basado en Zoho
         const updateData: Partial<typeof profileData> = { ...profileData };
         
-        // Eliminar propiedades undefined ANTES de procesar password
         Object.keys(updateData).forEach(key => {
           if (updateData[key as keyof typeof updateData] === undefined) {
             delete updateData[key as keyof typeof updateData];
           }
         });
         
-        // Generar password si el usuario no tiene una (null, undefined, o string vacío)
         const needsPassword = existingByZoho.password === null || 
                              existingByZoho.password === undefined || 
                              (typeof existingByZoho.password === 'string' && existingByZoho.password.trim() === '');
@@ -419,7 +427,7 @@ async function syncProfilesFromZoho(differentialSync = true) {
             updateData.password = await generatePasswordHash("Coacharte2025");
             updateData.password_changed_at = new Date().toISOString();
           } catch (error) {
-            console.error(`Error generating password for user ${existingByZoho.email}:`, error);
+            console.error("Error generating password for existing user:", error);
           }
         }
         
@@ -439,16 +447,29 @@ async function syncProfilesFromZoho(differentialSync = true) {
         if (existingByEmail && !existingByEmail.zoho_record_id) {
           const complementData: Partial<typeof profileData> = {
             zoho_record_id: colaborador.id,
+            status: 'active',
             updated_at: new Date().toISOString()
           };
           
           Object.entries(profileData).forEach(([key, value]) => {
             if (key !== 'email' && key !== 'updated_at' && key !== 'zoho_record_id' && 
-                key !== 'status' && key !== 'full_name' && key !== 'last_name' &&
-                value !== null && value !== '') {
+                value !== null && value !== '' && value !== undefined) {
               (complementData as Record<string, unknown>)[key] = value;
             }
           });
+          
+          const needsPassword = existingByEmail.password === null || 
+                               existingByEmail.password === undefined || 
+                               (typeof existingByEmail.password === 'string' && existingByEmail.password.trim() === '');
+        
+          if (needsPassword) {
+            try {
+              complementData.password = await generatePasswordHash("Coacharte2025");
+              complementData.password_changed_at = new Date().toISOString();
+            } catch (error) {
+              console.error("Error generating password for existing user:", error);
+            }
+          }
           
           result = await supabase
             .from('profiles')
@@ -460,26 +481,28 @@ async function syncProfilesFromZoho(differentialSync = true) {
           try {
             profileData.password = await generatePasswordHash("Coacharte2025");
             profileData.password_changed_at = new Date().toISOString();
+            
+            result = await supabase
+              .from('profiles')
+              .insert({
+                ...profileData,
+                status: 'active'
+              })
+              .select()
+              .single();
           } catch (error) {
-            console.error(`Error generating password for new user:`, error);
+            console.error("Error generating password for new user:", error);
           }
-          
-          result = await supabase
-            .from('profiles')
-            .insert(profileData)
-            .select()
-            .single();
         } else {
           continue;
         }
       }
       
       if (result?.error) {
-        console.error(`Error upserting profile:`, result.error);
+        console.error("Error upserting profile:", result.error);
         _errors.push({
-          email: colaborador.Email,
-          zoho_id: colaborador.id,
-          error: result.error.message
+          error: result.error.message,
+          operation: 'profile_sync'
         });
         continue;
       }
@@ -525,12 +548,12 @@ async function syncProfilesFromZoho(differentialSync = true) {
           if (!error) {
             localDeactivatedCount++;
           } else {
-            _errors.push({ email: user.email, error: error.message });
+            _errors.push({ error: error.message });
           }
         } catch (error) {
           _errors.push({ 
-            email: user.email,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: 'Failed to deactivate user not in Zoho',
+            details: error instanceof Error ? error.message : 'Unknown error'
           });
         }
       }
@@ -594,7 +617,7 @@ async function getProfilesWithCache(forceSync = false) {
     throw error;
   }
 }
-async function getZohoCollaboradores(page = 1, perPage = 200, modifiedSince?: Date) {
+async function getZohoCollaboradores(page = 1, perPage = 200, modifiedSince?: Date, includeInactive = false) {
   const token = await getZohoAccessToken();
   const ZOHO_API_URL = Deno.env.get("ZOHO_API_URL");
   if (!ZOHO_API_URL) {
@@ -603,6 +626,10 @@ async function getZohoCollaboradores(page = 1, perPage = 200, modifiedSince?: Da
   
   const moduleName = "Colaboradores";
   let url = `${ZOHO_API_URL}/${moduleName}?page=${page}&per_page=${perPage}`;
+  
+  if (!includeInactive) {
+    url += `&criteria=((Estatus:equals:Asignado))`;
+  }
   
   if (modifiedSince) {
     const modifiedSinceStr = modifiedSince.toISOString();
@@ -623,7 +650,17 @@ async function getZohoCollaboradores(page = 1, perPage = 200, modifiedSince?: Da
       throw new Error(`Error fetching colaboradores from Zoho CRM: ${response.status}`);
     }
     const result = await response.json();
-    return result.data || [];
+    const data = result.data || [];
+    
+    if (!includeInactive) {
+      const filtered = data.filter((colaborador: ZohoContact) => {
+        const status = colaborador['Estatus'];
+        return status === 'Asignado';
+      });
+      return filtered;
+    }
+    
+    return data;
   } catch (error) {
     console.error("Error in getZohoCollaboradores:", error);
     throw error;
@@ -958,91 +995,7 @@ serve(async (req)=>{
           }
         });
       }
-
       // GET /debug-user/{email} - debug específico para un usuario
-      if (path.includes("/debug-user/")) {
-        const pathParts = path.split('/');
-        const email = pathParts[pathParts.length - 1];
-        
-        if (!email) {
-          return new Response(JSON.stringify({
-            success: false,
-            error: "email es requerido"
-          }), {
-            status: 400,
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json"
-            }
-          });
-        }
-
-        try {
-          // Obtener TODOS los colaboradores de Zoho (todas las páginas)
-          let allColaboradores: ZohoContact[] = [];
-          let page = 1;
-          let hasMore = true;
-
-          while (hasMore) {
-            const colaboradores = await getZohoCollaboradores(page, 200);
-            allColaboradores = allColaboradores.concat(colaboradores);
-            
-            if (colaboradores.length < 200) {
-              hasMore = false;
-            } else {
-              page++;
-            }
-          }
-
-          // Buscar específicamente el usuario
-          const targetUser = allColaboradores.find(c => 
-            c.Email && c.Email.toLowerCase().trim() === email.toLowerCase().trim()
-          );
-
-          return new Response(JSON.stringify({
-            success: true,
-            data: {
-              searched_email: email.toLowerCase().trim(),
-              total_users_in_zoho: allColaboradores.length,
-              found_user: targetUser || null,
-              user_details: targetUser ? {
-                id: targetUser.id,
-                email: targetUser.Email,
-                name: targetUser['Nombre_completo'],
-                estatus: targetUser['Estatus'],
-                mapped_status: (() => {
-                  const zohoStatus = targetUser['Estatus'];
-                  if (zohoStatus === 'Desasignado') return 'inactive';
-                  else if (zohoStatus === 'Asignado' || zohoStatus === null || zohoStatus === undefined) return 'active';
-                  return 'active';
-                })()
-              } : null,
-              sample_emails: allColaboradores.slice(0, 5).map(c => c.Email)
-            },
-            message: "Debug completado",
-            timestamp: new Date().toISOString()
-          }), {
-            status: 200,
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json"
-            }
-          });
-        } catch (error) {
-          return new Response(JSON.stringify({
-            success: false,
-            error: "Error en debug",
-            details: error instanceof Error ? error.message : "Error desconocido"
-          }), {
-            status: 500,
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json"
-            }
-          });
-        }
-      }
-      
       // GET /sync-status - obtener estado de la sincronización
       if (path.includes("/sync-status")) {
         const { data: profilesWithZoho } = await supabase
@@ -1074,9 +1027,6 @@ serve(async (req)=>{
           }
         });
       }
-
-
-
       // GET /compare-status - comparar estados entre Zoho CRM y base de datos
       if (path.includes("/compare-status")) {
         const limit = parseInt(searchParams.get("limit") || "50");
@@ -1522,13 +1472,8 @@ serve(async (req)=>{
         const zohoRecordId = pathParts[pathParts.length - 2];
         const attachmentId = pathParts[pathParts.length - 1];
 
-        console.log(`Attempting to download document: zohoRecordId=${zohoRecordId}, attachmentId=${attachmentId}`);
-
         try {
           const fileResponse = await downloadZohoAttachment(zohoRecordId, attachmentId);
-          
-          console.log(`Download response status: ${fileResponse.status}`);
-          console.log(`Download response headers:`, Object.fromEntries(fileResponse.headers.entries()));
           
           if (!fileResponse.ok) {
             const errorText = await fileResponse.text();
@@ -1553,8 +1498,6 @@ serve(async (req)=>{
           const fileBuffer = await fileResponse.arrayBuffer();
           const contentType = fileResponse.headers.get("Content-Type") || "application/octet-stream";
           const contentDisposition = fileResponse.headers.get("Content-Disposition") || "attachment";
-          
-          console.log(`File downloaded successfully, size: ${fileBuffer.byteLength} bytes, type: ${contentType}`);
           
           return new Response(fileBuffer, {
             status: 200,
@@ -1634,7 +1577,6 @@ serve(async (req)=>{
           const body = await req.json();
           const differential = body?.differential !== false;
           
-          console.log("Iniciando sincronización manual de perfiles...");
           const profiles = await syncProfilesFromZoho(differential);
           
           return new Response(JSON.stringify({
