@@ -14,9 +14,13 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ComputerIcon from '@mui/icons-material/Computer';
 import WallpaperIcon from '@mui/icons-material/Wallpaper';
 import DownloadIcon from '@mui/icons-material/Download';
+import authService from '../../services/authService';
+import { useAuthStore } from '../../store/authStore';
+import { NOMINA_BASE_URL } from '../../utils/constants';
 
 const RecursosHumanosPage: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string>('');
+  const { user } = useAuthStore();
 
   useEffect(() => {
     // Solo ejecutar en el lado del cliente
@@ -24,6 +28,13 @@ const RecursosHumanosPage: React.FC = () => {
       setUserEmail(localStorage.getItem('userEmail') || '');
     }
   }, []);
+
+  const handleNominaAccess = () => {
+    const token = authService.getToken();
+    if (token && user?.email) {
+      window.open(`${NOMINA_BASE_URL}/token_auth.php?token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`, '_blank');
+    }
+  };
 
   const services = [
     {
@@ -141,14 +152,12 @@ const RecursosHumanosPage: React.FC = () => {
               <p>{service.description}</p>
               {service.available ? (
                 service.external ? (
-                  <a 
-                    href={`https://nomina.coacharte.mx/user.php?email=${userEmail}`}
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                  <button 
+                    onClick={handleNominaAccess}
                     className="service-button"
                   >
                     Acceder
-                  </a>
+                  </button>
                 ) : (
                   <Link href={service.href} className="service-button">
                     Acceder
