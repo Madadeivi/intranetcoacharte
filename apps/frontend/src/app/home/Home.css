@@ -1,51 +1,51 @@
-/* Estilo para el menú de hamburguesa */
+
 .hamburger-menu {
-  display: flex; /* Mostrado por defecto en mobile */
+  display: flex; 
   cursor: pointer;
   padding: var(--space-2);
   margin-left: var(--space-2); 
-  background-color: transparent; /* Asegurar que no tenga fondo por defecto */
-  border: none; /* Asegurar que no tenga borde por defecto */
+  background-color: transparent; 
+  border: none; 
 }
 
 .hamburger-menu svg {
-  width: 24px; /* Tamaño del ícono de hamburguesa */
-  height: 24px; /* Tamaño del ícono de hamburguesa */
+  width: 24px; 
+  height: 24px; 
   fill: var(--color-text-secondary); 
 }
 
 .hamburger-menu:hover svg {
-  fill: var(--color-primary-100); /* Color al pasar el mouse */
+  fill: var(--color-primary-100); 
 }
 
-/* Menú de navegación móvil */
+
 .mobile-nav-menu {
-  position: fixed; /* Cambiar a fixed para evitar problemas con sticky header */
-  top: 4.5rem; /* Altura del header para posicionarse justo debajo */
+  position: fixed; 
+  top: 4.5rem; 
   left: 0;
   right: 0;
   background: var(--color-background-light); 
   box-shadow: var(--shadow-lg);
-  z-index: 1001; /* Z-index alto para asegurar que esté por encima de todos los elementos */
+  z-index: 1001; 
   padding: var(--space-4) 0;
-  border-top: 1px solid var(--color-border); /* Línea sutil de separación */
-  max-height: calc(100vh - 4.5rem); /* Limitar altura para evitar overflow */
-  overflow-y: auto; /* Permitir scroll si el contenido es muy largo */
+  border-top: 1px solid var(--color-border); 
+  max-height: calc(100vh - 4.5rem); 
+  overflow-y: auto; 
 }
 
 .mobile-nav-menu a,
-.mobile-nav-menu button { /* Aplicar estilos también a botones dentro del menú móvil */
+.mobile-nav-menu button { 
   display: block;
   padding: var(--space-3) var(--space-4);
   color: var(--color-text-title);
   text-decoration: none;
   font-size: var(--text-base);
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif; /* Consistencia de fuente */
-  border: none; /* Para botones */
-  background: none; /* Para botones */
-  width: 100%; /* Para botones */
-  text-align: left; /* Para botones */
-  cursor: pointer; /* Para botones */
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif; 
+  border: none; 
+  background: none; 
+  width: 100%; 
+  text-align: left; 
+  cursor: pointer; 
 }
 
 .mobile-nav-menu a:hover,
@@ -54,7 +54,7 @@
   color: var(--color-primary-100);
 }
 
-/* Información del usuario en menú móvil */
+
 .mobile-user-info {
   display: flex;
   align-items: center;
@@ -118,14 +118,14 @@
   white-space: nowrap;
 }
 
-/* Divisores en menú móvil */
+
 .mobile-menu-divider {
   height: 1px;
   background: var(--color-border);
   margin: var(--space-2) var(--space-4);
 }
 
-/* Items adicionales del menú móvil */
+
 .mobile-menu-item {
   display: block;
   padding: var(--space-3) var(--space-4);
@@ -146,9 +146,7 @@
   color: var(--color-primary-100);
 }
 
-/* ==============================================
-   GLOBAL STYLES & RESETS (from index.css context)
-   ============================================== */
+
 
 body {
   margin: 0;
@@ -165,9 +163,7 @@ code {
     monospace;
 }
 
-/* ==============================================
-   HOME PAGE SPECIFIC STYLES
-   ============================================== */
+
 
 .home-root {
   display: flex;
@@ -180,36 +176,36 @@ code {
   width: 100%;
 }
 
-/* Header y Navegación */
+
 .home-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-3) var(--space-8); /* Ajustado para más padding horizontal */
+  padding: var(--space-3) var(--space-8); 
   background-color: var(--color-background-light);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-md); 
-  position: sticky; /* Fijar header */
+  position: sticky; 
   top: 0;
-  z-index: 100; /* Asegurar que esté por encima de otro contenido */
+  z-index: 100; 
   width: 100%; 
   box-sizing: border-box; 
-  min-height: 4.5rem; /* Altura mínima del header (ej. 72px) */
+  min-height: 4.5rem; 
 }
 
-.logo { /* Contenedor del logo para control adicional si es necesario */
+.logo { 
   display: flex;
   align-items: center;
 }
 
 .home-logo-img {
-  height: 2rem; /* Ajustado (era 1.5rem), puede ser variable --logo-height */
-  width: auto; /* Mantener proporción */
+  height: 2rem; 
+  width: auto; 
   object-fit: contain; 
 }
 
 .home-nav {
-  display: none; /* Oculto en mobile por defecto, se mostrará en desktop */
+  display: none; 
   align-items: center;
   gap: var(--space-6);
   flex: 1;
@@ -271,7 +267,7 @@ code {
   flex-shrink: 0;
 }
 
-/* Estilos para el avatar cuando es cumpleaños */
+
 .user-avatar.birthday-doodle {
   position: relative;
   animation: birthday-pulse 2s infinite, birthday-shimmer 4s ease-in-out infinite, birthday-subtle-rotate 8s linear infinite;
@@ -283,7 +279,7 @@ code {
     0 0 60px rgba(255, 215, 0, 0.2);
 }
 
-/* Estilos para el avatar cuando es aniversario laboral */
+
 .user-avatar.anniversary-doodle {
   position: relative;
   animation: anniversary-pulse 2s infinite, anniversary-shimmer 4s ease-in-out infinite, anniversary-subtle-rotate 8s linear infinite;
@@ -295,7 +291,7 @@ code {
     0 0 60px rgba(78, 205, 196, 0.2);
 }
 
-/* Estilos para el avatar cuando es aniversario importante */
+
 .user-avatar.important-anniversary-doodle {
   position: relative;
   animation: important-anniversary-pulse 2s infinite, important-anniversary-shimmer 4s ease-in-out infinite, important-anniversary-subtle-rotate 8s linear infinite;
@@ -307,13 +303,13 @@ code {
     0 0 60px rgba(249, 202, 36, 0.4);
 }
 
-/* Rotación sutil y continua */
+
 @keyframes birthday-subtle-rotate {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Efecto de confeti que cae */
+
 .user-avatar.birthday-doodle .birthday-confetti {
   position: absolute;
   top: -30px;
@@ -388,7 +384,7 @@ code {
   animation: birthday-rainbow 3s ease infinite;
 }
 
-/* Efecto shimmer/brillo para el avatar de cumpleaños */
+
 .user-avatar.birthday-doodle::after {
   content: '';
   position: absolute;
@@ -409,7 +405,7 @@ code {
   opacity: 0.8;
 }
 
-/* Efectos para el avatar de aniversario */
+
 .user-avatar.anniversary-doodle::before {
   content: '';
   position: absolute;
@@ -444,7 +440,7 @@ code {
   opacity: 0.8;
 }
 
-/* Efectos para el avatar de aniversario importante */
+
 .user-avatar.important-anniversary-doodle::before {
   content: '';
   position: absolute;
@@ -548,7 +544,7 @@ code {
   z-index: 2;
 }
 
-/* Partículas flotantes adicionales para cumpleaños */
+
 .user-avatar.birthday-doodle .birthday-particles {
   position: absolute;
   top: 0;
@@ -629,7 +625,7 @@ code {
   }
 }
 
-/* Efecto de resplandor pulsante adicional */
+
 .user-avatar.birthday-doodle {
   box-shadow: 
     0 0 20px rgba(255, 215, 0, 0.6),
@@ -637,7 +633,7 @@ code {
     0 0 60px rgba(255, 215, 0, 0.2);
 }
 
-/* Estilos para las serpentinas */
+
 .birthday-streamers {
   position: absolute;
   top: 0;
@@ -705,7 +701,7 @@ code {
   }
 }
 
-/* Responsive para serpentinas en móviles */
+
 @media (max-width: 768px) {
   .streamer {
     font-size: 10px;
@@ -739,24 +735,22 @@ code {
   60% { transform: translateY(-5px); }
 }
 
-/* ==============================================
-   ANIMACIONES DE ANIVERSARIO
-   ============================================== */
 
-/* Rotación sutil para aniversario */
+
+
 @keyframes anniversary-subtle-rotate {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Animación de pulso para aniversario */
+
 @keyframes anniversary-pulse {
   0% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7); }
   70% { box-shadow: 0 0 0 10px rgba(78, 205, 196, 0); }
   100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); }
 }
 
-/* Animación de brillo para aniversario */
+
 @keyframes anniversary-shimmer {
   0% { 
     background-position: -200% -200%;
@@ -780,7 +774,7 @@ code {
   }
 }
 
-/* Animaciones para aniversario importante */
+
 @keyframes important-anniversary-subtle-rotate {
   0% { transform: rotate(0deg) scale(1); }
   50% { transform: rotate(180deg) scale(1.05); }
@@ -816,7 +810,7 @@ code {
   }
 }
 
-/* Animaciones de bounce para iconos de aniversario */
+
 @keyframes anniversary-bounce {
   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
   40% { transform: translateY(-8px); }
@@ -829,7 +823,7 @@ code {
   60% { transform: translateY(-6px) scale(1.05); }
 }
 
-/* Contenedor principal de la información del usuario */
+
 .user-info-container {
   display: flex;
   align-items: center;
@@ -860,7 +854,7 @@ code {
   outline-offset: 2px;
 }
 
-/* Contenedor del nombre del usuario */
+
 .user-name-display {
   display: flex;
   flex-direction: column;
@@ -874,7 +868,7 @@ code {
   white-space: nowrap;
 }
 
-/* Estilos para dispositivos móviles */
+
 @media (max-width: 768px) {
   .user-name-display {
     display: none;
@@ -890,7 +884,7 @@ code {
   font-weight: 500;
   color: var(--color-text-title);
   font-size: var(--text-sm);
-  display: none; /* Oculto en mobile por defecto, se muestra en desktop */
+  display: none; 
 }
 
 .user-dropdown-arrow {
@@ -920,7 +914,7 @@ code {
   animation: dropdownFadeIn 0.15s ease-out;
 }
 
-/* Estilos específicos para elementos dentro del dropdown */
+
 .user-dropdown-menu .user-name {
   display: block;
   font-weight: 600;
@@ -938,14 +932,14 @@ code {
   padding: 0;
 }
 
-/* Divisor entre secciones del dropdown */
+
 .user-dropdown-divider {
   height: 1px;
   background: var(--color-border);
   margin: var(--space-3) 0;
 }
 
-/* Enlaces y botones dentro del dropdown */
+
 .user-dropdown-menu a,
 .user-dropdown-menu button {
   display: block;
@@ -1004,36 +998,36 @@ code {
   color: var(--color-text-on-primary);
 }
 
-/* Contenedor del nombre de usuario y flecha (si se usa) */
+
 .user-details {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  cursor: pointer; /* Si todo el bloque es clickeable */
+  cursor: pointer; 
 }
 
-.user-name { /* Estilo para el nombre del usuario al lado del avatar */
-  font-weight: 500; /* Geometria-Medium */
+.user-name { 
+  font-weight: 500; 
   color: var(--color-text-title);
   font-size: var(--text-sm);
-  display: none; /* Oculto por defecto, se muestra en desktop via media query */
+  display: none; 
 }
 
-/* Menú desplegable del usuario */
+
 .user-dropdown {
   position: absolute;
-  top: calc(100% + var(--space-2)); /* Posicionarlo debajo del avatar con un pequeño espacio */
+  top: calc(100% + var(--space-2)); 
   right: 0;
   background-color: var(--color-background-light);
   border-radius: var(--radius-lg); 
   box-shadow: var(--shadow-lg);
   padding: var(--space-2); 
-  z-index: 110; /* Encima de otros elementos como el header */
-  min-width: 200px; /* Ancho mínimo del desplegable */
+  z-index: 110; 
+  min-width: 200px; 
   border: 1px solid var(--color-border-light); 
-  opacity: 0; /* Inicialmente oculto para animación */
-  transform: translateY(-10px); /* Posición inicial para animación */
-  animation: fadeInDown 0.2s ease-out forwards; /* Animación de entrada */
+  opacity: 0; 
+  transform: translateY(-10px); 
+  animation: fadeInDown 0.2s ease-out forwards; 
 }
 
 @keyframes fadeInDown {
@@ -1043,50 +1037,50 @@ code {
   }
 }
 
-.user-info { /* Sección de información del usuario dentro del desplegable */
+.user-info { 
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border-light);
   margin-bottom: var(--space-2);
 }
 
-.user-info .user-name { /* Nombre dentro del desplegable */
-  display: block; /* Asegurar que se muestre */
-  font-weight: 600; /* Geometria-Bold o Semibold */
+.user-info .user-name { 
+  display: block; 
+  font-weight: 600; 
   color: var(--color-text-title);
   font-size: var(--text-base);
   margin-bottom: var(--space-1);
   padding: 0;
 }
 
-.user-info .user-email { /* Email dentro del desplegable */
+.user-info .user-email { 
   display: block;
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 
-/* Divisor entre secciones del dropdown */
+
 .user-dropdown-divider {
   height: 1px;
   background: var(--color-border);
   margin: var(--space-3) 0;
 }
 
-/* Enlaces y botones dentro del dropdown */
+
 .user-dropdown-menu a,
 .user-dropdown-menu button {
   display: block;
   width: 100%;
   padding: var(--space-3) var(--space-4); 
   text-align: left;
-  background: transparent; /* Fondo transparente por defecto */
+  background: transparent; 
   border: none;
   color: var(--color-text-title); 
   font-size: var(--text-sm);
-  font-family: 'Geometria', Arial, sans-serif; /* Fuente base */
+  font-family: 'Geometria', Arial, sans-serif; 
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease; 
   border-radius: var(--radius-md); 
-  margin-bottom: var(--space-1); /* Espacio entre items */
+  margin-bottom: var(--space-1); 
 }
 
 .user-dropdown a:hover,
@@ -1130,14 +1124,12 @@ code {
 }
 
 
-/* ==============================================
-   FOOTER SECTION
-   ============================================== */
+
 .home-footer {
-  margin-top: auto; /* Para pegarlo al fondo con flexbox */
+  margin-top: auto; 
   background: var(--color-dark-100);
   color: white;
-  padding: var(--space-6) var(--space-4) var(--space-4); /* Menor padding para reducir altura */
+  padding: var(--space-6) var(--space-4) var(--space-4); 
   width: 100%;
   box-sizing: border-box;
 }
@@ -1151,7 +1143,7 @@ code {
   width: 100%;
 }
 
-/* Sección de logo y slogan */
+
 .footer-brand-section {
   display: flex;
   flex-direction: column;
@@ -1160,7 +1152,7 @@ code {
 }
 
 .footer-logo {
-  height: 2rem; /* Menor altura para reducir espacio */
+  height: 2rem; 
   width: auto;
 }
 
@@ -1172,7 +1164,7 @@ code {
   margin: 0;
 }
 
-/* Sección central con las 3 columnas */
+
 .footer-links-section {
   display: grid;
   grid-template-columns: 1fr;
@@ -1183,21 +1175,21 @@ code {
 .footer-col h4 {
   font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
   color: white;
-  font-size: var(--text-sm); /* Menor tamaño para reducir altura */
-  margin: 0 0 var(--space-2) 0; /* Menor margin bottom */
+  font-size: var(--text-sm); 
+  margin: 0 0 var(--space-2) 0; 
   text-align: center;
 }
 
 .footer-links-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1); /* Menor gap para reducir altura */
+  gap: var(--space-1); 
 }
 
 .footer-links-list a {
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  font-size: var(--text-xs); /* Menor tamaño para reducir altura */
+  font-size: var(--text-xs); 
   transition: color 0.2s ease-in-out;
 }
 
@@ -1207,14 +1199,14 @@ code {
 
 .footer-social-icons {
   display: flex;
-  gap: var(--space-2); /* Menor gap */
+  gap: var(--space-2); 
   justify-content: center;
-  margin-top: var(--space-2); /* Menor margin */
+  margin-top: var(--space-2); 
 }
 
 .footer-social-icon {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 1.2rem; /* Menor tamaño */
+  font-size: 1.2rem; 
   transition: color 0.2s ease-in-out;
   text-decoration: none;
 }
@@ -1236,7 +1228,7 @@ code {
   margin: 0;
 }
 
-/* Media queries específicas para footer */
+
 @media (min-width: 920px) {
   .home-footer .footer-content {
     flex-direction: row;
@@ -1281,7 +1273,7 @@ code {
 
 
 
-/* --- Estilos para el Banner de Cumpleañeros --- */
+
 
 .home-birthdays {
   margin: var(--space-6) 0;
@@ -1338,12 +1330,12 @@ code {
   scroll-behavior: smooth;
   padding: var(--space-2) 0;
   flex: 1;
-  /* scrollbar-width: thin; Firefox - comentado por compatibilidad */
-  -ms-overflow-style: none; /* IE and Edge */
+  
+  -ms-overflow-style: none; 
 }
 
 .birthday-carousel::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none; 
 }
 
 .birthday-card {
@@ -1442,7 +1434,7 @@ code {
   box-shadow: var(--shadow-sm);
 }
 
-/* Responsividad para cumpleañeros */
+
 @media (max-width: 768px) {
   .home-birthdays {
     margin: var(--space-4) 0;
@@ -1487,22 +1479,16 @@ code {
   }
 }
 
-/* ==============================================
-   CLASES DE UTILIDAD RESPONSIVE
-   ============================================== */
 
-/* Elementos que solo se muestran en desktop */
+
+
 .desktop-only {
-  display: none; /* Oculto en mobile por defecto */
+  display: none; 
 }
 
-/* ==============================================
-   HOME PAGE SPECIFIC STYLES - CONTINUED
-   ============================================== */
 
-/* ==============================================
-   WELCOME SECTION
-   ============================================== */
+
+
 .home-welcome {
   background: url('/assets/img_banner.webp') center/cover no-repeat;
   padding: var(--space-8) var(--space-4);
@@ -1536,18 +1522,18 @@ code {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0; /* Sin gap ya que cada elemento tiene su propio margin */
+  gap: 0; 
 }
 
 .home-welcome-month {
   margin-bottom: var(--space-4);
   padding: var(--space-1) var(--space-4);
-  align-self: flex-start; /* Asegurar que se alinee al inicio */
+  align-self: flex-start; 
 }
 
 .home-welcome-month span {
-  background: rgba(255, 255, 255, 0.30);
-  color: var(--color-primary-100);
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-xl);
   font-size: var(--text-sm);
@@ -1556,12 +1542,13 @@ code {
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .home-welcome h1 {
   font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
   font-size: var(--text-2xl);
-  color: var(--color-text-title);
+  color: #ffffff;
   margin: 0 0 var(--space-4) 0;
   padding: var(--space-1) var(--space-4);
   line-height: 1.2;
@@ -1570,16 +1557,17 @@ code {
   display: inline-block;
   box-sizing: border-box;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.20);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   max-width: 100%;
-  align-self: flex-start; /* Asegurar que se alinee al inicio */
+  align-self: flex-start; 
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .home-welcome p {
   font-size: var(--text-base);
-  color: var(--color-text-title);
+  color: #f0f0f0;
   margin: 0 0 var(--space-8) 0;
   line-height: 1.5;
   position: relative;
@@ -1588,29 +1576,30 @@ code {
   box-sizing: border-box;
   padding: var(--space-1) var(--space-4);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.20);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   max-width: 100%;
-  align-self: flex-start; /* Asegurar que se alinee al inicio */
+  align-self: flex-start; 
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .home-search-wrapper {
   position: relative;
-  max-width: 500px; /* Reducir ancho máximo del buscador */
+  max-width: 500px; 
   margin: 0;
   display: block;
-  width: 100%; /* Mantener width 100% pero limitado por max-width */
-  align-self: flex-start; /* Alinear al inicio en lugar de stretch */
+  width: 100%; 
+  align-self: flex-start; 
 }
 
 .home-search {
   width: 100%;
   padding: var(--space-4) var(--space-4) var(--space-4) 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: var(--radius-xl);
   font-size: var(--text-base);
-  background: rgba(255, 255, 255, 0.50);
+  background: rgba(255, 255, 255, 0.85);
   box-shadow: var(--shadow-md);
   transition: all 0.2s ease-in-out;
   box-sizing: border-box;
@@ -1622,7 +1611,7 @@ code {
   outline: none;
   border-color: white;
   box-shadow: var(--shadow-lg);
-  background: rgba(255, 255, 255, 0.70);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .home-search-icon {
@@ -1634,9 +1623,7 @@ code {
   pointer-events: none;
 }
 
-/* ==============================================
-   MAIN CARDS SECTION
-   ============================================== */
+
 
 .home-main-cards {
   padding: var(--space-8) var(--space-4);
@@ -1664,13 +1651,13 @@ code {
   margin: 0 auto;
 }
 
-/* Botones de navegación del carrusel de tarjetas - solo visibles en tablet y móvil */
+
 .card-carousel-nav {
   display: none;
 }
 
 .card-grid {
-  /* Desktop: 3 columnas */
+  
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-6);
@@ -1732,7 +1719,7 @@ code {
   background-color: var(--neutral-background-disabled);
 }
 
-/* Botón/enlace de acción dentro de la tarjeta principal */
+
 .main-card-button {
   display: inline-flex;
   align-items: center;
@@ -1769,9 +1756,9 @@ code {
   outline-offset: 2px;
 }
 
-/* Media queries para diseño responsivo de tarjetas principales */
 
-/* Tablet: 2 columnas con carrusel */
+
+
 @media (max-width: 919px) and (min-width: 768px) {
   .home-main-cards {
     padding: var(--space-6) var(--space-4);
@@ -1779,7 +1766,7 @@ code {
   
   .card-carousel-wrapper {
     position: relative;
-    overflow: hidden; /* Evitar que las cards se desborden */
+    overflow: hidden; 
   }
   
   .card-carousel-nav {
@@ -1800,7 +1787,7 @@ code {
     cursor: pointer;
   }
 
-  /* Sobrescribir display: none de .carousel-nav-button para los cards en tablet */
+  
   .carousel-nav-button.card-carousel-nav {
     display: flex !important;
   }
@@ -1829,29 +1816,29 @@ code {
     scroll-behavior: smooth;
     gap: var(--space-4);
     padding: 0 var(--space-2);
-    scrollbar-width: thin; /* Firefox - usar thin para compatibilidad */
-    -ms-overflow-style: none; /* IE and Edge */
-    /* Forzar una sola fila horizontal - NO permitir wrap */
+    scrollbar-width: thin; 
+    -ms-overflow-style: none; 
+    
     flex-wrap: nowrap;
-    /* Resetear cualquier configuración de grid */
+    
     grid-template-columns: none;
-    /* Asegurar que el contenedor tenga altura suficiente */
+    
     min-height: 180px;
   }
   
   .card-grid::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none; 
   }
   
   .main-card {
-    /* Cada card ocupa exactamente la mitad del ancho visible menos el gap */
+    
     flex: 0 0 calc(50% - var(--space-2));
     min-width: calc(50% - var(--space-2));
     max-width: calc(50% - var(--space-2));
     width: calc(50% - var(--space-2));
-    /* Mantener altura consistente */
+    
     min-height: 160px;
-    /* Prevenir que el contenido fuerce cambios de tamaño */
+    
     box-sizing: border-box;
   }
   
@@ -1868,7 +1855,7 @@ code {
   }
 }
 
-/* Móvil: 1 columna con carrusel */
+
 @media (max-width: 767px) {
   .home-main-cards {
     padding: var(--space-6) var(--space-2);
@@ -1895,12 +1882,12 @@ code {
     transition: all 0.2s ease;
   }
 
-  /* Sobrescribir display: none de .carousel-nav-button para los cards en móvil */
+  
   .carousel-nav-button.card-carousel-nav {
     display: flex !important;
   }
   
-  /* También para enlaces rápidos en móvil */
+  
   .carousel-nav-button.quicklink-carousel-nav {
     display: flex !important;
   }
@@ -1933,12 +1920,12 @@ code {
     scroll-behavior: smooth;
     gap: var(--space-4);
     padding: 0 var(--space-2);
-    scrollbar-width: thin; /* Firefox - usar thin para compatibilidad */
-    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: thin; 
+    -ms-overflow-style: none; 
   }
   
   .card-grid::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none; 
   }
   
   .main-card {
@@ -1960,9 +1947,7 @@ code {
   }
 }
 
-/* ==============================================
-   NOTICES SECTION (AVISOS IMPORTANTES)
-   ============================================== */
+
 .home-notices {
   background: var(--neutral-background-alt);
   padding: var(--space-8) var(--space-4);
@@ -1995,11 +1980,11 @@ code {
   overflow-x: auto;
   scroll-behavior: smooth;
   padding-bottom: var(--space-2);
-  scrollbar-width: thin; /* Firefox - usar thin para compatibilidad */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: thin; 
+  -ms-overflow-style: none; 
 }
 
-.notice-carousel::-webkit-scrollbar { /* Webkit (Chrome, Safari, newer Opera) */
+.notice-carousel::-webkit-scrollbar { 
   display: none;
 }
 
@@ -2070,7 +2055,7 @@ code {
   color: var(--color-primary-70);
 }
 
-/* Botones de navegación del carrusel de avisos */
+
 .carousel-nav-button {
   position: absolute;
   top: 50%;
@@ -2080,7 +2065,7 @@ code {
   border-radius: 50%;
   width: 2.5rem;
   height: 2.5rem;
-  display: none; /* Hidden on mobile */
+  display: none; 
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -2109,37 +2094,35 @@ code {
   right: -1.25rem;
 }
 
-/* Media queries para avisos importantes */
+
 @media (min-width: 768px) {
   .carousel-nav-button {
-    display: flex !important; /* Mostrar botones de navegación en tablet y desktop con !important */
+    display: flex !important; 
   }
   
-  /* Asegurar que los botones de enlaces rápidos también se muestren */
+  
   .carousel-nav-button.quicklink-carousel-nav {
     display: flex !important;
   }
   
-  /* Asegurar que los botones de avisos importantes también se muestren */
+  
   .carousel-nav-button.notice-carousel-nav {
     display: flex !important;
   }
 }
 
-/* Media query específica para tablet - avisos importantes */
+
 @media (min-width: 768px) and (max-width: 919px) {
   .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; /* Forzar visualización de botones de avisos importantes en tablet */
+    display: flex !important; 
   }
   
   .carousel-nav-button.notice-carousel-nav {
-    display: flex !important; /* Forzar visualización específica para botones de avisos importantes */
+    display: flex !important; 
   }
 }
 
-/* ==============================================
-   QUICKLINKS SECTION
-   ============================================== */
+
 .home-quicklinks {
   padding: var(--space-8) var(--space-4);
   width: 100%;
@@ -2157,7 +2140,7 @@ code {
   font-size: var(--text-2xl);
 }
 
-/* Wrapper del carrusel de enlaces rápidos */
+
 .quicklink-carousel-wrapper {
   position: relative;
   width: 100%;
@@ -2209,7 +2192,7 @@ code {
   margin: 0;
 }
 
-/* Botones de navegación para carrusel de enlaces rápidos */
+
 .quicklink-carousel-nav {
   position: absolute;
   top: 50%;
@@ -2248,9 +2231,9 @@ code {
   right: -1.25rem;
 }
 
-/* Media queries para quicklinks */
+
 @media (min-width: 768px) and (max-width: 919px) {
-  /* En tablet: 2 columnas con carrusel */
+  
   .quicklinks-grid {
     display: flex;
     overflow-x: auto;
@@ -2265,14 +2248,14 @@ code {
     display: flex;
   }
   
-  /* Sobrescribir display: none de .carousel-nav-button para enlaces rápidos en tablet */
+  
   .carousel-nav-button.quicklink-carousel-nav {
     display: flex !important;
   }
 }
 
 @media (min-width: 920px) {
-  /* En tablet: 2 columnas con carrusel */
+  
   .quicklinks-grid {
     display: flex;
     overflow-x: auto;
@@ -2289,7 +2272,7 @@ code {
 }
 
 @media (min-width: 1200px) {
-  /* En desktop: 4 columnas sin carrusel */
+  
   .quicklinks-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -2306,13 +2289,11 @@ code {
   }
 }
 
-/* ==============================================
-   RESPONSIVE DESIGN - NAVBAR & HEADER
-   ============================================== */
 
-/* Mobile First - ya configurado por defecto */
 
-/* Tablet y Desktop - Navbar y header (920px and up) */
+
+
+
 @media (min-width: 920px) {
   .home-logo-img {
     width: 10rem;
@@ -2320,23 +2301,23 @@ code {
   }
   
   .home-nav {
-    display: flex; /* Mostrar navegación normal en tablet y desktop */
+    display: flex; 
   }
 
   .hamburger-menu {
-    display: none; /* Ocultar hamburguesa en tablet y desktop */
+    display: none; 
   }
 
   .mobile-nav-menu {
-    display: none !important; /* Asegurar que el menú móvil esté oculto */
+    display: none !important; 
   }
   
   .user-name {
-    display: block; /* Mostrar nombre de usuario en tablet y desktop */
+    display: block; 
   }
 
   .desktop-only {
-    display: block; /* Mostrar elementos desktop-only */
+    display: block; 
   }
   
   .home-welcome {
@@ -2356,9 +2337,9 @@ code {
   }
 }
 
-/* Desktop (1200px and up) */
+
 @media (min-width: 1200px) {
-  /* Tarjetas principales: Volver a grid 3 columnas sin carrusel */
+  
   .card-grid {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr);
@@ -2392,24 +2373,24 @@ code {
   }
   
   .card-carousel-nav {
-    display: none !important; /* Ocultar navegación de carrusel en desktop */
+    display: none !important; 
   }
   
-  /* Pero mantener visible la navegación de avisos importantes en desktop */
+  
   .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; /* Forzar visualización de botones de avisos importantes en desktop */
+    display: flex !important; 
   }
 
-  /* Footer responsive para desktop */
+  
   .home-footer {
-    padding: var(--space-6) 5% var(--space-4) !important; /* Menor padding para reducir altura */
+    padding: var(--space-6) 5% var(--space-4) !important; 
   }
   
   .home-footer .footer-content {
     max-width: none !important;
     gap: var(--space-12) !important;
     padding: 0 !important;
-    flex-direction: row !important; /* Asegurar que sea horizontal en desktop */
+    flex-direction: row !important; 
     justify-content: space-between !important;
     align-items: flex-start !important;
     display: flex !important;
@@ -2421,7 +2402,7 @@ code {
   }
   
   .home-footer .footer-logo {
-    height: 2.5rem !important; /* Ligeramente mayor en desktop */
+    height: 2.5rem !important; 
   }
   
   .home-footer .footer-slogan {
@@ -2436,7 +2417,7 @@ code {
     display: flex !important;
     flex-direction: row !important;
     justify-content: space-evenly !important;
-    grid-template-columns: none !important; /* Anular grid */
+    grid-template-columns: none !important; 
   }
   
   .home-footer .footer-col {
@@ -2445,9 +2426,7 @@ code {
   }
 }
 
-/* ==============================================
-   MODAL STYLES
-   ============================================== */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -2509,7 +2488,7 @@ code {
   color: var(--color-text-secondary);
 }
 
-/* Support Modal Styles */
+
 .support-modal-backdrop {
   position: fixed;
   top: 0;
@@ -2574,9 +2553,7 @@ code {
   }
 }
 
-/* ==============================================
-   MODAL STYLES
-   ============================================== */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -2638,7 +2615,7 @@ code {
   color: var(--color-text-secondary);
 }
 
-/* Support Modal Styles */
+
 .support-modal-backdrop {
   position: fixed;
   top: 0;
@@ -2676,7 +2653,7 @@ code {
   color: var(--color-primary-100);
 }
 
-/* Estilos para el popup de cumpleaños */
+
 .birthday-popup-backdrop {
   position: fixed;
   top: 0;
@@ -2692,7 +2669,7 @@ code {
   backdrop-filter: blur(3px);
 }
 
-/* Estilos para el popup de cumpleaños */
+
 .birthday-popup-backdrop {
   position: fixed;
   top: 0;
@@ -2739,7 +2716,7 @@ code {
   }
 }
 
-/* Efecto de celebración extra para el popup */
+
 .birthday-popup-content {
   animation: birthday-popup-enter 0.8s ease-out forwards, birthday-celebration-shake 0.5s ease-in-out 0.8s;
 }
@@ -2830,7 +2807,7 @@ code {
   transform: translateY(0);
 }
 
-/* Responsive para móviles */
+
 @media (max-width: 768px) {
   .birthday-popup-content {
     padding: var(--space-6);
@@ -2846,9 +2823,7 @@ code {
   }
 }
 
-/* ==============================================
-   SLIDER DE CUMPLEAÑEROS
-   ============================================== */
+
 
 .birthday-slider-section {
   width: 100%;
@@ -3149,7 +3124,7 @@ code {
   margin: 0;
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
   .birthday-slider-section {
     padding: var(--space-6) var(--space-3);
@@ -3211,7 +3186,7 @@ code {
   }
 }
 
-/* Efectos especiales para cumpleañeros del día */
+
 .birthday-card.today {
   border: 2px solid var(--color-primary-100);
   background: linear-gradient(135deg, var(--color-background-light) 0%, var(--color-primary-5) 100%);
@@ -3239,11 +3214,9 @@ code {
   }
 }
 
-/* ==============================================
-   CALENDARIO Y EVENTOS - ESTRUCTURA BASE
-   ============================================== */
 
-/* Contenedor principal - Desktop/Tablet: 2 columnas */
+
+
 .home-calendar-events {
   display: flex !important;
   flex-direction: row !important;
@@ -3255,11 +3228,11 @@ code {
   align-items: flex-start;
 }
 
-/* Columna del calendario - Desktop/Tablet */
+
 .calendar-column {
   flex: none;
   width: calc(50% - var(--space-3) / 2);
-  min-width: 0; /* Previene overflow */
+  min-width: 0; 
   background: var(--color-background-light);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
@@ -3267,11 +3240,11 @@ code {
   box-shadow: var(--shadow-sm);
 }
 
-/* Columna de eventos - Desktop/Tablet */
+
 .events-column {
   flex: none;
   width: calc(50% - var(--space-3) / 2);
-  min-width: 0; /* Previene overflow */
+  min-width: 0; 
   background: var(--color-background-light);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
@@ -3279,7 +3252,7 @@ code {
   box-shadow: var(--shadow-sm);
 }
 
-/* Títulos de las columnas */
+
 .calendar-column h2,
 .events-column h2 {
   margin: 0 0 var(--space-4) 0;
@@ -3289,18 +3262,16 @@ code {
   text-align: center;
 }
 
-/* Contenedor del calendario */
+
 .calendar-container {
   background: var(--color-background-light);
   border-radius: var(--radius-md);
   padding: var(--space-4);
 }
 
-/* ==============================================
-   ESTILOS BÁSICOS DEL CALENDARIO REACT-CALENDAR
-   ============================================== */
 
-/* Contenedor principal del calendario */
+
+
 
 .custom-calendar {
   width: 100% !important;
@@ -3309,7 +3280,7 @@ code {
   font-family: 'Geometria', Arial, sans-serif !important;
 }
 
-/* Navegación del calendario */
+
 .custom-calendar .react-calendar__navigation {
   display: flex;
   align-items: center;
@@ -3321,7 +3292,7 @@ code {
   border: 1px solid var(--color-border-light);
 }
 
-/* Botones de navegación */
+
 .custom-calendar .react-calendar__navigation button {
   background: none;
   border: none;
@@ -3337,7 +3308,7 @@ code {
   color: var(--color-primary-100);
 }
 
-/* Label del mes/año */
+
 .custom-calendar .react-calendar__navigation__label {
   font-weight: 600;
   font-size: var(--text-lg);
@@ -3355,7 +3326,7 @@ code {
   color: var(--color-primary-100);
 }
 
-/* Días de la semana */
+
 .custom-calendar .react-calendar__month-view__weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -3376,14 +3347,14 @@ code {
   text-decoration: none;
 }
 
-/* Grid de días */
+
 .custom-calendar .react-calendar__month-view__days {
   display: grid !important;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--space-1);
 }
 
-/* Cada día */
+
 .custom-calendar .react-calendar__tile {
   background: var(--color-background-light);
   border: 1px solid var(--color-border-light);
@@ -3400,14 +3371,14 @@ code {
   justify-content: center;
 }
 
-/* Hover en días */
+
 .custom-calendar .react-calendar__tile:hover {
   background: var(--color-primary-5);
   color: var(--color-primary-100);
   border-color: var(--color-primary-30);
 }
 
-/* Día actual */
+
 .custom-calendar .react-calendar__tile--now {
   background: var(--color-primary-10);
   color: var(--color-primary-100);
@@ -3415,7 +3386,7 @@ code {
   border-color: var(--color-primary-50);
 }
 
-/* Día seleccionado */
+
 .custom-calendar .react-calendar__tile--active {
   background: var(--color-primary-100);
   color: white;
@@ -3426,28 +3397,24 @@ code {
   background: var(--color-primary-110);
 }
 
-/* Días del mes anterior/siguiente */
+
 .custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
   color: var(--color-text-muted);
   opacity: 0.5;
 }
 
-/* ==============================================
-   ESTILOS BÁSICOS DE LA LISTA DE EVENTOS
-   ============================================== */
 
-/* Contenedor de la lista de eventos */
-/* ==============================================
-   ESTILOS AVANZADOS DE LA LISTA DE EVENTOS
-   ============================================== */
 
-/* Wrapper del carrusel de eventos */
+
+
+
+
 .events-carousel-wrapper {
   display: flex;
   width: 100%;
 }
 
-/* Contenedor de la lista de eventos - Carrusel vertical */
+
 .events-list {
   display: flex;
   flex-direction: column;
@@ -3461,7 +3428,7 @@ code {
   scroll-behavior: smooth;
 }
 
-/* Scrollbar personalizada para la lista */
+
 .events-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -3480,7 +3447,7 @@ code {
   background: var(--color-primary-110);
 }
 
-/* Cada evento individual - Distribución vertical optimizada */
+
 .event-item {
   display: flex;
   align-items: stretch;
@@ -3499,7 +3466,7 @@ code {
   box-shadow: var(--shadow-sm);
 }
 
-/* Efecto de brillo sutil */
+
 .event-item::before {
   content: '';
   position: absolute;
@@ -3522,7 +3489,7 @@ code {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1), 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
-/* Imagen del evento */
+
 .event-image {
   width: 70px;
   height: 60px;
@@ -3540,7 +3507,7 @@ code {
   box-shadow: var(--shadow-md);
 }
 
-/* Fecha del evento - Diseño tipo calendario */
+
 .event-date {
   background: linear-gradient(135deg, var(--color-secondary-100) 0%, var(--color-secondary-110) 100%);
   color: var(--color-text-on-secondary);
@@ -3560,7 +3527,7 @@ code {
   line-height: 1.1;
 }
 
-/* Mes en la fecha */
+
 .event-date-month {
   font-size: var(--text-xs);
   font-weight: 500;
@@ -3569,14 +3536,14 @@ code {
   letter-spacing: 0.5px;
 }
 
-/* Día en la fecha */
+
 .event-date-day {
   font-size: var(--text-lg);
   font-weight: 900;
   margin-top: 2px;
 }
 
-/* Contenido del evento */
+
 .event-content {
   flex: 3;
   display: flex;
@@ -3587,7 +3554,7 @@ code {
   padding: var(--space-1) 0;
 }
 
-/* Título del evento */
+
 .event-title {
   font-size: var(--text-base);
   color: var(--color-text-title);
@@ -3603,7 +3570,7 @@ code {
   flex-shrink: 0;
 }
 
-/* Descripción del evento */
+
 .event-description {
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
@@ -3618,7 +3585,7 @@ code {
   flex-grow: 1;
 }
 
-/* Información adicional del evento */
+
 .event-meta {
   display: flex;
   align-items: center;
@@ -3627,7 +3594,7 @@ code {
   flex-shrink: 0;
 }
 
-/* Tiempo del evento */
+
 .event-time {
   font-size: var(--text-xs);
   color: var(--color-primary-100);
@@ -3642,7 +3609,7 @@ code {
   transition: all 0.3s ease;
 }
 
-/* Categoría del evento */
+
 .event-category {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
@@ -3656,7 +3623,7 @@ code {
   transition: all 0.3s ease;
 }
 
-/* Icono del evento */
+
 .event-icon {
   position: absolute;
   top: var(--space-3);
@@ -3674,7 +3641,7 @@ code {
   transform: scale(1.1);
 }
 
-/* Badge de evento urgente */
+
 .event-urgent {
   border-left: 4px solid #ef4444;
 }
@@ -3683,7 +3650,7 @@ code {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-/* Badge de evento destacado */
+
 .event-featured {
   border-left: 4px solid var(--color-secondary-100);
 }
@@ -3692,7 +3659,7 @@ code {
   background: linear-gradient(135deg, var(--color-secondary-100) 0%, var(--color-secondary-110) 100%);
 }
 
-/* Estado cuando no hay eventos */
+
 .events-list p {
   text-align: center;
   color: var(--color-text-secondary);
@@ -3713,12 +3680,12 @@ code {
 }
 
 .events-list p::before {
-  content: '📅'; /* Icono de calendario */
+  content: '📅'; 
   font-size: 2rem;
   opacity: 0.5;
 }
 
-/* Botones de navegación del carrusel de eventos - Vertical */
+
 .event-carousel-nav {
   position: absolute;
   left: 50%;
@@ -3767,7 +3734,7 @@ code {
   color: var(--color-primary-100);
 }
 
-/* Hover effects para elementos internos */
+
 .event-item:hover .event-date {
   background: linear-gradient(135deg, var(--color-primary-110) 0%, var(--color-primary-120) 100%);
   transform: scale(1.05);
@@ -3787,7 +3754,7 @@ code {
   color: var(--color-primary-110);
 }
 
-/* Animaciones de entrada */
+
 .event-item {
   animation: fadeInUp 0.6s ease-out;
 }
@@ -3803,18 +3770,16 @@ code {
   }
 }
 
-/* Delay escalonado para múltiples eventos */
+
 .event-item:nth-child(1) { animation-delay: 0.1s; }
 .event-item:nth-child(2) { animation-delay: 0.2s; }
 .event-item:nth-child(3) { animation-delay: 0.3s; }
 .event-item:nth-child(4) { animation-delay: 0.4s; }
 .event-item:nth-child(5) { animation-delay: 0.5s; }
 
-/* ==============================================
-   RESPONSIVIDAD BÁSICA
-   ============================================== */
 
-/* Tablet (769px - 1024px) - Dos columnas */
+
+
 @media (max-width: 1024px) and (min-width: 769px) {
   .home-calendar-events {
     gap: var(--space-3);
@@ -3886,7 +3851,7 @@ code {
   }
 }
 
-/* Móvil (768px hacia abajo) - Una columna */
+
 @media (max-width: 768px) {
   .home-calendar-events {
     flex-direction: column;
@@ -4003,7 +3968,7 @@ code {
   }
 }
 
-/* Móvil pequeño (480px hacia abajo) - Una columna */
+
 @media (max-width: 480px) {
   .home-calendar-events {
     flex-direction: column;
@@ -4066,7 +4031,7 @@ code {
   }
   
   .event-description {
-    display: none; /* Ocultar descripción en móvil pequeño */
+    display: none; 
   }
   
   .event-time {
@@ -4075,7 +4040,7 @@ code {
   }
   
   .event-category {
-    display: none; /* Ocultar categoría en móvil pequeño */
+    display: none; 
   }
   
   .event-icon {
@@ -4086,7 +4051,7 @@ code {
   }
 }
 
-/* Contenedor para elementos izquierdos (fecha e imagen) */
+
 .event-left-elements {
   display: flex;
   flex-direction: column;
@@ -4100,9 +4065,7 @@ code {
   width: 120px;
 }
 
-/* ==============================================
-   SLIDER DE ANIVERSARIOS - ESTILOS ESPECÍFICOS
-   ============================================== */
+
 
 .anniversary-slider-section {
   width: 100%;
@@ -4396,7 +4359,7 @@ code {
   margin: 0;
 }
 
-/* Efectos especiales para aniversarios del día */
+
 .anniversary-card.today {
   border: 2px solid #4ecdc4;
   background: linear-gradient(135deg, var(--color-background-light) 0%, #e8f4f8 100%);
@@ -4424,7 +4387,7 @@ code {
   }
 }
 
-/* Efectos especiales para aniversarios hito */
+
 .anniversary-card.milestone {
   border: 2px solid #f9ca24;
   background: linear-gradient(135deg, var(--color-background-light) 0%, #fef7e0 100%);
@@ -4451,11 +4414,9 @@ code {
   }
 }
 
-/* ==============================================
-   POPUP DE CELEBRACIÓN - ESTILOS UNIFICADOS
-   ============================================== */
 
-/* Popup general para celebraciones */
+
+
 .celebration-popup-backdrop {
   position: fixed;
   top: 0;
@@ -4483,7 +4444,7 @@ code {
   animation: celebration-popup-enter 0.3s ease-out forwards;
 }
 
-/* Variantes del popup según el tipo de celebración */
+
 .celebration-popup-backdrop.birthday {
   background: rgba(255, 107, 107, 0.1);
 }
@@ -4647,7 +4608,7 @@ code {
   transform: translateY(0);
 }
 
-/* Responsive para móviles */
+
 @media (max-width: 768px) {
   .celebration-popup-content {
     padding: var(--space-6);
