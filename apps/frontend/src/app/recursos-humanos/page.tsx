@@ -19,15 +19,7 @@ import { useAuthStore } from '../../store/authStore';
 import { NOMINA_BASE_URL } from '../../utils/constants';
 
 const RecursosHumanosPage: React.FC = () => {
-  const [userEmail, setUserEmail] = useState<string>('');
   const { user } = useAuthStore();
-
-  useEffect(() => {
-    // Solo ejecutar en el lado del cliente
-    if (typeof window !== 'undefined') {
-      setUserEmail(localStorage.getItem('userEmail') || '');
-    }
-  }, []);
 
   const handleNominaAccess = () => {
     const token = authService.getToken();
