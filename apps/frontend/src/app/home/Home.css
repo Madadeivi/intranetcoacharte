@@ -1532,8 +1532,8 @@ code {
 }
 
 .home-welcome-month span {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background: var(--color-white-25);
+  color: var(--color-white);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-xl);
   font-size: var(--text-sm);
@@ -1542,13 +1542,13 @@ code {
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   display: inline-block;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--color-white-30);
 }
 
 .home-welcome h1 {
   font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
   font-size: var(--text-2xl);
-  color: #ffffff;
+  color: var(--color-white);
   margin: 0 0 var(--space-4) 0;
   padding: var(--space-1) var(--space-4);
   line-height: 1.2;
@@ -1557,17 +1557,17 @@ code {
   display: inline-block;
   box-sizing: border-box;
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--color-black-25);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   max-width: 100%;
   align-self: flex-start; 
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 8px var(--color-black-60);
 }
 
 .home-welcome p {
   font-size: var(--text-base);
-  color: #f0f0f0;
+  color: var(--color-text-light);
   margin: 0 0 var(--space-8) 0;
   line-height: 1.5;
   position: relative;
@@ -1576,12 +1576,12 @@ code {
   box-sizing: border-box;
   padding: var(--space-1) var(--space-4);
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--color-black-25);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   max-width: 100%;
   align-self: flex-start; 
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 6px var(--color-black-60);
 }
 
 .home-search-wrapper {
@@ -1596,10 +1596,10 @@ code {
 .home-search {
   width: 100%;
   padding: var(--space-4) var(--space-4) var(--space-4) 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--color-white-40);
   border-radius: var(--radius-xl);
   font-size: var(--text-base);
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--color-white-85);
   box-shadow: var(--shadow-md);
   transition: all 0.2s ease-in-out;
   box-sizing: border-box;
