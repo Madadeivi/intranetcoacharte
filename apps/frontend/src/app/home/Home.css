@@ -1504,7 +1504,7 @@ code {
    WELCOME SECTION
    ============================================== */
 .home-welcome {
-  background: url('/assets/img_banner.jpeg') center/cover no-repeat;
+  background: url('/assets/img_banner.webp') center/cover no-repeat;
   padding: var(--space-8) var(--space-4);
   position: relative;
   width: 100%;

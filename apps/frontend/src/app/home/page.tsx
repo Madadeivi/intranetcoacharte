@@ -116,10 +116,6 @@ interface UserData {
   name?: string;
 }
 
-/**
- * Función utilitaria para extraer los nombres del usuario
- * Los datos ya vienen procesados desde la edge function
- */
 const getUserNames = (user: UserData | null | undefined): UserNameData => {
   if (!user) {
     return { firstName: '', lastName: '', displayName: 'Usuario', fullName: 'Usuario' };
@@ -194,15 +190,12 @@ const BirthdaySlider: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
-      // Use existing birthday service with response validation
       const response = await birthdayService.getCurrentMonthBirthdays();
       
-      // Validate that the response has the expected structure
       if (!response || typeof response !== 'object') {
         throw new Error('Respuesta inválida del servidor');
       }
       
-      // Validate that it has the required properties
       if (!response.hasOwnProperty('success') || !response.hasOwnProperty('data')) {
         throw new Error('Estructura de respuesta inválida');
       }
@@ -234,9 +227,7 @@ const BirthdaySlider: React.FC = () => {
       
       setError(errorMessage);
       console.error('Error fetching birthday data:', err);
-      
-      // Optional: report error to monitoring service
-      // errorReportingService.reportError(err, 'BirthdaySlider.fetchBirthdayData');
+
     } finally {
       setIsLoading(false);
     }
@@ -246,9 +237,7 @@ const BirthdaySlider: React.FC = () => {
     fetchBirthdayData();
   }, []);
 
-  // Function to format date - usando zona horaria de México
   const formatDate = (dateString: string) => {
-    // Crear fecha asumiendo que viene en formato YYYY-MM-DD y forzar zona horaria de México
     const date = new Date(dateString + 'T00:00:00-06:00');
     return date.toLocaleDateString('es-MX', {
       day: 'numeric',
@@ -257,20 +246,16 @@ const BirthdaySlider: React.FC = () => {
     });
   };
 
-  // Function to check if today is birthday - usando zona horaria de México
   const isBirthdayToday = (dateString: string) => {
     const today = new Date();
-    // Crear fecha de cumpleaños forzando zona horaria de México
     const birthday = new Date(dateString + 'T00:00:00-06:00');
     
-    // Obtener fecha actual en zona horaria de México
     const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
     
     return todayInMexico.getDate() === birthday.getDate() && 
            todayInMexico.getMonth() === birthday.getMonth();
   };
 
-  // Function to navigate in slider
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
   };
@@ -287,9 +272,6 @@ const BirthdaySlider: React.FC = () => {
     }
   };
 
-
-
-  // If loading
   if (isLoading) {
     return (
       <section className="birthday-slider-section">
@@ -301,7 +283,6 @@ const BirthdaySlider: React.FC = () => {
     );
   }
 
-  // If there's an error
   if (error) {
     return (
       <section className="birthday-slider-section">
@@ -314,7 +295,6 @@ const BirthdaySlider: React.FC = () => {
     );
   }
 
-  // If no data
   if (!birthdayData?.data || birthdayData.data.length === 0) {
     return (
       <section className="birthday-slider-section">
@@ -442,7 +422,6 @@ const HomePage: React.FC = () => {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
-  // Estados para celebraciones
   const [celebrations, setCelebrations] = useState<User[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [celebrationPopup, setCelebrationPopup] = useState<{ user: User; eventType: 'birthday' | 'anniversary' } | null>(null);
   
@@ -501,12 +480,10 @@ const HomePage: React.FC = () => {
     }
   }, [user, celebrationPopup]);
 
-  // Función para cerrar popup de celebración
   const closeCelebrationPopup = () => {
     setCelebrationPopup(null);
   };
 
-  // Función para determinar clases CSS del avatar basado en celebraciones
   const getAvatarClasses = () => {
     if (!user) return 'user-avatar';
     
@@ -520,7 +497,6 @@ const HomePage: React.FC = () => {
     return 'user-avatar';
   };
 
-  // Función para obtener el icono de celebración
   const getCelebrationIcon = () => {
     if (!user) return null;
     
@@ -576,7 +552,6 @@ const HomePage: React.FC = () => {
     return null;
   };
   
-  // Lógica de scroll para el carrusel de tarjetas principales
   const handleCardScroll = debounce(() => {
     const el = cardCarouselRef.current;
     if (el) {
@@ -586,7 +561,6 @@ const HomePage: React.FC = () => {
     }
   }, 50);
 
-  // Lógica de scroll para el carrusel de avisos
   const handleNoticeScroll = debounce(() => {
     const el = noticeCarouselRef.current;
     if (el) {
@@ -596,7 +570,6 @@ const HomePage: React.FC = () => {
     }
   }, 50);
 
-  // Lógica de scroll para el carrusel de enlaces rápidos
   const handleQuicklinkScroll = debounce(() => {
     const el = quicklinkCarouselRef.current;
     if (el) {
@@ -606,7 +579,6 @@ const HomePage: React.FC = () => {
     }
   }, 50);
 
-  // Lógica de scroll para el carrusel de eventos (vertical)
   const handleEventScroll = debounce(() => {
     const el = eventCarouselRef.current;
     if (el) {
@@ -618,7 +590,6 @@ const HomePage: React.FC = () => {
 
   const scrollCardCarouselBy = (offset: number) => {
     scrollCarousel(cardCarouselRef, offset);
-    // Actualizar estado inmediatamente para mejor UX
     setTimeout(() => handleCardScroll(), 100);
   };
 
@@ -629,13 +600,11 @@ const HomePage: React.FC = () => {
 
   const scrollQuicklinkCarouselBy = (offset: number) => {
     scrollCarousel(quicklinkCarouselRef, offset);
-    // Actualizar estado inmediatamente para mejor UX
     setTimeout(() => handleQuicklinkScroll(), 100);
   };
 
   const scrollEventCarouselBy = (offset: number) => {
     scrollCarouselVertical(eventCarouselRef, offset);
-    // Actualizar estado inmediatamente para mejor UX
     setTimeout(() => handleEventScroll(), 100);
   };
 
@@ -645,7 +614,6 @@ const HomePage: React.FC = () => {
     
     el.addEventListener('scroll', handleCardScroll);
     
-    // Comprobar estado inicial con un pequeño delay para asegurar que el DOM esté listo
     const checkInitialState = () => {
       handleCardScroll();
     };
@@ -658,7 +626,6 @@ const HomePage: React.FC = () => {
     };
   }, [handleCardScroll]);
 
-  // useEffect para el carrusel de avisos
   useEffect(() => {
     const el = noticeCarouselRef.current;
     if (!el) return;
@@ -745,12 +712,9 @@ const HomePage: React.FC = () => {
   }
   
   if (!user) {
-    // Esto no debería suceder si la lógica de redirección anterior funciona,
-    // pero es una salvaguarda.
     return <div>Redirigiendo al login...</div>;
   }
 
-  // Derivar datos del usuario de manera simplificada
   const userInitials = generateInitials(user?.email || '');
   const { firstName, lastName, fullName, displayName } = getUserNames(user);
   const userEmail = user?.email || '';
