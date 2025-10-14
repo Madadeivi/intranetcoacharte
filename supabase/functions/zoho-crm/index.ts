@@ -390,11 +390,6 @@ async function syncProfilesFromZoho(differentialSync = true) {
         continue;
       }
       
-      const zohoStatus = colaborador['Estatus'];
-      if (zohoStatus !== 'Asignado' && zohoStatus !== null && zohoStatus !== undefined) {
-        continue;
-      }
-      
       const profileData = {
         ...mapZohoToProfile(colaborador),
         password: undefined as string | undefined,
@@ -514,57 +509,6 @@ async function syncProfilesFromZoho(differentialSync = true) {
     
     const syncStatus = _errors.length > 0 ? (_errors.length >= profiles.length ? 'error' : 'partial') : 'success';
     
-    // Después de sincronizar usuarios de Zoho, desactivar usuarios locales que ya no están en Zoho
-    let localDeactivatedCount = 0;
-    try {
-      // Crear un Set con los emails de usuarios en Zoho
-      const zohoEmails = new Set(
-        allColaboradores
-          .filter((c: ZohoContact) => c.Email)
-          .map((c: ZohoContact) => c.Email!.toLowerCase().trim())
-      );
-      
-      // Obtener usuarios locales activos que no están en Zoho
-      const { data: allLocalUsers } = await supabase
-        .from('profiles')
-        .select('id, email, status');
-      
-      const usersToDeactivate = allLocalUsers?.filter(user => 
-        !zohoEmails.has(user.email.toLowerCase().trim()) && 
-        user.status === 'active'
-      ) || [];
-      
-      // Desactivar usuarios que no están en Zoho
-      for (const user of usersToDeactivate) {
-        try {
-          const { error } = await supabase
-            .from('profiles')
-            .update({
-              status: 'inactive',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', user.id);
-          
-          if (!error) {
-            localDeactivatedCount++;
-          } else {
-            _errors.push({ error: error.message });
-          }
-        } catch (error) {
-          _errors.push({ 
-            error: 'Failed to deactivate user not in Zoho',
-            details: error instanceof Error ? error.message : 'Unknown error'
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error deactivating users not in Zoho:", error);
-      _errors.push({ 
-        error: 'Failed to deactivate users not in Zoho',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-    
     await supabase.from('sync_logs').insert({
       sync_type: 'zoho_profiles_sync',
       status: syncStatus,
@@ -572,8 +516,7 @@ async function syncProfilesFromZoho(differentialSync = true) {
       response_body: { 
         synchronized: profiles.length, 
         errors: _errors.length,
-        error_details: _errors.slice(0, 5),
-        local_users_deactivated: localDeactivatedCount
+        error_details: _errors.slice(0, 5)
       }
     });
     
@@ -650,17 +593,7 @@ async function getZohoCollaboradores(page = 1, perPage = 200, modifiedSince?: Da
       throw new Error(`Error fetching colaboradores from Zoho CRM: ${response.status}`);
     }
     const result = await response.json();
-    const data = result.data || [];
-    
-    if (!includeInactive) {
-      const filtered = data.filter((colaborador: ZohoContact) => {
-        const status = colaborador['Estatus'];
-        return status === 'Asignado';
-      });
-      return filtered;
-    }
-    
-    return data;
+    return result.data || [];
   } catch (error) {
     console.error("Error in getZohoCollaboradores:", error);
     throw error;
