@@ -39,56 +39,63 @@ const organigramas = [
     title: "Dirección General",
     description: "Estructura de la Dirección General liderada por Luis Pascual",
     image: "/assets/organigrama_1.png",
-    lastUpdate: "Septiembre 2025"
+    lastUpdate: "Octubre 2025"
   },
   {
     id: 2,
     title: "Talento y Transformación",
     description: "Departamento de T&T dirigido por Adriana Powell",
     image: "/assets/organigrama_2.png",
-    lastUpdate: "Septiembre 2025"
+    lastUpdate: "Octubre 2025"
   },
   {
     id: 3,
     title: "Cultura",
     description: "Área de Cultura con Brenda Cruz como Hacker de Cultura",
     image: "/assets/organigrama_3.png",
-    lastUpdate: "Septiembre 2025"
+    lastUpdate: "Octubre 2025"
   },
   {
     id: 4,
     title: "Account Manager - Manuel",
-    description: "Estructura del equipo de Manuel Guzmán",
+    description: "Estructura del equipo de Manuel Guzmán - Panamericano",
     image: "/assets/organigrama_4.png",
-    lastUpdate: "Septiembre 2025"
+    lastUpdate: "Octubre 2025"
   },
   {
     id: 5,
-    title: "Account Manager - Zair",
-    description: "Primer equipo dirigido por Zair Cortés",
+    title: "Account Manager - Manuel 2",
+    description: "Estructura del equipo de Manuel Guzmán - Gentera",
     image: "/assets/organigrama_5.png",
-    lastUpdate: "Septiembre 2025"
+    lastUpdate: "Octubre 2025"
   },
   {
     id: 6,
-    title: "Account Manager - Zair 2",
-    description: "Segundo equipo dirigido por Zair Cortés",
+    title: "Account Manager - Zair",
+    description: "Primer equipo dirigido por Zair Cortés",
     image: "/assets/organigrama_6.png",
-    lastUpdate: "Septiembre 2025"
+    lastUpdate: "Octubre 2025"
   },
   {
     id: 7,
-    title: "Account Manager - Ivette Balseca",
-    description: "Estructura del equipo de Ivette Balseca",
+    title: "Account Manager - Zair 2",
+    description: "Segundo equipo dirigido por Zair Cortés",
     image: "/assets/organigrama_7.png",
-    lastUpdate: "Septiembre 2025"
+    lastUpdate: "Octubre 2025"
   },
   {
     id: 8,
+    title: "Account Manager - Ivette Balseca",
+    description: "Estructura del equipo de Ivette Balseca",
+    image: "/assets/organigrama_8.png",
+    lastUpdate: "Octubre 2025"
+  },
+  {
+    id: 9,
     title: "Account Manager - Luis",
     description: "Estructura del equipo de Luis Pascual",
-    image: "/assets/organigrama_8.png",
-    lastUpdate: "Septiembre 2025"
+    image: "/assets/organigrama_9.png",
+    lastUpdate: "Octubre 2025"
   }
 ];
 

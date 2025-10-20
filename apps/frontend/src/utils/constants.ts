@@ -77,7 +77,7 @@ interface CalendarEvent {
 
 export const CALENDAR_EVENTS: CalendarEvent[] = [
     { 
-      date: new Date(2025, 8, 12),
+      date: new Date(2025, 9, 15),
       title: 'Pago de Nómina', 
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
@@ -85,15 +85,7 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       category: 'Talento y Transformación'
     },
     { 
-      date: new Date(2025, 8, 16),
-      title: 'Día no laborable', 
-      description: 'Independencia de México',
-      time: '12:00 PM',
-      image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop&crop=center&auto=format&q=80',
-      category: 'Talento y Transformación'
-    },
-    { 
-      date: new Date(2025, 8, 30),
+      date: new Date(2025, 9, 30),
       title: 'Pago de Nómina', 
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
