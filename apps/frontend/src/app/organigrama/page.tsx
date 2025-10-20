@@ -66,35 +66,35 @@ const organigramas = [
     id: 5,
     title: "Account Manager - Manuel 2",
     description: "Estructura del equipo de Manuel Guzmán - Gentera",
-    image: "/assets/organigrama_4.png",
+    image: "/assets/organigrama_5.png",
     lastUpdate: "Octubre 2025"
   },
   {
     id: 6,
     title: "Account Manager - Zair",
     description: "Primer equipo dirigido por Zair Cortés",
-    image: "/assets/organigrama_5.png",
+    image: "/assets/organigrama_6.png",
     lastUpdate: "Octubre 2025"
   },
   {
     id: 7,
     title: "Account Manager - Zair 2",
     description: "Segundo equipo dirigido por Zair Cortés",
-    image: "/assets/organigrama_6.png",
+    image: "/assets/organigrama_7.png",
     lastUpdate: "Octubre 2025"
   },
   {
     id: 8,
     title: "Account Manager - Ivette Balseca",
     description: "Estructura del equipo de Ivette Balseca",
-    image: "/assets/organigrama_7.png",
+    image: "/assets/organigrama_8.png",
     lastUpdate: "Octubre 2025"
   },
   {
     id: 9,
     title: "Account Manager - Luis",
     description: "Estructura del equipo de Luis Pascual",
-    image: "/assets/organigrama_8.png",
+    image: "/assets/organigrama_9.png",
     lastUpdate: "Octubre 2025"
   }
 ];
