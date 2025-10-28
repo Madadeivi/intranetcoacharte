@@ -1,4 +1,10 @@
-// Tipos personalizados para usuario y sesión (independiente de Supabase Auth)
+import { createClient } from '@supabase/supabase-js'
+
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+)
+
 export interface User {
   id: string;
   email: string;

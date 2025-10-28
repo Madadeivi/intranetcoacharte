@@ -71,6 +71,17 @@ EMAIL_FROM=soporte@coacharte.mx
 JWT_SECRET=::youwouldnoguess:
 ```
 
+## 📁 Integración Google Drive (Organigramas)
+
+```bash
+# ID de la carpeta de Google Drive con los organigramas
+GOOGLE_DRIVE_FOLDER_ID=1w0XcB0JYa-okz1k4Nju3jiR-GQOSTZUw
+
+# Credenciales de Service Account (JSON completo)
+# Copiar todo el contenido del archivo JSON de GCP
+GOOGLE_SERVICE_ACCOUNT_CREDENTIALS={"type":"service_account","project_id":"intranet-coacharte",...}
+```
+
 ## 🌍 URLs por Entorno
 
 | Entorno | URL Principal | Dominio Anterior |
@@ -98,6 +109,8 @@ Estas variables solo están disponibles en el servidor:
 - `EMAIL_PASS`
 - `JWT_SECRET`
 - `DATABASE_URL`
+- `GOOGLE_DRIVE_FOLDER_ID`
+- `GOOGLE_SERVICE_ACCOUNT_CREDENTIALS`
 
 ## 📝 Notas Importantes
 
