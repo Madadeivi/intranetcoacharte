@@ -2,10 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import './recursos-humanos.css';
 
-// Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
 import ReceiptIcon from '@mui/icons-material/Receipt';
@@ -18,90 +16,57 @@ import authService from '../../services/authService';
 import { useAuthStore } from '../../store/authStore';
 import { NOMINA_BASE_URL } from '../../utils/constants';
 
+const RECURSOS_SERVICIOS = [
+  {
+    title: 'Recibos de Nómina',
+    description: 'Consulta y descarga tus recibos de nómina',
+    icon: ReceiptIcon,
+    href: '/nomina',
+    external: true,
+    available: true
+  },
+  {
+    title: 'Solicitud de Vacaciones',
+    description: 'Gestiona tus días de vacaciones y solicitudes',
+    icon: BeachAccessIcon,
+    href: '/vacations',
+    external: false,
+    available: true
+  },
+  {
+    title: 'Organigrama',
+    description: 'Estructura organizacional de Coacharte',
+    icon: AccountTreeIcon,
+    href: '/organigrama',
+    external: false,
+    available: true
+  }
+];
+
+const WALLPAPERS = [
+  'background_1.jpeg',
+  'background_2.jpeg',
+  'background_3.jpeg',
+  'background_4.jpeg',
+  'background_5.jpeg',
+  'background_6.jpeg',
+  'background_7.jpeg'
+];
+
 const RecursosHumanosPage: React.FC = () => {
   const { user } = useAuthStore();
 
   const handleNominaAccess = () => {
     const token = authService.getToken();
     if (token && user?.email) {
-      window.open(`${NOMINA_BASE_URL}/token_auth.php?token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`, '_blank');
+      window.open(
+        `${NOMINA_BASE_URL}/token_auth.php?token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`,
+        '_blank'
+      );
     }
   };
 
-  const services = [
-    {
-      title: 'Recibos de Nómina',
-      description: 'Consulta y descarga tus recibos de nómina',
-      icon: <ReceiptIcon className="service-icon" />,
-      href: '/nomina',
-      external: true,
-      available: true
-    },
-    {
-      title: 'Solicitud de Vacaciones',
-      description: 'Gestiona tus días de vacaciones y solicitudes',
-      icon: <BeachAccessIcon className="service-icon" />,
-      href: '/vacations',
-      external: false,
-      available: true
-    },
-    {
-      title: 'Organigrama',
-      description: 'Estructura organizacional de Coacharte',
-      icon: <AccountTreeIcon className="service-icon" />,
-      href: '/organigrama',
-      external: false,
-      available: true
-    }
-  ];
-
-  // Fondos de pantalla disponibles
-  const wallpapers = [
-    {
-      id: 1,
-      name: 'Fondo Coacharte 1',
-      filename: 'background_1.jpeg',
-      preview: '/assets/background_1.jpeg'
-    },
-    {
-      id: 2,
-      name: 'Fondo Coacharte 2',
-      filename: 'background_2.jpeg',
-      preview: '/assets/background_2.jpeg'
-    },
-    {
-      id: 3,
-      name: 'Fondo Coacharte 3',
-      filename: 'background_3.jpeg',
-      preview: '/assets/background_3.jpeg'
-    },
-    {
-      id: 4,
-      name: 'Fondo Coacharte 4',
-      filename: 'background_4.jpeg',
-      preview: '/assets/background_4.jpeg'
-    },
-    {
-      id: 5,
-      name: 'Fondo Coacharte 5',
-      filename: 'background_5.jpeg',
-      preview: '/assets/background_5.jpeg'
-    },
-    {
-      id: 6,
-      name: 'Fondo Coacharte 6',
-      filename: 'background_6.jpeg',
-      preview: '/assets/background_6.jpeg'
-    },
-    {
-      id: 7,
-      name: 'Fondo Coacharte 7',
-      filename: 'background_7.jpeg',
-      preview: '/assets/background_7.jpeg'
-    }
-  ];
-
-  const downloadWallpaper = (filename: string) => {
+  const handleDownload = (filename: string) => {
     const link = document.createElement('a');
     link.href = `/assets/${filename}`;
     link.download = filename;
@@ -110,7 +75,6 @@ const RecursosHumanosPage: React.FC = () => {
 
   return (
     <div className="talento-transformacion-page recursos-humanos-page">
-      {/* Header */}
       <div className="rh-header">
         <Link href="/home" className="back-button">
           <ArrowBackIcon />
@@ -122,7 +86,6 @@ const RecursosHumanosPage: React.FC = () => {
         </h1>
       </div>
 
-      {/* Descripción */}
       <section className="rh-intro">
         <p>
           Accede a todos los servicios de Talento y Transformación de Coacharte. 
@@ -131,48 +94,45 @@ const RecursosHumanosPage: React.FC = () => {
         </p>
       </section>
 
-      {/* Servicios */}
       <section className="rh-services">
         <h2>Servicios Disponibles</h2>
         <div className="services-grid">
-          {services.map((service, index) => (
-            <div key={index} className={`service-card ${!service.available ? 'disabled' : ''}`}>
-              <div className="service-header">
-                {service.icon}
-                <h3>{service.title}</h3>
-              </div>
-              <p>{service.description}</p>
-              {service.available ? (
-                service.external ? (
-                  <button 
-                    onClick={handleNominaAccess}
-                    className="service-button"
-                  >
-                    Acceder
-                  </button>
+          {RECURSOS_SERVICIOS.map((service, index) => {
+            const IconComponent = service.icon;
+            return (
+              <div key={index} className={`service-card ${!service.available ? 'disabled' : ''}`}>
+                <div className="service-header">
+                  <IconComponent className="service-icon" />
+                  <h3>{service.title}</h3>
+                </div>
+                <p>{service.description}</p>
+                {service.available ? (
+                  service.external ? (
+                    <button onClick={handleNominaAccess} className="service-button">
+                      Acceder
+                    </button>
+                  ) : (
+                    <Link href={service.href} className="service-button">
+                      Acceder
+                    </Link>
+                  )
                 ) : (
-                  <Link href={service.href} className="service-button">
-                    Acceder
-                  </Link>
-                )
-              ) : (
-                <button className="service-button disabled" disabled>
-                  Próximamente
-                </button>
-              )}
-            </div>
-          ))}
+                  <button className="service-button disabled" disabled>
+                    Próximamente
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Herramientas de Teletrabajo */}
       <section className="rh-telework">
         <h2>
           <ComputerIcon className="section-icon" />
           Herramientas de Teletrabajo
         </h2>
         
-        {/* Fondos de Pantalla */}
         <div className="telework-category">
           <h3>
             <WallpaperIcon className="category-icon" />
@@ -182,38 +142,33 @@ const RecursosHumanosPage: React.FC = () => {
             Descarga fondos de pantalla oficiales de Coacharte para personalizar tu espacio de trabajo virtual.
           </p>
           
-          <div className="wallpapers-grid">
-            {wallpapers.map((wallpaper) => (
-              <div key={wallpaper.id} className="wallpaper-card">
-                <div className="wallpaper-preview">
-                  <Image 
-                    src={wallpaper.preview} 
-                    alt={wallpaper.name}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    loading="lazy"
-                  />
-                  <div className="wallpaper-overlay">
-                    <button 
-                      className="download-btn"
-                      onClick={() => downloadWallpaper(wallpaper.filename)}
-                      title={`Descargar ${wallpaper.name}`}
-                    >
-                      <DownloadIcon />
-                    </button>
+          <div className="wallpapers-list">
+            {WALLPAPERS.map((filename, index) => {
+              const displayName = `Fondo Coacharte ${index + 1}`;
+              return (
+                <div key={filename} className="wallpaper-list-item">
+                  <div className="wallpaper-list-icon">
+                    <WallpaperIcon />
                   </div>
+                  <div className="wallpaper-list-info">
+                    <span className="wallpaper-list-name">{displayName}</span>
+                    <span className="wallpaper-list-format">JPEG</span>
+                  </div>
+                  <button
+                    className="wallpaper-list-download"
+                    onClick={() => handleDownload(filename)}
+                    aria-label={`Descargar ${displayName}`}
+                  >
+                    <DownloadIcon />
+                    <span>Descargar</span>
+                  </button>
                 </div>
-                <div className="wallpaper-info">
-                  <h4>{wallpaper.name}</h4>
-                  <span className="wallpaper-format">JPEG</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Información adicional */}
       <section className="rh-info">
         <h2>Información Importante</h2>
         <div className="info-cards">

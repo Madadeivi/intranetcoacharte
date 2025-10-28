@@ -241,105 +241,81 @@
   font-size: var(--text-base);
 }
 
-/* Grid de fondos de pantalla siguiendo el estilo corporativo */
-.wallpapers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-6);
+.wallpapers-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.wallpaper-card {
+.wallpaper-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
   background: var(--color-background-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-border-light);
-  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
 }
 
-.wallpaper-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+.wallpaper-list-item:hover {
+  background: var(--color-primary-5);
   border-color: var(--color-primary-100);
 }
 
-.wallpaper-preview {
-  position: relative;
-  width: 100%;
-  height: 160px;
-  overflow: hidden;
-}
-
-.wallpaper-preview img {
-  transition: transform 0.3s ease;
-}
-
-.wallpaper-card:hover .wallpaper-preview img {
-  transform: scale(1.05);
-}
-
-.wallpaper-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+.wallpaper-list-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.wallpaper-card:hover .wallpaper-overlay {
-  opacity: 1;
-}
-
-.download-btn {
-  background: var(--color-primary-100);
-  color: var(--color-text-on-primary);
-  border: none;
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  color: var(--color-primary-100);
   font-size: 1.5rem;
-  box-shadow: var(--shadow-md);
+  min-width: 40px;
 }
 
-.download-btn:hover {
-  background: var(--color-primary-80);
-  transform: scale(1.1);
-  box-shadow: var(--shadow-lg);
+.wallpaper-list-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-1);
 }
 
-.wallpaper-info {
-  padding: var(--space-4);
-  text-align: center;
-}
-
-.wallpaper-info h4 {
-  margin: 0 0 var(--space-2) 0;
+.wallpaper-list-name {
   font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-title);
   font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
 }
 
-.wallpaper-format {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.wallpaper-list-format {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-family: 'Geometria', Arial, sans-serif;
+}
+
+.wallpaper-list-download {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary-100);
+  color: var(--color-text-on-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
+  box-shadow: var(--shadow-sm);
+}
+
+.wallpaper-list-download:hover {
+  background: var(--color-primary-80);
+  box-shadow: var(--shadow-md);
+}
+
+.wallpaper-list-download svg {
+  font-size: 1.2rem;
 }
 
 /* Información adicional */
@@ -457,27 +433,19 @@
     padding: var(--space-5);
   }
 
-  .wallpapers-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: var(--space-4);
+  .wallpaper-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
   }
 
-  .wallpaper-preview {
-    height: 140px;
-  }
-
-  .wallpaper-info {
-    padding: var(--space-3);
+  .wallpaper-list-download {
+    width: 100%;
+    justify-content: center;
   }
 
   .telework-category h3 {
     font-size: var(--text-lg);
-  }
-
-  .download-btn {
-    width: 48px;
-    height: 48px;
-    font-size: 1.2rem;
   }
 
   .rh-telework {
