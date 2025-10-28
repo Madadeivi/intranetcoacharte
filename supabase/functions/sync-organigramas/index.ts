@@ -132,40 +132,24 @@ serve(async (req) => {
         if (uploadError) throw uploadError
         console.log(`  ⬆️  Subido a Supabase Storage`)
 
-        if (existing) {
-          const { error: updateError } = await supabase
-            .from('organigramas')
-            .update({
-              orden,
-              title,
-              storage_path: storagePath,
-              drive_file_id: driveFile.id,
-              last_synced_at: new Date().toISOString(),
-              file_size: driveFile.size,
-              is_active: true,
-            })
-            .eq('id', existing.id)
+        const { error: upsertError } = await supabase
+          .from('organigramas')
+          .upsert({
+            orden,
+            title,
+            description: existing?.description || `Organigrama ${title}`,
+            file_name: driveFile.name,
+            storage_path: storagePath,
+            drive_file_id: driveFile.id,
+            last_synced_at: new Date().toISOString(),
+            file_size: driveFile.size,
+            is_active: true,
+          }, {
+            onConflict: 'file_name',
+          })
 
-          if (updateError) throw updateError
-          console.log(`  ✅ Actualizado en BD: ${driveFile.name}`)
-        } else {
-          const { error: insertError } = await supabase
-            .from('organigramas')
-            .insert({
-              orden,
-              title,
-              description: `Organigrama ${title}`,
-              file_name: driveFile.name,
-              storage_path: storagePath,
-              drive_file_id: driveFile.id,
-              last_synced_at: new Date().toISOString(),
-              file_size: driveFile.size,
-              is_active: true,
-            })
-
-          if (insertError) throw insertError
-          console.log(`  ✅ Creado nuevo en BD: ${driveFile.name}`)
-        }
+        if (upsertError) throw upsertError
+        console.log(`  ✅ ${existing ? 'Actualizado' : 'Creado'} en BD: ${driveFile.name}`)
 
         result.filesUpdated++
       } catch (error) {
