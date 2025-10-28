@@ -12,6 +12,9 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import CloseIcon from '@mui/icons-material/Close';
+import SyncIcon from '@mui/icons-material/Sync';
+
+import { organigramaService, Organigrama } from '@/services/organigramaService';
 
 const scrollLockManager = {
   lockCount: 0,
@@ -33,78 +36,48 @@ const scrollLockManager = {
   }
 };
 
-const organigramas = [
-  {
-    id: 1,
-    title: "Dirección General",
-    description: "Estructura de la Dirección General liderada por Luis Pascual",
-    image: "/assets/organigrama_1.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 2,
-    title: "Talento y Transformación",
-    description: "Departamento de T&T dirigido por Adriana Powell",
-    image: "/assets/organigrama_2.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 3,
-    title: "Cultura",
-    description: "Área de Cultura con Brenda Cruz como Hacker de Cultura",
-    image: "/assets/organigrama_3.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 4,
-    title: "Account Manager - Manuel",
-    description: "Estructura del equipo de Manuel Guzmán - Panamericano",
-    image: "/assets/organigrama_4.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 5,
-    title: "Account Manager - Manuel 2",
-    description: "Estructura del equipo de Manuel Guzmán - Gentera",
-    image: "/assets/organigrama_5.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 6,
-    title: "Account Manager - Zair",
-    description: "Primer equipo dirigido por Zair Cortés",
-    image: "/assets/organigrama_6.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 7,
-    title: "Account Manager - Zair 2",
-    description: "Segundo equipo dirigido por Zair Cortés",
-    image: "/assets/organigrama_7.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 8,
-    title: "Account Manager - Ivette Balseca",
-    description: "Estructura del equipo de Ivette Balseca",
-    image: "/assets/organigrama_8.png",
-    lastUpdate: "Octubre 2025"
-  },
-  {
-    id: 9,
-    title: "Account Manager - Luis",
-    description: "Estructura del equipo de Luis Pascual",
-    image: "/assets/organigrama_9.png",
-    lastUpdate: "Octubre 2025"
-  }
-];
-
 const OrganigramaPage: React.FC = () => {
+  const [organigramas, setOrganigramas] = useState<Array<Organigrama & { imageUrl: string }>>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    loadOrganigramas();
+  }, []);
+
+  const loadOrganigramas = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await organigramaService.getOrganigramasWithUrls();
+      setOrganigramas(data);
+    } catch (err) {
+      console.error('Error loading organigramas:', err);
+      setError('Error al cargar los organigramas. Por favor, intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSync = async () => {
+    try {
+      setSyncing(true);
+      await organigramaService.syncOrganigramas();
+      await loadOrganigramas();
+      alert('✅ Organigramas sincronizados correctamente');
+    } catch (err) {
+      console.error('Error syncing organigramas:', err);
+      alert('❌ Error al sincronizar organigramas.');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % organigramas.length);
@@ -119,25 +92,8 @@ const OrganigramaPage: React.FC = () => {
   };
 
   const downloadCurrentOrganigrama = async () => {
-    try {
-      const src = organigramas[currentSlide].image;
-      const response = await fetch(src);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Organigrama_${organigramas[currentSlide].title.replace(/\s+/g, '_')}.png`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading organigrama:', error);
-      const link = document.createElement('a');
-      link.href = organigramas[currentSlide].image;
-      link.download = `Organigrama_${organigramas[currentSlide].title.replace(/\s+/g, '_')}.png`;
-      link.click();
+    if (organigramas[currentSlide]) {
+      await organigramaService.downloadOrganigrama(organigramas[currentSlide]);
     }
   };
 
@@ -213,6 +169,51 @@ const OrganigramaPage: React.FC = () => {
     };
   }, [isModalOpen]);
 
+  if (loading) {
+    return (
+      <div className="organigrama-page">
+        <div className="organigrama-header">
+          <Link href="/recursos-humanos" className="back-button">
+            <ArrowBackIcon />
+            <span>Volver a Talento y Transformación</span>
+          </Link>
+          <h1>
+            <AccountTreeIcon className="page-icon" />
+            Organigramas Coacharte
+          </h1>
+        </div>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>Cargando organigramas...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || organigramas.length === 0) {
+    return (
+      <div className="organigrama-page">
+        <div className="organigrama-header">
+          <Link href="/recursos-humanos" className="back-button">
+            <ArrowBackIcon />
+            <span>Volver a Talento y Transformación</span>
+          </Link>
+          <h1>
+            <AccountTreeIcon className="page-icon" />
+            Organigramas Coacharte
+          </h1>
+        </div>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>{error || 'No hay organigramas disponibles.'}</p>
+          <button onClick={loadOrganigramas} style={{ marginTop: '20px' }}>
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentOrganigrama = organigramas[currentSlide];
+
   return (
     <div className="organigrama-page">
       <div className="organigrama-header">
@@ -236,17 +237,21 @@ const OrganigramaPage: React.FC = () => {
       <section className="organigrama-content">
         <div className="organigrama-actions">
           <div className="carousel-info">
-            <h2>{organigramas[currentSlide].title}</h2>
-            <p className="carousel-description">{organigramas[currentSlide].description}</p>
+            <h2>{currentOrganigrama.title}</h2>
+            <p className="carousel-description">{currentOrganigrama.description}</p>
           </div>
           <div className="carousel-controls">
-            <button className="zoom-button" onClick={openModal}>
+            <button className="zoom-button" onClick={openModal} disabled={syncing}>
               <ZoomInIcon />
               <span>Ampliar</span>
             </button>
-            <button className="download-button" onClick={downloadCurrentOrganigrama}>
+            <button className="download-button" onClick={downloadCurrentOrganigrama} disabled={syncing}>
               <DownloadIcon />
               <span>Descargar</span>
+            </button>
+            <button className="sync-button" onClick={handleSync} disabled={syncing} title="Sincronizar desde Google Drive">
+              <SyncIcon className={syncing ? 'spinning' : ''} />
+              <span>{syncing ? 'Sincronizando...' : 'Sincronizar'}</span>
             </button>
           </div>
         </div>
@@ -256,14 +261,15 @@ const OrganigramaPage: React.FC = () => {
             className="carousel-nav prev" 
             onClick={prevSlide}
             aria-label="Organigrama anterior"
+            disabled={syncing}
           >
             <ChevronLeftIcon />
           </button>
           
           <div className="organigrama-image-wrapper">
             <Image
-              src={organigramas[currentSlide].image}
-              alt={`Organigrama ${organigramas[currentSlide].title}`}
+              src={currentOrganigrama.imageUrl}
+              alt={`Organigrama ${currentOrganigrama.title}`}
               width={1000}
               height={700}
               className="organigrama-image"
@@ -276,19 +282,21 @@ const OrganigramaPage: React.FC = () => {
             className="carousel-nav next" 
             onClick={nextSlide}
             aria-label="Organigrama siguiente"
+            disabled={syncing}
           >
             <ChevronRightIcon />
           </button>
         </div>
 
         <div className="carousel-indicators">
-          {organigramas.map((_, index) => (
+          {organigramas.map((org, index) => (
             <button
-              key={index}
+              key={org.id}
               className={`indicator ${index === currentSlide ? 'active' : ''}`}
               onClick={() => goToSlide(index)}
+              disabled={syncing}
             >
-              {index + 1}
+              {org.orden}
             </button>
           ))}
         </div>
@@ -299,11 +307,15 @@ const OrganigramaPage: React.FC = () => {
         <div className="info-grid">
           <div className="info-item">
             <h3>Departamento</h3>
-            <p>{organigramas[currentSlide].title}</p>
+            <p>{currentOrganigrama.title}</p>
           </div>
           <div className="info-item">
-            <h3>Última Actualización</h3>
-            <p>{organigramas[currentSlide].lastUpdate}</p>
+            <h3>Última Sincronización</h3>
+            <p>
+              {currentOrganigrama.last_synced_at
+                ? new Date(currentOrganigrama.last_synced_at).toLocaleDateString('es-MX')
+                : 'No sincronizado'}
+            </p>
           </div>
           <div className="info-item">
             <h3>Organigrama</h3>
@@ -350,7 +362,7 @@ const OrganigramaPage: React.FC = () => {
         </div>
       </section>
 
-      {isModalOpen && (
+      {isModalOpen && currentOrganigrama && (
         <div 
           className="modal-overlay" 
           onClick={closeModal}
@@ -364,7 +376,7 @@ const OrganigramaPage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header">
-              <h3 id="modal-title">{organigramas[currentSlide].title}</h3>
+              <h3 id="modal-title">{currentOrganigrama.title}</h3>
               <button 
                 ref={closeButtonRef}
                 className="modal-close" 
@@ -376,8 +388,8 @@ const OrganigramaPage: React.FC = () => {
             </div>
             <div className="modal-image-container">
               <Image
-                src={organigramas[currentSlide].image}
-                alt={`Organigrama ampliado de ${organigramas[currentSlide].title}`}
+                src={currentOrganigrama.imageUrl}
+                alt={`Organigrama ampliado de ${currentOrganigrama.title}`}
                 width={1400}
                 height={980}
                 className="modal-image"

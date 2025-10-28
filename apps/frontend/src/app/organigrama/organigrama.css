@@ -775,3 +775,47 @@
     padding: 10px 15px;
   }
 }
+
+.sync-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+  outline: none;
+}
+
+.sync-button:hover:not(:disabled),
+.sync-button:focus:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+}
+
+.sync-button:focus {
+  box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4), 0 0 0 3px rgba(255, 152, 0, 0.3);
+}
+
+.sync-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sync-button .spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
