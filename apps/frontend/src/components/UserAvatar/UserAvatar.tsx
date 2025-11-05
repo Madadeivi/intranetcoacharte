@@ -52,7 +52,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ user, userInitials }) =>
 
   return (
     <span id="user-avatar" className={getAvatarClasses()}>
-      {showImage ? (
+      {showImage && user?.avatar ? (
         <Image
           src={user.avatar}
           alt={`Avatar de ${user.name || 'usuario'}`}
