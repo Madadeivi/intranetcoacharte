@@ -6,7 +6,7 @@
  * para evitar duplicación en múltiples componentes.
  */
 
-import { useState, useEffect, useCallback, RefObject } from 'react';
+import { useState, useEffect, useCallback, RefObject, useMemo } from 'react';
 import { debounce } from '../utils/functions';
 import { 
   checkCarouselScrollability, 
@@ -39,17 +39,18 @@ export const useCarousel = (
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  // Función para verificar el estado del scroll
-  const handleScroll = useCallback(
-    debounce(() => {
-      const element = carouselRef.current;
-      if (element) {
-        const { canScrollLeft: left, canScrollRight: right } = checkCarouselScrollability(element);
-        setCanScrollLeft(left);
-        setCanScrollRight(right);
-      }
-    }, debounceMs),
-    [carouselRef, debounceMs]
+  const checkScrollability = useCallback(() => {
+    const element = carouselRef.current;
+    if (element) {
+      const { canScrollLeft: left, canScrollRight: right } = checkCarouselScrollability(element);
+      setCanScrollLeft(left);
+      setCanScrollRight(right);
+    }
+  }, [carouselRef]);
+
+  const handleScroll = useMemo(
+    () => debounce(checkScrollability, debounceMs),
+    [checkScrollability, debounceMs]
   );
 
   // Función para hacer scroll por offset
@@ -124,17 +125,18 @@ export const useCarouselVertical = (
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(true);
 
-  // Función para verificar el estado del scroll
-  const handleScroll = useCallback(
-    debounce(() => {
-      const element = carouselRef.current;
-      if (element) {
-        const { canScrollUp: up, canScrollDown: down } = checkCarouselVerticalScrollability(element);
-        setCanScrollUp(up);
-        setCanScrollDown(down);
-      }
-    }, debounceMs),
-    [carouselRef, debounceMs]
+  const checkScrollability = useCallback(() => {
+    const element = carouselRef.current;
+    if (element) {
+      const { canScrollUp: up, canScrollDown: down } = checkCarouselVerticalScrollability(element);
+      setCanScrollUp(up);
+      setCanScrollDown(down);
+    }
+  }, [carouselRef]);
+
+  const handleScroll = useMemo(
+    () => debounce(checkScrollability, debounceMs),
+    [checkScrollability, debounceMs]
   );
 
   // Función para hacer scroll por offset

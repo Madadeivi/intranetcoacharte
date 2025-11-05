@@ -20,42 +20,27 @@ const LOG_STYLES = {
   success: 'color: #00b894; font-weight: bold;'
 } as const;
 
-/**
- * Logger de desarrollo - solo muestra en development
- */
-export const debugLog = (...args: any[]): void => {
+export const debugLog = (...args: unknown[]): void => {
   if (isDebugEnabled) {
     console.log('%c[DEBUG]', LOG_STYLES.debug, ...args);
   }
 };
 
-/**
- * Logger de información
- */
-export const infoLog = (...args: any[]): void => {
+export const infoLog = (...args: unknown[]): void => {
   if (isDevelopment) {
     console.log('%c[INFO]', LOG_STYLES.info, ...args);
   }
 };
 
-/**
- * Logger de advertencias - se muestra siempre
- */
-export const warnLog = (...args: any[]): void => {
+export const warnLog = (...args: unknown[]): void => {
   console.warn('%c[WARN]', LOG_STYLES.warn, ...args);
 };
 
-/**
- * Logger de errores - se muestra siempre
- */
-export const errorLog = (...args: any[]): void => {
+export const errorLog = (...args: unknown[]): void => {
   console.error('%c[ERROR]', LOG_STYLES.error, ...args);
 };
 
-/**
- * Logger de éxito - solo en development
- */
-export const successLog = (...args: any[]): void => {
+export const successLog = (...args: unknown[]): void => {
   if (isDevelopment) {
     console.log('%c[SUCCESS]', LOG_STYLES.success, ...args);
   }
@@ -72,10 +57,7 @@ export const groupLog = (title: string, callback: () => void): void => {
   }
 };
 
-/**
- * Logger de tabla - útil para arrays de objetos
- */
-export const tableLog = (data: any[], title?: string): void => {
+export const tableLog = (data: unknown[], title?: string): void => {
   if (isDebugEnabled) {
     if (title) {
       console.log(`%c${title}`, LOG_STYLES.info);

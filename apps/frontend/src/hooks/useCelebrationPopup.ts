@@ -17,8 +17,9 @@ import {
   markCelebrationShown 
 } from '../utils/celebrationStorage';
 import { debugLog } from '../utils/logger';
+import { sanitizeUserForLogging } from '../utils/sanitizeForLogging';
 
-export type CelebrationEventType = 'birthday' | 'anniversary';
+export type CelebrationEventType = 'birthday' | 'anniversary' | 'important-anniversary';
 export type CelebrationStorageType = 'birthday' | 'anniversary' | 'importantAnniversary';
 
 export interface CelebrationPopupState {
@@ -38,7 +39,7 @@ const mapEventTypes = (
     case 'birthday':
       return { storage: 'birthday', popup: 'birthday' };
     case 'important-anniversary':
-      return { storage: 'importantAnniversary', popup: 'anniversary' };
+      return { storage: 'importantAnniversary', popup: 'important-anniversary' };
     case 'anniversary':
       return { storage: 'anniversary', popup: 'anniversary' };
   }
@@ -66,7 +67,9 @@ const getCelebrationForUser = (user: User): CelebrationPopupState | null => {
     user,
     eventType: popup,
     storageType: storage,
-    yearsOfService: popup === 'anniversary' ? calculateUserYearsOfService(user) : undefined
+    yearsOfService: (popup === 'anniversary' || popup === 'important-anniversary') 
+      ? calculateUserYearsOfService(user) 
+      : undefined
   };
 };
 
@@ -90,7 +93,7 @@ export const useCelebrationPopup = (
       return;
     }
 
-    debugLog('Verificando celebraciones para usuario:', user);
+    debugLog('Verificando celebraciones para usuario:', sanitizeUserForLogging(user));
 
     // Obtener los datos de celebración
     const celebration = getCelebrationForUser(user);
@@ -100,13 +103,18 @@ export const useCelebrationPopup = (
       return;
     }
 
-    debugLog('Celebración encontrada:', celebration);
+    debugLog('Celebración encontrada:', {
+      eventType: celebration.eventType,
+      storageType: celebration.storageType,
+      yearsOfService: celebration.yearsOfService,
+      userId: celebration.user.id
+    });
 
     // Mostrar popup después del delay
     const timer = setTimeout(() => {
       setPopup(celebration);
       markCelebrationShown(user.id, celebration.storageType);
-      debugLog(`Celebración ${celebration.storageType} marcada como mostrada`);
+      debugLog(`Celebración ${celebration.storageType} marcada como mostrada para usuario ${user.id}`);
     }, delay);
 
     return () => clearTimeout(timer);

@@ -53,8 +53,6 @@ import {
   NOMINA_BASE_URL,
 } from '../../utils/constants';
 
-import { isUserBirthday, getUserSpecialEvent, calculateUserYearsOfService } from '../../utils/celebrationUtils';
-import { User } from '../../config/api';
 
 const HomePage: React.FC = () => {
   const [searchActive, setSearchActive] = useState(false);

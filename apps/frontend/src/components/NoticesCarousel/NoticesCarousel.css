@@ -67,6 +67,13 @@
   margin: 0 0 var(--space-2) 0;
   color: var(--color-text-title);
   font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  max-height: 2.8em;
 }
 
 .notice-card-content p {
@@ -74,6 +81,12 @@
   font-size: 0.9rem;
   margin-bottom: var(--space-3);
   line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  max-height: 4.5em;
 }
 
 .notice-card-content a {

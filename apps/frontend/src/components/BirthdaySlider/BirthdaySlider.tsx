@@ -93,15 +93,17 @@ export const BirthdaySlider: React.FC = () => {
     setCurrentSlide(index);
   };
 
+  const slidesCount = birthdayData?.data ? Math.ceil(birthdayData.data.length / 3) : 0;
+
   const nextSlide = () => {
-    if (birthdayData?.data && birthdayData.data.length > 0) {
-      setCurrentSlide((prev) => (prev + 1) % Math.ceil(birthdayData.data.length / 3));
+    if (slidesCount > 0) {
+      setCurrentSlide((prev) => Math.min(prev + 1, slidesCount - 1));
     }
   };
 
   const prevSlide = () => {
-    if (birthdayData?.data && birthdayData.data.length > 0) {
-      setCurrentSlide((prev) => (prev - 1 + Math.ceil(birthdayData.data.length / 3)) % Math.ceil(birthdayData.data.length / 3));
+    if (slidesCount > 0) {
+      setCurrentSlide((prev) => Math.max(prev - 1, 0));
     }
   };
 
@@ -145,7 +147,6 @@ export const BirthdaySlider: React.FC = () => {
 
   const { data: birthdays, month, year, count } = birthdayData;
   const monthName = formatters.monthName(new Date(year, month - 1));
-  const slidesCount = Math.ceil(birthdays.length / 3);
 
   return (
     <section className="birthday-slider-section">

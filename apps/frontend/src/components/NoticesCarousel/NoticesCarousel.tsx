@@ -5,6 +5,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useCarousel } from '../../hooks/useCarousel';
 import { CAROUSEL_SCROLL_OFFSET, Notice } from '../../utils/constants';
+import { truncateText } from '../../utils/textUtils';
 import './NoticesCarousel.css';
 
 interface NoticesCarouselProps {
@@ -46,8 +47,8 @@ export const NoticesCarousel: React.FC<NoticesCarouselProps> = ({ notices, onNot
               />
               <div className="notice-card-content">
                 <div className="notice-date">{notice.date}</div>
-                <h4>{notice.title}</h4>
-                {notice.summary && <p>{notice.summary}</p>}
+                <h4>{truncateText(notice.title, 60)}</h4>
+                {notice.summary && <p>{truncateText(notice.summary, 100)}</p>}
                 <a href="#" onClick={(e) => e.preventDefault()}>Leer más →</a>
               </div>
             </div>
