@@ -4,11 +4,13 @@
 
 .home-notices-span {
   margin-bottom: var(--space-4);
+  text-align: center;
 }
 
 .home-notices-span h2 {
   font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
   color: var(--color-text-title);
+  text-align: center;
 }
 
 .notice-carousel-wrapper {

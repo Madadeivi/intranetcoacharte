@@ -1960,10 +1960,11 @@ code {
 
 .home-notices-span {
   width: 100%;
+  text-align: center;
 }
 
 .home-notices-span h2 {
-  text-align: left;
+  text-align: center;
   color: var(--color-text-title);
   margin: 0 0 var(--space-6) 0;
   font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
