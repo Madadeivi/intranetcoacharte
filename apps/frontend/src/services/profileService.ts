@@ -43,6 +43,7 @@ export interface ProfileData {
   bank_card_number?: string;
   zoho_record_id?: string;
   internal_registry?: string;
+  assigned_client?: string;
   tags?: string;
   locked: boolean;
   last_login_at?: string;
@@ -107,6 +108,7 @@ class ProfileService {
       email: profileData.email,
       position: profileData.title || profileData.role || 'Colaborador',
       department: departmentData?.name || 'Sin departamento',
+      assignedClient: profileData.assigned_client || 'Sin cliente asignado',
       joinDate: profileData.hire_date || profileData.created_at,
       avatarUrl: profileData.avatar_url || '',
       initials: profileData.initials || this.generateInitials(profileData.email),

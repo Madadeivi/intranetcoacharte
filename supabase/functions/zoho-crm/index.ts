@@ -51,6 +51,7 @@ interface ProfileData {
   vacation_days_available?: number;
   vacation_days_taken?: number;
   comments?: string;
+  assigned_client?: string;
 }
 
 interface ZohoContact {
@@ -336,6 +337,9 @@ function mapZohoToProfile(colaborador: ZohoContact): Partial<ProfileData> {
     zoho_record_id: colaborador.id,
     // Mapeo corregido: Name contiene el código interno (COA-151, COA-152, etc.)
     internal_registry: cleanString(colaborador.Name),
+    
+    // Cliente asignado
+    assigned_client: cleanString(colaborador['Account_Name']),
     
     updated_at: new Date().toISOString()
   };

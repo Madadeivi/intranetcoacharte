@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { User } from '../../config/api';
 import { isUserBirthday, getUserSpecialEvent } from '../../utils/celebrationUtils';
 import './UserAvatar.css';
@@ -12,6 +13,8 @@ interface UserAvatarProps {
 export const UserAvatar: React.FC<UserAvatarProps> = ({ user, userInitials }) => {
   const specialEvent = getUserSpecialEvent(user);
   const isBirthday = isUserBirthday(user);
+  const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const getAvatarClasses = () => {
     const classes = ['user-avatar'];
@@ -36,9 +39,48 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ user, userInitials }) =>
     return null;
   };
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(false);
+  };
+
+  const showImage = user?.avatar && !imageError && imageLoaded;
+
   return (
     <span id="user-avatar" className={getAvatarClasses()}>
-      {userInitials}
+      {showImage && user?.avatar ? (
+        <Image
+          src={user.avatar}
+          alt={`Avatar de ${user.name || 'usuario'}`}
+          width={40}
+          height={40}
+          className="avatar-img"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          style={{ borderRadius: '50%', objectFit: 'cover' }}
+        />
+      ) : (
+        <span className="avatar-initials">{userInitials}</span>
+      )}
+      
+      {/* Imagen oculta para pre-cargar */}
+      {user?.avatar && !imageLoaded && !imageError && (
+        <Image
+          src={user.avatar}
+          alt=""
+          className="avatar-preload"
+          width={40}
+          height={40}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          style={{ display: 'none' }}
+        />
+      )}
+      
       {getCelebrationIcon()}
       {isBirthday && (
         <>

@@ -41,6 +41,7 @@ interface UserProfile {
   email: string;
   position: string;
   department: string;
+  assignedClient?: string;
   joinDate: string;
   avatarUrl?: string;
   initials: string;
@@ -156,6 +157,7 @@ export default function ProfilePage() {
           email: mappedProfile.email,
           position: mappedProfile.position,
           department: mappedProfile.department,
+          assignedClient: mappedProfile.assignedClient,
           joinDate: mappedProfile.joinDate,
           avatarUrl: mappedProfile.avatarUrl,
           initials: mappedProfile.initials,
@@ -209,6 +211,7 @@ export default function ProfilePage() {
         email: mappedProfile.email,
         position: mappedProfile.position,
         department: mappedProfile.department,
+        assignedClient: mappedProfile.assignedClient,
         joinDate: mappedProfile.joinDate,
         avatarUrl: mappedProfile.avatarUrl,
         initials: mappedProfile.initials,
@@ -396,8 +399,8 @@ export default function ProfilePage() {
           <div className="detail-item">
             <BusinessIcon className="detail-icon" />
             <div className="detail-content">
-              <span className="detail-label">Departamento</span>
-              <span className="detail-value">{profile.department}</span>
+              <span className="detail-label">Cliente Asignado</span>
+              <span className="detail-value">{profile.assignedClient || 'Sin cliente asignado'}</span>
             </div>
           </div>
 

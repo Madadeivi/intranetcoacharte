@@ -47,6 +47,7 @@ interface ProfileData {
   bank_card_number?: string;
   zoho_record_id?: string;
   internal_registry?: string;
+  assigned_client?: string;
   locked: boolean;
   last_login_at?: string;
   initials?: string;
@@ -192,6 +193,7 @@ async function getProfile(supabase: SupabaseClient, userId: string): Promise<Pro
         bank_card_number,
         zoho_record_id,
         internal_registry,
+        assigned_client,
         locked,
         last_login_at,
         initials,
