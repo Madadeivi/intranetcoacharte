@@ -1,0 +1,2 @@
+export { BirthdaySlider } from './BirthdaySlider';
+

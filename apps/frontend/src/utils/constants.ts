@@ -57,7 +57,6 @@ export interface Notice {
 // Tarjetas deshabilitadas por defecto
 export const DISABLED_CARDS: string[] = [
   'Procesos y Documentación', 
-  'Soporte y Comunicación', 
   'Calendario y Eventos'
 ]; 
 
@@ -77,7 +76,7 @@ interface CalendarEvent {
 
 export const CALENDAR_EVENTS: CalendarEvent[] = [
     { 
-      date: new Date(2025, 9, 15),
+      date: new Date(2025, 10, 14),
       title: 'Pago de Nómina', 
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
@@ -85,7 +84,7 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
       category: 'Talento y Transformación'
     },
     { 
-      date: new Date(2025, 9, 30),
+      date: new Date(2025, 10, 28),
       title: 'Pago de Nómina', 
       description: 'Depósito de nómina quincenal para todos los empleados',
       time: '12:00 PM',
