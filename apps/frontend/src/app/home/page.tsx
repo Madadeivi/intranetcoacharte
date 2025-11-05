@@ -11,18 +11,16 @@ import 'react-calendar/dist/Calendar.css';
 import { useAuthStore } from '../../store/authStore';
 import authService from '../../services/authService';
 import { useClickOutside } from '../../hooks';
-import SupportForm from '../../components/SupportForm';
+import { useCarousel, useCarouselVertical } from '../../hooks/useCarousel';
+import { useCelebrationPopup } from '../../hooks/useCelebrationPopup';
+import { SupportModal } from '../../components/SupportModal';
+import { BirthdaySlider } from '../../components/BirthdaySlider';
+import { UserAvatar } from '../../components/UserAvatar';
+import { NoticesCarousel } from '../../components/NoticesCarousel';
 import NoticeDetailModal from '../../components/NoticeDetailModal/NoticeDetailModal';
 import { CelebrationPopup } from '../../components/CelebrationPopup';
 import { AnniversarySlider } from '../../components/AnniversarySlider';
 
-interface BirthdayData {
-  success: boolean;
-  data: Birthday[];
-  month: number;
-  year: number;
-  count: number;
-}
 
 // Icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -33,7 +31,6 @@ import InfoIcon from '@mui/icons-material/Info';
 import SchoolIcon from '@mui/icons-material/School';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
-import CloseIcon from '@mui/icons-material/Close';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -42,23 +39,9 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LockIcon from '@mui/icons-material/Lock';
-import CakeIcon from '@mui/icons-material/Cake';
 
-import {
-  getCurrentMonthYear,
-  checkCarouselScrollability,
-  scrollCarousel,
-  debounce,
-} from '../../utils/functions';
-
-import {
-  scrollCarouselVertical,
-  checkCarouselVerticalScrollability,
-} from '../../utils/carouselUtils';
-
-import {
-  generateInitials
-} from '../../utils/helpers';
+import { getCurrentMonthYear } from '../../utils/functions';
+import { generateInitials } from '../../utils/helpers';
 
 import {
   notices,
@@ -70,350 +53,6 @@ import {
   NOMINA_BASE_URL,
 } from '../../utils/constants';
 
-// Servicios
-import { birthdayService, Birthday } from '../../services/birthdayService';
-
-import { 
-  getUserSpecialEvent,
-  calculateUserYearsOfService
-} from '../../utils/celebrationUtils';
-import { 
-  wasCelebrationShown, 
-  markCelebrationShown 
-} from '../../utils/celebrationStorage';
-import { User } from '../../config/api';
-
-const isUserBirthday = (user: User | null): boolean => {
-  if (!user) return false;
-  
-  const birthDateField = user.birth_date || user.birthday;
-  if (!birthDateField) return false;
-  
-  const today = new Date();
-  const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-  
-  const birthday = new Date(birthDateField + 'T00:00:00-06:00');
-  
-  return todayInMexico.getMonth() === birthday.getMonth() && 
-         todayInMexico.getDate() === birthday.getDate();
-};
-
-interface SupportModalProps {
-  userInfo: { firstName: string; lastName: string; email: string } | null;
-  onClose: () => void;
-}
-
-interface UserNameData {
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  displayName: string;
-}
-
-interface UserData {
-  firstName?: string;
-  lastName?: string;
-  name?: string;
-}
-
-const getUserNames = (user: UserData | null | undefined): UserNameData => {
-  if (!user) {
-    return { firstName: '', lastName: '', displayName: 'Usuario', fullName: 'Usuario' };
-  }
-
-  const firstName = user.firstName || '';
-  const lastName = user.lastName || '';
-  const fullName = `${firstName} ${lastName}`.trim() || 'Sin nombre';
-  const displayName = fullName || 'Usuario';
-  
-  return {
-    firstName,
-    lastName,
-    displayName,
-    fullName
-  };
-};
-
-const SupportModal = React.forwardRef<HTMLDivElement, SupportModalProps>(
-  ({ userInfo, onClose }, ref) => {
-    const modalContentRef = useRef<HTMLDivElement>(null);
-
-    React.useImperativeHandle(ref, () => modalContentRef.current as HTMLDivElement);
-
-    useEffect(() => {
-      function handleClickOutside(event: MouseEvent) {
-        if (modalContentRef.current && !modalContentRef.current.contains(event.target as Node)) {
-          onClose();
-        }
-      }
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [onClose]);
-
-    if (!userInfo) return null;
-
-    return (
-      <div className="support-modal-backdrop">
-        <div className="support-modal-content" ref={modalContentRef}>
-          <button className="support-modal-close-button" onClick={onClose} aria-label="Cerrar">
-            <CloseIcon />
-          </button>
-          <SupportForm 
-            userEmail={userInfo.email}
-            userName={`${userInfo.firstName} ${userInfo.lastName}`}
-          />
-        </div>
-      </div>
-    );
-  }
-);
-SupportModal.displayName = 'SupportModal';
-
-const BirthdaySlider: React.FC = () => {
-  const [birthdayData, setBirthdayData] = useState<BirthdayData | null>(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  const sliderRef = useRef<HTMLDivElement>(null);
-
-  // Update transform when currentSlide changes
-  useEffect(() => {
-    if (sliderRef.current) {
-      sliderRef.current.style.transform = `translateX(-${currentSlide * 100}%)`;
-    }
-  }, [currentSlide]);
-
-  // Function to fetch birthday data
-  const fetchBirthdayData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await birthdayService.getCurrentMonthBirthdays();
-      
-      if (!response || typeof response !== 'object') {
-        throw new Error('Respuesta inválida del servidor');
-      }
-      
-      if (!response.hasOwnProperty('success') || !response.hasOwnProperty('data')) {
-        throw new Error('Estructura de respuesta inválida');
-      }
-      
-      // Validate that the response is successful
-      if (!response.success) {
-        throw new Error('Error en la respuesta del servidor');
-      }
-      
-      if (!Array.isArray(response.data)) {
-        throw new Error('Datos de cumpleañeros inválidos');
-      }
-      
-      // Validate required response properties
-      if (typeof response.month !== 'number' || typeof response.year !== 'number') {
-        throw new Error('Información de fecha inválida');
-      }
-      
-      setBirthdayData(response);
-    } catch (err) {
-      // Detailed error handling
-      let errorMessage = 'Error desconocido al obtener cumpleañeros';
-      
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === 'string') {
-        errorMessage = err;
-      }
-      
-      setError(errorMessage);
-      console.error('Error fetching birthday data:', err);
-
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBirthdayData();
-  }, []);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00-06:00');
-    return date.toLocaleDateString('es-MX', {
-      day: 'numeric',
-      month: 'long',
-      timeZone: 'America/Mexico_City'
-    });
-  };
-
-  const isBirthdayToday = (dateString: string) => {
-    const today = new Date();
-    const birthday = new Date(dateString + 'T00:00:00-06:00');
-    
-    const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-    
-    return todayInMexico.getDate() === birthday.getDate() && 
-           todayInMexico.getMonth() === birthday.getMonth();
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
-
-  const nextSlide = () => {
-    if (birthdayData?.data && birthdayData.data.length > 0) {
-      setCurrentSlide((prev) => (prev + 1) % Math.ceil(birthdayData.data.length / 3));
-    }
-  };
-
-  const prevSlide = () => {
-    if (birthdayData?.data && birthdayData.data.length > 0) {
-      setCurrentSlide((prev) => (prev - 1 + Math.ceil(birthdayData.data.length / 3)) % Math.ceil(birthdayData.data.length / 3));
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <section className="birthday-slider-section">
-        <div className="birthday-slider-header">
-          <CakeIcon className="birthday-slider-icon" />
-          <h2 className="birthday-slider-title">Cargando cumpleañeros...</h2>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section className="birthday-slider-section">
-        <div className="birthday-slider-header">
-          <CakeIcon className="birthday-slider-icon" />
-          <h2 className="birthday-slider-title">Error al cargar cumpleañeros</h2>
-          <p className="birthday-slider-subtitle">{error}</p>
-        </div>
-      </section>
-    );
-  }
-
-  if (!birthdayData?.data || birthdayData.data.length === 0) {
-    return (
-      <section className="birthday-slider-section">
-        <div className="birthday-slider-header">
-          <CakeIcon className="birthday-slider-icon" />
-          <h2 className="birthday-slider-title">Cumpleañeros del mes</h2>
-        </div>
-        <div className="birthday-no-data">
-          <CakeIcon className="birthday-no-data-icon" />
-          <p className="birthday-no-data-text">No hay cumpleañeros este mes</p>
-        </div>
-      </section>
-    );
-  }
-
-  const { data: birthdays, month, year, count } = birthdayData;
-  const monthName = new Date(year, month - 1).toLocaleDateString('es-ES', { month: 'long' });
-  const slidesCount = Math.ceil(birthdays.length / 3);
-
-  return (
-    <section className="birthday-slider-section">
-      <div className="birthday-slider-header">
-        <CakeIcon className="birthday-slider-icon" />
-        <h2 className="birthday-slider-title">Cumpleañeros de {monthName} {year}</h2>
-        <p className="birthday-slider-subtitle">{count} cumpleañeros este mes</p>
-      </div>
-
-      <div className="birthday-slider-container">
-        <div 
-          className="birthday-slider-track" 
-          ref={sliderRef}
-        >
-          {Array.from({ length: slidesCount }).map((_, slideIndex) => (
-            <div key={slideIndex} className="birthday-slider-slide">
-              {birthdays.slice(slideIndex * 3, (slideIndex + 1) * 3).map((birthday: Birthday) => (
-                <div 
-                  key={birthday.id} 
-                  className={`birthday-card ${isBirthdayToday(birthday.date) ? 'today' : ''}`}
-                >
-                  <div className="birthday-card-celebration">🎉</div>
-                  
-                  <div className="birthday-card-header">
-                    <div className="birthday-card-avatar">
-                      {birthday.avatar ? (
-                        <Image 
-                          src={birthday.avatar} 
-                          alt={birthday.name}
-                          width={64}
-                          height={64}
-                          className="birthday-card-avatar-image"
-                        />
-                      ) : (
-                        birthday.initial
-                      )}
-                    </div>
-                    <div className="birthday-card-info">
-                      <h3 className="birthday-card-name">{birthday.name}</h3>
-                      <p className="birthday-card-position">{birthday.position}</p>
-                      <span className="birthday-card-department">{birthday.department}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="birthday-card-details">
-                    <div className="birthday-card-age">
-                      <CakeIcon className="birthday-card-age-icon" />
-                      <span className="birthday-card-age-text">
-                        {birthday.age} {birthday.age === 1 ? 'año' : 'años'}
-                      </span>
-                    </div>
-                    
-                    <div className="birthday-card-date">
-                      <EventIcon className="birthday-card-date-icon" />
-                      <p className="birthday-card-date-text">{formatDate(birthday.date)}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {slidesCount > 1 && (
-        <>
-          <div className="birthday-slider-navigation">
-              <button
-                className="birthday-slider-nav-button"
-                onClick={prevSlide}
-                disabled={currentSlide === 0}
-                title="Anterior"
-                aria-label="Slide anterior"
-              >
-                <ArrowBackIosNewIcon />
-              </button>
-              <button
-                className="birthday-slider-nav-button"
-                onClick={nextSlide}
-                disabled={currentSlide === slidesCount - 1}
-                title="Siguiente"
-                aria-label="Slide siguiente"
-              >
-                <ArrowForwardIosIcon />
-              </button>
-            </div>
-          
-            <div className="birthday-slider-dots">
-              {Array.from({ length: slidesCount }).map((_, index) => (
-              <div
-                key={index}
-                className={`birthday-slider-dot ${index === currentSlide ? 'active' : ''}`}
-                onClick={() => goToSlide(index)}
-              />
-              ))}
-            </div>
-        </>
-      )}
-    </section>
-  );
-};
 
 const HomePage: React.FC = () => {
   const [searchActive, setSearchActive] = useState(false);
@@ -422,110 +61,21 @@ const HomePage: React.FC = () => {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   
-  const [celebrations, setCelebrations] = useState<User[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [celebrationPopup, setCelebrationPopup] = useState<{ user: User; eventType: 'birthday' | 'anniversary' } | null>(null);
-  
   const dropdownRef = useRef<HTMLDivElement>(null);
   const celebrationPopupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user) return;
+  const { popup: celebrationPopup, closePopup: closeCelebrationPopup } = useCelebrationPopup(user, { delay: 1500 });
 
-    console.log('USER DATA:', user);
-    console.log('birth_date:', user.birth_date);
-    console.log('hire_date:', user.hire_date);
-    
-    const specialEvent = getUserSpecialEvent(user);
-    console.log('specialEvent:', specialEvent);
-    
-    if (specialEvent && !celebrationPopup) {
-      let storageEventType: 'birthday' | 'anniversary' | 'importantAnniversary';
-      let popupEventType: 'birthday' | 'anniversary';
-      
-      if (specialEvent === 'birthday') {
-        storageEventType = 'birthday';
-        popupEventType = 'birthday';
-      } else if (specialEvent === 'important-anniversary') {
-        storageEventType = 'importantAnniversary';
-        popupEventType = 'anniversary';
-      } else {
-        storageEventType = 'anniversary';
-        popupEventType = 'anniversary';
-      }
+  const cardCarouselRef = useRef<HTMLDivElement>(null);
+  const quicklinkCarouselRef = useRef<HTMLDivElement>(null);
+  const eventCarouselRef = useRef<HTMLDivElement>(null);
 
-      const alreadyShown = wasCelebrationShown(user.id, storageEventType);
-      console.log(`Celebración ${storageEventType} ya mostrada hoy:`, alreadyShown);
-      
-      if (!alreadyShown) {
-        setCelebrations(prev => {
-          if (!prev.find(u => u.id === user.id)) {
-            return [...prev, user];
-          }
-          return prev;
-        });
-
-        const timer = setTimeout(() => {
-          setCelebrationPopup({
-            user: user,
-            eventType: popupEventType
-          });
-          
-          markCelebrationShown(user.id, storageEventType);
-          console.log(`Celebración ${storageEventType} marcada como mostrada`);
-        }, 1500);
-        
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [user, celebrationPopup]);
-
-  const closeCelebrationPopup = () => {
-    setCelebrationPopup(null);
-  };
-
-  const getAvatarClasses = () => {
-    if (!user) return 'user-avatar';
-    
-    const specialEvent = getUserSpecialEvent(user);
-    if (specialEvent === 'birthday') {
-      return 'user-avatar birthday-doodle';
-    } else if (specialEvent === 'anniversary' || specialEvent === 'important-anniversary') {
-      return 'user-avatar anniversary-doodle';
-    }
-    
-    return 'user-avatar';
-  };
-
-  const getCelebrationIcon = () => {
-    if (!user) return null;
-    
-    const specialEvent = getUserSpecialEvent(user);
-    if (specialEvent === 'birthday') {
-      return <span className="birthday-doodle-icon">🎂</span>;
-    } else if (specialEvent === 'anniversary' || specialEvent === 'important-anniversary') {
-      return <span className="anniversary-doodle-icon">🎉</span>;
-    }
-    
-    return null;
-  };
-  const cardCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de tarjetas
-  const quicklinkCarouselRef = useRef<HTMLDivElement>(null); // Carrusel de enlaces rápidos
-  const noticeCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de avisos
-  const eventCarouselRef = useRef<HTMLDivElement>(null);  // Carrusel de eventos
-
-  // Hook para cerrar el dropdown al hacer clic fuera
   useClickOutside(dropdownRef as RefObject<HTMLElement>, () => setDropdownOpen(false), dropdownOpen);
 
-  // Estados para controlar los carruseles
-  const [cardCanScrollLeft, setCardCanScrollLeft] = useState(false);
-  const [cardCanScrollRight, setCardCanScrollRight] = useState(true);
-  const [quicklinkCanScrollLeft, setQuicklinkCanScrollLeft] = useState(false);
-  const [quicklinkCanScrollRight, setQuicklinkCanScrollRight] = useState(true); 
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [eventCanScrollLeft, setEventCanScrollLeft] = useState(false);
-  const [eventCanScrollRight, setEventCanScrollRight] = useState(true);
+  const cardCarousel = useCarousel(cardCarouselRef, { debounceMs: 50 });
+  const quicklinkCarousel = useCarousel(quicklinkCarouselRef);
+  const eventCarousel = useCarouselVertical(eventCarouselRef);
 
   const handleLogout = () => {
     logout();
@@ -541,7 +91,7 @@ const HomePage: React.FC = () => {
 
   const currentMonthYearText = getCurrentMonthYear();
 
-  const tileClassName = ({ date, view }: { date: Date; view: string }) => { // react-calendar pasa view
+  const tileClassName = ({ date, view }: { date: Date; view: string }) => {
     if (view === 'month' && CALENDAR_EVENTS.some(eventDate => 
         eventDate.date.getFullYear() === date.getFullYear() &&
         eventDate.date.getMonth() === date.getMonth() &&
@@ -551,141 +101,7 @@ const HomePage: React.FC = () => {
     }
     return null;
   };
-  
-  const handleCardScroll = debounce(() => {
-    const el = cardCarouselRef.current;
-    if (el) {
-      const { canScrollLeft: newCanScrollLeft, canScrollRight: newCanScrollRight } = checkCarouselScrollability(el);
-      setCardCanScrollLeft(newCanScrollLeft);
-      setCardCanScrollRight(newCanScrollRight);
-    }
-  }, 50);
 
-  const handleNoticeScroll = debounce(() => {
-    const el = noticeCarouselRef.current;
-    if (el) {
-      const { canScrollLeft: newCanScrollLeft, canScrollRight: newCanScrollRight } = checkCarouselScrollability(el);
-      setCanScrollLeft(newCanScrollLeft);
-      setCanScrollRight(newCanScrollRight);
-    }
-  }, 50);
-
-  const handleQuicklinkScroll = debounce(() => {
-    const el = quicklinkCarouselRef.current;
-    if (el) {
-      const { canScrollLeft: newCanScrollLeft, canScrollRight: newCanScrollRight } = checkCarouselScrollability(el);
-      setQuicklinkCanScrollLeft(newCanScrollLeft);
-      setQuicklinkCanScrollRight(newCanScrollRight);
-    }
-  }, 50);
-
-  const handleEventScroll = debounce(() => {
-    const el = eventCarouselRef.current;
-    if (el) {
-      const { canScrollUp, canScrollDown } = checkCarouselVerticalScrollability(el);
-      setEventCanScrollLeft(canScrollUp);  // Reutilizamos para "arriba"
-      setEventCanScrollRight(canScrollDown);  // Reutilizamos para "abajo"
-    }
-  }, 50);
-
-  const scrollCardCarouselBy = (offset: number) => {
-    scrollCarousel(cardCarouselRef, offset);
-    setTimeout(() => handleCardScroll(), 100);
-  };
-
-  const scrollNoticeCarouselBy = (offset: number) => {
-    scrollCarousel(noticeCarouselRef, offset);
-    setTimeout(() => handleNoticeScroll(), 100);
-  };
-
-  const scrollQuicklinkCarouselBy = (offset: number) => {
-    scrollCarousel(quicklinkCarouselRef, offset);
-    setTimeout(() => handleQuicklinkScroll(), 100);
-  };
-
-  const scrollEventCarouselBy = (offset: number) => {
-    scrollCarouselVertical(eventCarouselRef, offset);
-    setTimeout(() => handleEventScroll(), 100);
-  };
-
-  useEffect(() => {
-    const el = cardCarouselRef.current;
-    if (!el) return;
-    
-    el.addEventListener('scroll', handleCardScroll);
-    
-    const checkInitialState = () => {
-      handleCardScroll();
-    };
-    
-    checkInitialState();
-    setTimeout(checkInitialState, 100);
-    
-    return () => {
-      el.removeEventListener('scroll', handleCardScroll);
-    };
-  }, [handleCardScroll]);
-
-  useEffect(() => {
-    const el = noticeCarouselRef.current;
-    if (!el) return;
-
-    el.addEventListener('scroll', handleNoticeScroll);
-
-    const checkInitialState = () => {
-      handleNoticeScroll();
-    };
-
-    checkInitialState();
-    setTimeout(checkInitialState, 100);
-
-    return () => {
-      el.removeEventListener('scroll', handleNoticeScroll);
-    };
-  }, [handleNoticeScroll]);
-
-  // useEffect para el carrusel de enlaces rápidos
-  useEffect(() => {
-    const el = quicklinkCarouselRef.current;
-    if (!el) return;
-    
-    el.addEventListener('scroll', handleQuicklinkScroll);
-    
-    // Comprobar estado inicial con un pequeño delay para asegurar que el DOM esté listo
-    const checkInitialState = () => {
-      handleQuicklinkScroll();
-    };
-    
-    checkInitialState();
-    setTimeout(checkInitialState, 100);
-    
-    return () => {
-      el.removeEventListener('scroll', handleQuicklinkScroll);
-    };
-  }, [handleQuicklinkScroll]);
-
-  // useEffect para el carrusel de eventos
-  useEffect(() => {
-    const el = eventCarouselRef.current;
-    if (!el) return;
-    
-    el.addEventListener('scroll', handleEventScroll);
-    
-    // Comprobar estado inicial con un pequeño delay para asegurar que el DOM esté listo
-    const checkInitialState = () => {
-      handleEventScroll();
-    };
-    
-    checkInitialState();
-    setTimeout(checkInitialState, 100);
-    
-    return () => {
-      el.removeEventListener('scroll', handleEventScroll);
-    };
-  }, [handleEventScroll]);
-
-
-  // useEffect para clearError y manejo de error (ya existen, se mantienen)
   useEffect(() => {
     return () => {
       clearError();
@@ -694,13 +110,10 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     if (error) {
-      // Aquí puedes mostrar el error en una notificación o toast
       console.error("Auth Error:", error);
-      // alert(error); // Evitar alert en producción
     }
   }, [error, clearError]);
 
-  // useEffect para redirección si no está logueado
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/');
@@ -708,7 +121,7 @@ const HomePage: React.FC = () => {
   }, [user, isLoading, isAuthenticated, router]);
 
   if (isLoading || !isAuthenticated) {
-    return <div>Cargando...</div>; // O un componente de carga más sofisticado
+    return <div>Cargando...</div>;
   }
   
   if (!user) {
@@ -716,10 +129,13 @@ const HomePage: React.FC = () => {
   }
 
   const userInitials = generateInitials(user?.email || '');
-  const { firstName, lastName, fullName, displayName } = getUserNames(user);
+  const userNameParts = user?.name?.split(' ') || [];
+  const firstName = userNameParts[0] || '';
+  const lastName = userNameParts.slice(1).join(' ') || '';
+  const displayName = user?.name || 'Usuario';
+  const fullName = user?.name || 'Usuario';
   const userEmail = user?.email || '';
 
-  // JSX principal del componente HomePage
   return (
     <div className="home-root">
       {/* Header y barra de navegación */}
@@ -762,37 +178,7 @@ const HomePage: React.FC = () => {
             aria-label="Menú de opciones de usuario"
             title="Opciones de usuario"
           >
-            <span 
-              id="user-avatar"
-              className={getAvatarClasses()}
-            >
-              {userInitials}
-              {getCelebrationIcon()}
-              {isUserBirthday(user) && (
-                <>
-                  <span className="birthday-streamers">
-                    <span className="streamer streamer-1">🎊</span>
-                    <span className="streamer streamer-2">🎉</span>
-                    <span className="streamer streamer-3">🎈</span>
-                  </span>
-                  <span className="birthday-particles">
-                    <span className="birthday-particle"></span>
-                    <span className="birthday-particle"></span>
-                    <span className="birthday-particle"></span>
-                    <span className="birthday-particle"></span>
-                    <span className="birthday-particle"></span>
-                    <span className="birthday-particle"></span>
-                  </span>
-                  <span className="birthday-confetti">
-                    <span className="confetti-piece"></span>
-                    <span className="confetti-piece"></span>
-                    <span className="confetti-piece"></span>
-                    <span className="confetti-piece"></span>
-                    <span className="confetti-piece"></span>
-                  </span>
-                </>
-              )}
-            </span>
+            <UserAvatar user={user} userInitials={userInitials} />
             <div className="user-name-display">
               <span className="user-greeting">Hola, {displayName}</span>
             </div>
@@ -874,8 +260,8 @@ const HomePage: React.FC = () => {
         </div>
         <div className="card-carousel-wrapper">
           <button 
-            onClick={() => scrollCardCarouselBy(-CARD_CAROUSEL_SCROLL_OFFSET)} 
-            disabled={!cardCanScrollLeft} 
+            onClick={() => cardCarousel.scrollBy(-CARD_CAROUSEL_SCROLL_OFFSET)} 
+            disabled={!cardCarousel.canScrollLeft} 
             className="carousel-nav-button prev card-carousel-nav" 
             aria-label="Tarjetas anteriores"
           >
@@ -926,8 +312,8 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           <button 
-            onClick={() => scrollCardCarouselBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
-            disabled={!cardCanScrollRight} 
+            onClick={() => cardCarousel.scrollBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
+            disabled={!cardCarousel.canScrollRight} 
             className="carousel-nav-button next card-carousel-nav" 
             aria-label="Siguientes tarjetas"
           >
@@ -936,57 +322,14 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Avisos importantes */}
-      <section className="home-notices">
-        <div className="home-notices-span">
-          <h2>Avisos Importantes</h2>
-        </div>
-        <div className="notice-carousel-wrapper">
-          <button 
-            onClick={() => scrollNoticeCarouselBy(-CAROUSEL_SCROLL_OFFSET)} 
-            disabled={!canScrollLeft} 
-            className="carousel-nav-button prev notice-carousel-nav" 
-            aria-label="Anterior aviso"
-          >
-            <ArrowBackIosNewIcon />
-          </button>
-          <div className="notice-carousel" ref={noticeCarouselRef}>
-            {notices.map(notice => (
-              <div 
-                key={notice.id} 
-                className="notice-card" 
-                onClick={() => setNoticeModal({
-                  open: true, 
-                  title: notice.title, 
-                  detail: notice.detail
-                })}
-              >
-                <Image 
-                  src={notice.imageUrl} 
-                  alt={notice.title} 
-                  className="notice-card-img"
-                  width={300} // Ancho de la imagen
-                  height={180} // Alto de la imagen
-                />
-                <div className="notice-card-content">
-                  <div className="notice-date">{notice.date}</div>
-                  <h4>{notice.title}</h4>
-                  <p>{notice.summary}</p>
-                  <a href="#" onClick={(e) => e.preventDefault()}>Leer más →</a>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button 
-            onClick={() => scrollNoticeCarouselBy(CAROUSEL_SCROLL_OFFSET)} 
-            disabled={!canScrollRight} 
-            className="carousel-nav-button next notice-carousel-nav" 
-            aria-label="Siguiente aviso"
-          >
-            <ArrowForwardIosIcon />
-          </button>
-        </div>
-      </section>
+      <NoticesCarousel 
+        notices={notices} 
+        onNoticeClick={(notice) => setNoticeModal({
+          open: true,
+          title: notice.title,
+          detail: notice.detail
+        })}
+      />
       <NoticeDetailModal 
         open={noticeModal.open} 
         onClose={() => setNoticeModal({ ...noticeModal, open: false })} 
@@ -994,15 +337,14 @@ const HomePage: React.FC = () => {
         detail={noticeModal.detail} 
       />
 
-      {/* Enlaces rápidos */}
       <section className="home-quicklinks">
         <div className="home-quicklinks-span">
           <h2>Enlaces Rápidos</h2>
         </div>
         <div className="quicklink-carousel-wrapper">
           <button 
-            onClick={() => scrollQuicklinkCarouselBy(-CARD_CAROUSEL_SCROLL_OFFSET)} 
-            disabled={!quicklinkCanScrollLeft} 
+            onClick={() => quicklinkCarousel.scrollBy(-CARD_CAROUSEL_SCROLL_OFFSET)} 
+            disabled={!quicklinkCarousel.canScrollLeft} 
             className="carousel-nav-button prev quicklink-carousel-nav" 
             aria-label="Enlaces anteriores"
           >
@@ -1043,8 +385,8 @@ const HomePage: React.FC = () => {
             </a>
           </div>
           <button 
-            onClick={() => scrollQuicklinkCarouselBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
-            disabled={!quicklinkCanScrollRight} 
+            onClick={() => quicklinkCarousel.scrollBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
+            disabled={!quicklinkCarousel.canScrollRight} 
             className="carousel-nav-button next quicklink-carousel-nav" 
             aria-label="Siguientes enlaces"
           >
@@ -1053,7 +395,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Calendario y próximos eventos */}
       <section className="home-calendar-events">
           <div className="calendar-column">
             <h2>Calendario</h2>
@@ -1074,8 +415,8 @@ const HomePage: React.FC = () => {
             <h2>Próximos Eventos</h2>
             <div className="events-carousel-wrapper">
               <button 
-                onClick={() => scrollEventCarouselBy(-CAROUSEL_SCROLL_OFFSET)} 
-                disabled={!eventCanScrollLeft} 
+                onClick={() => eventCarousel.scrollBy(-CAROUSEL_SCROLL_OFFSET)} 
+                disabled={!eventCarousel.canScrollUp} 
                 className="carousel-nav-button prev event-carousel-nav" 
                 aria-label="Eventos anteriores"
               >
@@ -1132,8 +473,8 @@ const HomePage: React.FC = () => {
                 )}
               </div>
               <button 
-                onClick={() => scrollEventCarouselBy(CAROUSEL_SCROLL_OFFSET)} 
-                disabled={!eventCanScrollRight} 
+                onClick={() => eventCarousel.scrollBy(CAROUSEL_SCROLL_OFFSET)} 
+                disabled={!eventCarousel.canScrollDown} 
                 className="carousel-nav-button next event-carousel-nav" 
                 aria-label="Siguientes eventos"
               >
@@ -1143,13 +484,10 @@ const HomePage: React.FC = () => {
           </div>
       </section>
 
-      {/* Slider de Cumpleañeros */}
       <BirthdaySlider />
       
-      {/* Slider de aniversarios laborales */}
       <AnniversarySlider />
 
-      {/* Footer */}
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-brand-section">
@@ -1197,9 +535,9 @@ const HomePage: React.FC = () => {
       {celebrationPopup && (
         <CelebrationPopup
           userInfo={{
-            firstName: getUserNames(celebrationPopup.user).firstName,
-            displayName: getUserNames(celebrationPopup.user).displayName,
-            yearsOfService: calculateUserYearsOfService(celebrationPopup.user)
+            firstName: celebrationPopup.user.name?.split(' ')[0] || 'Usuario',
+            displayName: celebrationPopup.user.name || 'Usuario',
+            yearsOfService: celebrationPopup.yearsOfService
           }}
           eventType={celebrationPopup.eventType}
           onClose={closeCelebrationPopup}
@@ -1207,7 +545,6 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      {/* Modal de soporte técnico */}
       {isSupportModalOpen && user && (
         <SupportModal
           userInfo={{ firstName: firstName || displayName, lastName: lastName, email: userEmail }}

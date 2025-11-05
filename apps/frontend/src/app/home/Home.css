@@ -2488,7 +2488,6 @@ code {
   color: var(--color-text-secondary);
 }
 
-
 .support-modal-backdrop {
   position: fixed;
   top: 0;
@@ -2551,84 +2550,6 @@ code {
   .footer-social-icon {
     font-size: 1.3rem !important;
   }
-}
-
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: var(--space-4);
-  box-sizing: border-box;
-}
-
-.modal {
-  position: relative;
-  background: white;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  padding: var(--space-6);
-  overflow-y: auto;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-}
-
-.modal-close-button {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.modal-close-button:hover {
-  background: var(--color-primary-5);
-  color: var(--color-primary-100);
-}
-
-.modal h2 {
-  margin: 0 0 var(--space-4) 0;
-  color: var(--color-text-title);
-  font-family: 'Geometria-Bold', 'Geometria', Arial, sans-serif;
-}
-
-.notice-detail-text {
-  line-height: 1.6;
-  color: var(--color-text-secondary);
-}
-
-
-.support-modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: var(--space-4);
-  box-sizing: border-box;
 }
 
 .support-modal-close-button {

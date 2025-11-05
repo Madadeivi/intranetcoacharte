@@ -1,0 +1,2 @@
+export { NoticesCarousel } from './NoticesCarousel';
+

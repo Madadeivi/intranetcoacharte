@@ -1,80 +1,29 @@
 import { User } from '../config/api';
+import { isSameDayInMexico, getTodayInMexico, getYearsDifference } from './dateUtils';
 
 export const isUserBirthday = (user: User | null): boolean => {
   if (!user) return false;
   
-  console.log('isUserBirthday check:', user);
-  
   const birthDateField = user.birth_date || user.birthday;
-  console.log('birthDateField:', birthDateField);
-  
   if (!birthDateField) return false;
   
-  const today = new Date();
-  const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-  
-  const birthday = new Date(birthDateField + 'T00:00:00-06:00');
-  
-  console.log('todayInMexico:', todayInMexico);
-  console.log('birthday:', birthday);
-  console.log('months match:', todayInMexico.getMonth() === birthday.getMonth());
-  console.log('dates match:', todayInMexico.getDate() === birthday.getDate());
-  
-  return todayInMexico.getMonth() === birthday.getMonth() && 
-         todayInMexico.getDate() === birthday.getDate();
+  return isSameDayInMexico(birthDateField, getTodayInMexico());
 };
 
 export const isUserAnniversary = (user: User | null): boolean => {
-  if (!user) return false;
+  if (!user || !user.hire_date) return false;
   
-  console.log('isUserAnniversary check:', user);
+  const hireDate = new Date(user.hire_date + 'T00:00:00-06:00');
+  if (hireDate >= getTodayInMexico()) return false;
   
-  const hireDateField = user.hire_date;
-  console.log('hireDateField:', hireDateField);
-  
-  if (!hireDateField) return false;
-  
-  const today = new Date();
-  const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-  
-  const hireDate = new Date(hireDateField + 'T00:00:00-06:00');
-  
-  console.log('hireDate >= todayInMexico:', hireDate >= todayInMexico);
-  
-  if (hireDate >= todayInMexico) return false;
-  
-  console.log('hire months match:', todayInMexico.getMonth() === hireDate.getMonth());
-  console.log('hire dates match:', todayInMexico.getDate() === hireDate.getDate());
-  
-  return todayInMexico.getMonth() === hireDate.getMonth() && 
-         todayInMexico.getDate() === hireDate.getDate();
+  return isSameDayInMexico(user.hire_date, getTodayInMexico());
 };
 
 export const calculateUserYearsOfService = (user: User | null): number => {
   if (!user || !user.hire_date) return 0;
-  
-  try {
-    const today = new Date();
-    const todayInMexico = new Date(today.toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-    const hire = new Date(user.hire_date + 'T00:00:00-06:00');
-    
-    if (isNaN(hire.getTime()) || hire >= todayInMexico) {
-      return 0;
-    }
-    
-    const diffTime = todayInMexico.getTime() - hire.getTime();
-    const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
-    
-    return Math.max(0, diffYears);
-  } catch (error) {
-    console.warn('Error calculating years of service:', error);
-    return 0;
-  }
+  return getYearsDifference(user.hire_date, getTodayInMexico());
 };
 
-/**
- * Función para verificar si es un aniversario de hito importante (5, 10, 15, 20, 25+ años)
- */
 export const isImportantAnniversary = (user: User | null): boolean => {
   if (!isUserAnniversary(user)) return false;
   
@@ -84,9 +33,6 @@ export const isImportantAnniversary = (user: User | null): boolean => {
   return milestones.includes(years) || years >= 30;
 };
 
-/**
- * Función para determinar si el usuario tiene un evento especial hoy
- */
 export const getUserSpecialEvent = (user: User | null): 'birthday' | 'anniversary' | 'important-anniversary' | null => {
   if (!user) return null;
   
@@ -94,7 +40,6 @@ export const getUserSpecialEvent = (user: User | null): 'birthday' | 'anniversar
   const isAnniversary = isUserAnniversary(user);
   const isImportant = isImportantAnniversary(user);
   
-  // Priorizar cumpleaños sobre aniversario si ambos coinciden
   if (isBirthday) return 'birthday';
   if (isImportant) return 'important-anniversary';
   if (isAnniversary) return 'anniversary';
@@ -102,9 +47,6 @@ export const getUserSpecialEvent = (user: User | null): 'birthday' | 'anniversar
   return null;
 };
 
-/**
- * Función para obtener el mensaje de felicitaciones apropiado
- */
 export const getCelebrationMessage = (user: User | null, eventType: 'birthday' | 'anniversary' | 'important-anniversary'): string => {
   if (!user) return '';
   
@@ -127,9 +69,6 @@ export const getCelebrationMessage = (user: User | null, eventType: 'birthday' |
   }
 };
 
-/**
- * Función para obtener los emojis apropiados según el tipo de evento
- */
 export const getCelebrationEmojis = (eventType: 'birthday' | 'anniversary' | 'important-anniversary'): string => {
   switch (eventType) {
     case 'birthday':
@@ -143,9 +82,6 @@ export const getCelebrationEmojis = (eventType: 'birthday' | 'anniversary' | 'im
   }
 };
 
-/**
- * Función para obtener el color primario del tema según el tipo de evento
- */
 export const getCelebrationTheme = (eventType: 'birthday' | 'anniversary' | 'important-anniversary'): {
   primary: string;
   secondary: string;
@@ -154,21 +90,21 @@ export const getCelebrationTheme = (eventType: 'birthday' | 'anniversary' | 'imp
   switch (eventType) {
     case 'birthday':
       return {
-        primary: '#ff6b6b',  // Rosa/Rojo para cumpleaños
-        secondary: '#ffd93d', // Amarillo dorado
-        accent: '#6bcf7f'     // Verde claro
+        primary: '#ff6b6b',
+        secondary: '#ffd93d',
+        accent: '#6bcf7f'
       };
     case 'anniversary':
       return {
-        primary: '#4ecdc4',   // Turquesa para aniversario
-        secondary: '#45b7d1', // Azul cielo
-        accent: '#96ceb4'     // Verde menta
+        primary: '#4ecdc4',
+        secondary: '#45b7d1',
+        accent: '#96ceb4'
       };
     case 'important-anniversary':
       return {
-        primary: '#f9ca24',   // Dorado para hitos importantes
-        secondary: '#f0932b', // Naranja dorado
-        accent: '#eb4d4b'     // Rojo elegante
+        primary: '#f9ca24',
+        secondary: '#f0932b',
+        accent: '#eb4d4b'
       };
     default:
       return {

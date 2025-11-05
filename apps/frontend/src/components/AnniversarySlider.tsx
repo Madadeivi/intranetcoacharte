@@ -103,20 +103,21 @@ export const AnniversarySlider: React.FC<AnniversarySliderProps> = ({ className 
     return milestones.includes(years) || years >= 30;
   };
 
-  // Function to navigate in slider
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
   };
 
+  const slidesCount = anniversaryData?.data ? Math.ceil(anniversaryData.data.length / 3) : 0;
+
   const nextSlide = () => {
-    if (anniversaryData?.data && anniversaryData.data.length > 0) {
-      setCurrentSlide((prev) => (prev + 1) % Math.ceil(anniversaryData.data.length / 3));
+    if (slidesCount > 0) {
+      setCurrentSlide((prev) => Math.min(prev + 1, slidesCount - 1));
     }
   };
 
   const prevSlide = () => {
-    if (anniversaryData?.data && anniversaryData.data.length > 0) {
-      setCurrentSlide((prev) => (prev - 1 + Math.ceil(anniversaryData.data.length / 3)) % Math.ceil(anniversaryData.data.length / 3));
+    if (slidesCount > 0) {
+      setCurrentSlide((prev) => Math.max(prev - 1, 0));
     }
   };
 
@@ -164,7 +165,6 @@ export const AnniversarySlider: React.FC<AnniversarySliderProps> = ({ className 
 
   const { data: anniversaries, month, year, count } = anniversaryData;
   const monthName = new Date(year, month - 1).toLocaleDateString('es-ES', { month: 'long' });
-  const slidesCount = Math.ceil(anniversaries.length / 3);
 
   return (
     <section className={`anniversary-slider-section ${className}`}>
