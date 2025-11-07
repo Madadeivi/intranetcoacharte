@@ -70,7 +70,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
   };
 
   const handleSearch = () => {
-    if (pdfSlick && searchQuery.trim()) {
+    if (pdfSlick && pdfSlick.findController && searchQuery.trim()) {
       pdfSlick.findController.executeCommand('find', {
         query: searchQuery,
         highlightAll: true,
