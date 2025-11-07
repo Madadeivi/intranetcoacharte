@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { vacationService, VacationBalance, VacationRequest } from '@/services/vacationService';
 import { vacationPDFService } from '@/services/vacationPDFService';
-import { profileService, ProfileData } from '@/services/profileService';
+import { useEnrichedUser } from '@/hooks';
 import './vacations.css';
 
 // Icons
@@ -24,14 +24,12 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 
 const VacationsPage: React.FC = () => {
   const { user } = useAuthStore();
+  const { enrichedUser, isLoading: isProfileLoading, error: profileError } = useEnrichedUser();
   const [vacationBalance, setVacationBalance] = useState<VacationBalance | null>(null);
   const [requests, setRequests] = useState<VacationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,10 +57,9 @@ const VacationsPage: React.FC = () => {
       setError(null);
 
       // Cargar saldo y solicitudes en paralelo
-      const [balanceResult, requestsResult, profileResult] = await Promise.allSettled([
+      const [balanceResult, requestsResult] = await Promise.allSettled([
         vacationService.getVacationBalance(user.id),
         vacationService.getVacationRequests(user.id),
-        profileService.getProfile(),
       ]);
 
       if (balanceResult.status === 'fulfilled') {
@@ -78,32 +75,17 @@ const VacationsPage: React.FC = () => {
         console.error('Error loading vacation requests:', requestsResult.reason);
         setError('Error al cargar las solicitudes de vacaciones');
       }
-
-      if (profileResult.status === 'fulfilled') {
-        const profileResponse = profileResult.value;
-        if (profileResponse.success && profileResponse.data?.profile) {
-          setProfile(profileResponse.data.profile);
-          setProfileError(null);
-        } else {
-          setProfileError(profileResponse.message || 'No se pudo cargar el perfil del usuario');
-        }
-      } else {
-        console.error('Error loading profile data:', profileResult.reason);
-        setProfileError('No se pudo cargar el perfil del usuario');
-      }
     } catch (err) {
       console.error('Error loading vacation data:', err);
       setError('Error al cargar los datos de vacaciones');
     } finally {
       setIsLoading(false);
-      setIsProfileLoading(false);
     }
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id) return;
-    setIsProfileLoading(true);
-  }, [user?.id]);
+    loadVacationData();
+  }, [loadVacationData]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -145,18 +127,18 @@ const VacationsPage: React.FC = () => {
       return;
     }
 
-    if (!mergedUserInfo) {
+    if (!enrichedUser) {
       setError('No se pudo cargar la información del usuario. Intente nuevamente.');
       return;
     }
 
-    if (!mergedUserInfo.internal_registry && !isProfileLoading) {
+    if (!enrichedUser.internal_registry && !isProfileLoading) {
       setError('No se encontró el número de empleado. Verifique su perfil en Zoho.');
       return;
     }
 
     try {
-      await vacationPDFService.generatePDFWithUserData(mergedUserInfo, vacationBalance);
+      await vacationPDFService.generatePDFWithUserData(enrichedUser, vacationBalance);
     } catch (err) {
       console.error('Error generating document:', err);
       setError('Error al generar el documento');
@@ -177,26 +159,6 @@ const VacationsPage: React.FC = () => {
       setSelectedImage(null);
     }
   };
-
-  const mergedUserInfo = useMemo(() => {
-    if (!user) return null;
-
-    const firstName = profile?.full_name?.trim() || user.firstName || user.name || '';
-    const lastName = profile?.last_name?.trim() || user.lastName || '';
-    const displayName = `${firstName} ${lastName}`.trim() || user.name;
-
-    return {
-      email: user.email,
-      id: user.id,
-      firstName,
-      lastName,
-      displayName,
-      department: profile?.assigned_client || profile?.department_id || user.department,
-      position: profile?.title || user.role,
-      title: profile?.title || user.role,
-      internal_registry: profile?.internal_registry,
-    };
-  }, [user, profile]);
 
   if (isLoading) {
     return (
