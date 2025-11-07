@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { vacationService, VacationRequest, VacationBalance } from '@/services/vacationService';
 import { vacationDocxService } from '@/services/vacationDocxService';
+import { profileService, ProfileData } from '@/services/profileService';
 import '../vacations.css';
 
 // Icons
@@ -33,6 +34,9 @@ const VacationRequestPage: React.FC = () => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [vacationBalance, setVacationBalance] = useState<VacationBalance | null>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -58,13 +62,42 @@ const VacationRequestPage: React.FC = () => {
       return;
     }
 
-    if (user.id) {
-      vacationService.getVacationBalance(user.id)
-        .then(setVacationBalance)
-        .catch((err) => {
-          console.error('Error loading vacation balance:', err);
-        });
-    }
+    const fetchData = async () => {
+      if (!user.id) return;
+
+      try {
+        const [balanceResult, profileResult] = await Promise.allSettled([
+          vacationService.getVacationBalance(user.id),
+          profileService.getProfile(),
+        ]);
+
+        if (balanceResult.status === 'fulfilled') {
+          setVacationBalance(balanceResult.value);
+        } else {
+          console.error('Error loading vacation balance:', balanceResult.reason);
+        }
+
+        if (profileResult.status === 'fulfilled') {
+          const profileResponse = profileResult.value;
+          if (profileResponse.success && profileResponse.data?.profile) {
+            setProfile(profileResponse.data.profile);
+            setProfileError(null);
+          } else {
+            setProfileError(profileResponse.message || 'No se pudo cargar el perfil del usuario');
+          }
+        } else {
+          console.error('Error loading profile data:', profileResult.reason);
+          setProfileError('No se pudo cargar el perfil del usuario');
+        }
+      } catch (err) {
+        console.error('Unexpected error loading vacation data:', err);
+      } finally {
+        setIsProfileLoading(false);
+      }
+    };
+
+    setIsProfileLoading(true);
+    fetchData();
   }, [user, router]);
 
   // Cleanup navigation timeout on unmount
@@ -120,6 +153,16 @@ const VacationRequestPage: React.FC = () => {
       return;
     }
 
+    if (!mergedUserInfo) {
+      setError('No se pudo cargar la información del usuario. Intente nuevamente.');
+      return;
+    }
+
+    if (!mergedUserInfo.internal_registry && !isProfileLoading) {
+      setError('No se encontró el número de empleado. Verifique su perfil en Zoho.');
+      return;
+    }
+
     setIsGeneratingPDF(true);
     setError(null);
 
@@ -131,7 +174,7 @@ const VacationRequestPage: React.FC = () => {
     };
 
     try {
-      await vacationDocxService.generateDocxWithUserData(user, vacationBalance, requestData);
+      await vacationDocxService.generateDocxWithUserData(mergedUserInfo, vacationBalance, requestData);
     } catch (err) {
       console.error('Error generating document:', err);
       setError('Error al generar el documento. Intente nuevamente.');
@@ -189,6 +232,26 @@ const VacationRequestPage: React.FC = () => {
       setSelectedImage(null);
     }
   };
+
+  const mergedUserInfo = useMemo(() => {
+    if (!user) return null;
+
+    const firstName = profile?.full_name?.trim() || user.firstName || user.name || '';
+    const lastName = profile?.last_name?.trim() || user.lastName || '';
+    const displayName = `${firstName} ${lastName}`.trim() || user.name;
+
+    return {
+      email: user.email,
+      id: user.id,
+      firstName,
+      lastName,
+      displayName,
+      department: profile?.assigned_client || profile?.department_id || user.department,
+      position: profile?.title || user.role,
+      title: profile?.title || user.role,
+      internal_registry: profile?.internal_registry,
+    };
+  }, [user, profile]);
 
   return (
     <div className="vacation-page">
@@ -280,6 +343,13 @@ const VacationRequestPage: React.FC = () => {
             </div>
           )}
 
+          {profileError && (
+            <div className="form-error">
+              <WarningIcon />
+              <span>{profileError}</span>
+            </div>
+          )}
+
           <div className="form-actions">
             <Link href="/vacations" className="action-button secondary">
               Cancelar
@@ -288,7 +358,14 @@ const VacationRequestPage: React.FC = () => {
               type="button"
               className="action-button primary"
               onClick={handleGeneratePreviewPDF}
-              disabled={isGeneratingPDF || !!validationError || workingDays === 0 || !formData.reason.trim()}
+              disabled={
+                isGeneratingPDF ||
+                !!validationError ||
+                workingDays === 0 ||
+                !formData.reason.trim() ||
+                isProfileLoading ||
+                !!profileError
+              }
             >
               {isGeneratingPDF ? (
                 <>
