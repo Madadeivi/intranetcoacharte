@@ -1,20 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
-import { vacationService, VacationRequest } from '@/services/vacationService';
-import { vacationPDFService } from '@/services/vacationPDFService';
+import { vacationService, VacationRequest, VacationBalance } from '@/services/vacationService';
+import { vacationDocxService } from '@/services/vacationDocxService';
 import '../vacations.css';
 
 // Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import SendIcon from '@mui/icons-material/Send';
 import WarningIcon from '@mui/icons-material/Warning';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DescriptionIcon from '@mui/icons-material/Description';
 import InfoIcon from '@mui/icons-material/Info';
 import WorkOffIcon from '@mui/icons-material/WorkOff';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -22,17 +21,18 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 const VacationRequestPage: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
     reason: ''
   });
   const [workingDays, setWorkingDays] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [vacationBalance, setVacationBalance] = useState<VacationBalance | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -57,7 +57,25 @@ const VacationRequestPage: React.FC = () => {
       router.push('/login');
       return;
     }
+
+    if (user.id) {
+      vacationService.getVacationBalance(user.id)
+        .then(setVacationBalance)
+        .catch((err) => {
+          console.error('Error loading vacation balance:', err);
+        });
+    }
   }, [user, router]);
+
+  // Cleanup navigation timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (formData.startDate && formData.endDate) {
@@ -80,47 +98,15 @@ const VacationRequestPage: React.FC = () => {
   };
 
   const handleGeneratePreviewPDF = async () => {
-    if (!user || !formData.startDate || !formData.endDate) {
-      setError('Complete los datos del formulario para generar la vista previa');
+    if (isGeneratingPDF) return;
+    
+    if (!user?.id || !formData.startDate || !formData.endDate) {
+      setError('Complete los datos del formulario para generar el documento');
       return;
     }
 
     if (validationError || workingDays === 0) {
-      setError('Corrija los errores del formulario antes de generar el PDF');
-      return;
-    }
-
-    try {
-      setIsGeneratingPDF(true);
-      setError(null);
-
-      // Datos ficticios de balance para la vista previa
-      const previewBalance = {
-        available: 15,
-        taken: 5,
-        remaining: 10
-      };
-
-      const requestData = {
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        reason: formData.reason || 'Vista previa de solicitud',
-        totalDays: workingDays
-      };
-
-      await vacationPDFService.generatePDFWithUserData(user, previewBalance, requestData);
-    } catch (err) {
-      console.error('Error generating preview PDF:', err);
-      setError('Error al generar la vista previa del PDF');
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user?.id || validationError || workingDays === 0) {
+      setError('Corrija los errores del formulario antes de generar el documento');
       return;
     }
 
@@ -129,10 +115,31 @@ const VacationRequestPage: React.FC = () => {
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      setError(null);
+    if (!vacationBalance) {
+      setError('No se pudo cargar el saldo de vacaciones. Intente nuevamente.');
+      return;
+    }
 
+    setIsGeneratingPDF(true);
+    setError(null);
+
+    const requestData = {
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      reason: formData.reason,
+      totalDays: workingDays
+    };
+
+    try {
+      await vacationDocxService.generateDocxWithUserData(user, vacationBalance, requestData);
+    } catch (err) {
+      console.error('Error generating document:', err);
+      setError('Error al generar el documento. Intente nuevamente.');
+      setIsGeneratingPDF(false);
+      return;
+    }
+
+    try {
       const request: Omit<VacationRequest, 'id' | 'submittedAt' | 'status'> = {
         userId: user.id,
         startDate: formData.startDate,
@@ -142,16 +149,25 @@ const VacationRequestPage: React.FC = () => {
       };
 
       await vacationService.createVacationRequest(request);
-      
-      // Redirigir de vuelta a la página principal con un mensaje de éxito
-      router.push('/vacations?success=request-created');
+
+      // Store timeout reference for cleanup
+      navigationTimeoutRef.current = setTimeout(() => {
+        router.push('/vacations?success=request-created');
+        navigationTimeoutRef.current = null;
+      }, 1000);
     } catch (err) {
-      console.error('Error creating vacation request:', err);
-      setError(err instanceof Error ? err.message : 'Error al crear la solicitud de vacaciones');
+      console.error('Error saving vacation request:', err);
+      setError('El documento fue generado, pero hubo un error al guardar la solicitud.');
+      // Clear timeout if there's an error
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = null;
+      }
     } finally {
-      setIsSubmitting(false);
+      setIsGeneratingPDF(false);
     }
   };
+
 
   const getMinDate = () => {
     const tomorrow = new Date();
@@ -190,7 +206,7 @@ const VacationRequestPage: React.FC = () => {
 
       {/* Formulario */}
       <section className="vacation-balance-section">
-        <form onSubmit={handleSubmit} className="vacation-request-form">
+        <div className="vacation-request-form">
           <div className="form-group">
             <label htmlFor="startDate">Fecha de Inicio</label>
             <input
@@ -199,6 +215,11 @@ const VacationRequestPage: React.FC = () => {
               name="startDate"
               value={formData.startDate}
               onChange={handleInputChange}
+              onClick={(e) => {
+                if (typeof e.currentTarget.showPicker === 'function') {
+                  e.currentTarget.showPicker();
+                }
+              }}
               min={getMinDate()}
               required
               className="form-input"
@@ -213,6 +234,11 @@ const VacationRequestPage: React.FC = () => {
               name="endDate"
               value={formData.endDate}
               onChange={handleInputChange}
+              onClick={(e) => {
+                if (typeof e.currentTarget.showPicker === 'function') {
+                  e.currentTarget.showPicker();
+                }
+              }}
               min={formData.startDate || getMinDate()}
               required
               className="form-input"
@@ -258,45 +284,26 @@ const VacationRequestPage: React.FC = () => {
             <Link href="/vacations" className="action-button secondary">
               Cancelar
             </Link>
-            {formData.startDate && formData.endDate && workingDays > 0 && !validationError && (
-              <button
-                type="button"
-                className="action-button secondary"
-                onClick={handleGeneratePreviewPDF}
-                disabled={isGeneratingPDF}
-              >
-                {isGeneratingPDF ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    <span>Generando...</span>
-                  </>
-                ) : (
-                  <>
-                    <PictureAsPdfIcon />
-                    <span>Vista Previa PDF</span>
-                  </>
-                )}
-              </button>
-            )}
             <button
-              type="submit"
+              type="button"
               className="action-button primary"
-              disabled={isSubmitting || !!validationError || workingDays === 0}
+              onClick={handleGeneratePreviewPDF}
+              disabled={isGeneratingPDF || !!validationError || workingDays === 0 || !formData.reason.trim()}
             >
-              {isSubmitting ? (
+              {isGeneratingPDF ? (
                 <>
                   <div className="button-spinner"></div>
-                  <span>Enviando...</span>
+                  <span>Generando...</span>
                 </>
               ) : (
                 <>
-                  <SendIcon />
-                  <span>Enviar Solicitud</span>
+                  <DescriptionIcon />
+                  <span>Vista Previa / Descargar</span>
                 </>
               )}
             </button>
           </div>
-        </form>
+        </div>
       </section>
 
       {/* Información de Vacaciones */}
