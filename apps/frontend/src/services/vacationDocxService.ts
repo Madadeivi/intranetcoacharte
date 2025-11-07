@@ -44,14 +44,27 @@ class VacationDocxService {
       }
 
       const blob = await response.blob();
-      const contentDisposition = response.headers.get('Content-Disposition');
-      const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
-      const filename = filenameMatch ? filenameMatch[1] : 'Solicitud_Vacaciones.docx';
+      const contentDisposition = response.headers.get('Content-Disposition') || '';
+      
+      const filenameStarMatch = contentDisposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+      const quotedMatch = contentDisposition.match(/filename\s*=\s*"([^"]+)"/i);
+      const unquotedMatch = contentDisposition.match(/filename\s*=\s*([^;]+)/i);
+
+      let rawFilename =
+        (filenameStarMatch && decodeURIComponent(filenameStarMatch[1])) ||
+        (quotedMatch && quotedMatch[1]) ||
+        (unquotedMatch && unquotedMatch[1]) ||
+        'Solicitud_Vacaciones.docx';
+
+      rawFilename = rawFilename
+        .replace(/[\r\n]/g, '')
+        .replace(/[/\\?%*:|"<>]/g, '_')
+        .slice(0, 150) || 'Solicitud_Vacaciones.docx';
 
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filename;
+      a.download = rawFilename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

@@ -57,29 +57,35 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
     }
   }, [pdfSlick]);
 
-  const handlePrevPage = () => {
-    if (pdfSlick && pageNumber > 1) {
-      pdfSlick.viewer.currentPageNumber = pageNumber - 1;
+  const setSafePage = useCallback((target: number) => {
+    if (!pdfSlick?.viewer || !numPages || numPages < 1) return;
+    const clamped = Math.max(1, Math.min(numPages, Math.floor(target)));
+    if (!Number.isNaN(clamped)) {
+      pdfSlick.viewer.currentPageNumber = clamped;
     }
-  };
+  }, [pdfSlick, numPages]);
 
-  const handleNextPage = () => {
-    if (pdfSlick && pageNumber < numPages) {
-      pdfSlick.viewer.currentPageNumber = pageNumber + 1;
-    }
-  };
+  const handlePrevPage = useCallback(() => {
+    setSafePage((pageNumber || 1) - 1);
+  }, [setSafePage, pageNumber]);
 
-  const handleSearch = () => {
-    if (searchQuery.trim() && pdfSlick?.eventBus) {
+  const handleNextPage = useCallback(() => {
+    setSafePage((pageNumber || 1) + 1);
+  }, [setSafePage, pageNumber]);
+
+  const handleSearch = useCallback(() => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    if (pdfSlick?.eventBus && !(pdfSlick as any)?.destroyed) {
       pdfSlick.eventBus.dispatch('find', {
         type: 'find',
-        query: searchQuery,
+        query: q,
         caseSensitive: false,
         highlightAll: true,
         findPrevious: false,
       });
     }
-  };
+  }, [searchQuery, pdfSlick]);
 
   const toggleFullscreen = useCallback(() => {
     if (containerRef) {
@@ -156,12 +162,12 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
             <input
               type="number"
               min={1}
-              max={numPages}
-              value={pageNumber}
+              max={numPages || 1}
+              value={pageNumber || 1}
               onChange={(e) => {
-                const page = parseInt(e.target.value);
-                if (pdfSlick && page >= 1 && page <= numPages) {
-                  pdfSlick.viewer.currentPageNumber = page;
+                const parsed = Number(e.target.value);
+                if (!Number.isNaN(parsed)) {
+                  setSafePage(parsed);
                 }
               }}
               className="page-input"
@@ -187,7 +193,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
                 placeholder="Buscar en el documento..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="search-input"
                 autoFocus
               />

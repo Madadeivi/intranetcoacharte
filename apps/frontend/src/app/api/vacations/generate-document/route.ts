@@ -84,8 +84,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { userInfo, vacationBalance, requestData } = body;
 
-    const currentDate = new Date().toISOString().split('T')[0];
-    const currentYear = new Date().getFullYear().toString();
+    const now = new Date();
+    const currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentYear = now.getFullYear().toString();
 
     const nombreCompleto = `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() 
       || userInfo.displayName 
@@ -110,28 +111,69 @@ export async function POST(request: NextRequest) {
     };
 
     const templatePath = path.join(process.cwd(), 'public', 'templates', 'solicitud_vacaciones.docx');
-    const templateBuffer = await fs.readFile(templatePath);
+    
+    try {
+      await fs.access(templatePath);
+    } catch {
+      return NextResponse.json(
+        { error: 'Plantilla de documento no encontrada' },
+        { status: 500 }
+      );
+    }
 
-    const zip = new PizZip(templateBuffer);
-    const doc = new Docxtemplater(zip, {
-      paragraphLoop: true,
-      linebreaks: true,
-    });
+    let templateBuffer: Buffer;
+    try {
+      templateBuffer = await fs.readFile(templatePath);
+    } catch {
+      return NextResponse.json(
+        { error: 'No se pudo leer la plantilla del documento' },
+        { status: 500 }
+      );
+    }
 
-    doc.render(docxData);
+    let doc: Docxtemplater;
+    try {
+      const zip = new PizZip(templateBuffer);
+      doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+      });
+    } catch {
+      return NextResponse.json(
+        { error: 'Plantilla de documento inválida o corrupta' },
+        { status: 500 }
+      );
+    }
+
+    try {
+      doc.render(docxData);
+    } catch {
+      return NextResponse.json(
+        { error: 'Error al renderizar el documento' },
+        { status: 500 }
+      );
+    }
 
     const outputBuffer = doc.getZip().generate({
       type: 'nodebuffer',
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     });
 
-    const fileName = `Solicitud_Vacaciones_${docxData.nombre_completo.replace(/\s+/g, '_')}_${currentDate}.docx`;
+    const unsafeName = `${docxData.nombre_completo}`.normalize('NFKD').replace(/[\p{Diacritic}]/gu, '');
+    const safeName = unsafeName
+      .replace(/[^\p{L}\p{N}\s._-]/gu, '')
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/[_-]{2,}/g, '_')
+      .slice(0, 100) || 'Usuario';
+    const fileName = `Solicitud_Vacaciones_${safeName}_${currentDate}.docx`;
+    const encodedFileName = encodeURIComponent(fileName);
 
     return new NextResponse(outputBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Content-Disposition': `attachment; filename="${fileName.replace(/"/g, '')}"; filename*=UTF-8''${encodedFileName}`,
       },
     });
   } catch (error) {

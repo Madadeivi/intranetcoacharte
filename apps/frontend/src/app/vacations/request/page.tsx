@@ -87,6 +87,8 @@ const VacationRequestPage: React.FC = () => {
   };
 
   const handleGeneratePreviewPDF = async () => {
+    if (isGeneratingPDF) return;
+    
     if (!user?.id || !formData.startDate || !formData.endDate) {
       setError('Complete los datos del formulario para generar el documento');
       return;
@@ -107,19 +109,26 @@ const VacationRequestPage: React.FC = () => {
       return;
     }
 
+    setIsGeneratingPDF(true);
+    setError(null);
+
+    const requestData = {
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      reason: formData.reason,
+      totalDays: workingDays
+    };
+
     try {
-      setIsGeneratingPDF(true);
-      setError(null);
-
-      const requestData = {
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        reason: formData.reason,
-        totalDays: workingDays
-      };
-
       await vacationDocxService.generateDocxWithUserData(user, vacationBalance, requestData);
+    } catch (err) {
+      console.error('Error generating document:', err);
+      setError('Error al generar el documento. Intente nuevamente.');
+      setIsGeneratingPDF(false);
+      return;
+    }
 
+    try {
       const request: Omit<VacationRequest, 'id' | 'submittedAt' | 'status'> = {
         userId: user.id,
         startDate: formData.startDate,
@@ -134,8 +143,8 @@ const VacationRequestPage: React.FC = () => {
         router.push('/vacations?success=request-created');
       }, 1000);
     } catch (err) {
-      console.error('Error generating document or saving request:', err);
-      setError('Error al generar el documento y guardar la solicitud');
+      console.error('Error saving vacation request:', err);
+      setError('El documento fue generado, pero hubo un error al guardar la solicitud.');
     } finally {
       setIsGeneratingPDF(false);
     }
