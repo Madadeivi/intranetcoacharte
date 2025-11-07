@@ -111,6 +111,15 @@ const VacationRequestPage: React.FC = () => {
       setIsGeneratingPDF(true);
       setError(null);
 
+      const requestData = {
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        reason: formData.reason,
+        totalDays: workingDays
+      };
+
+      await vacationDocxService.generateDocxWithUserData(user, vacationBalance, requestData);
+
       const request: Omit<VacationRequest, 'id' | 'submittedAt' | 'status'> = {
         userId: user.id,
         startDate: formData.startDate,
@@ -121,20 +130,11 @@ const VacationRequestPage: React.FC = () => {
 
       await vacationService.createVacationRequest(request);
 
-      const requestData = {
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        reason: formData.reason,
-        totalDays: workingDays
-      };
-
-      await vacationDocxService.generateDocxWithUserData(user, vacationBalance, requestData);
-
       setTimeout(() => {
         router.push('/vacations?success=request-created');
       }, 1000);
     } catch (err) {
-      console.error('Error generating document:', err);
+      console.error('Error generating document or saving request:', err);
       setError('Error al generar el documento y guardar la solicitud');
     } finally {
       setIsGeneratingPDF(false);

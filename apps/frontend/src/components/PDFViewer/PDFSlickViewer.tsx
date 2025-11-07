@@ -85,10 +85,8 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
     if (containerRef) {
       if (!document.fullscreenElement) {
         containerRef.requestFullscreen?.();
-        setIsFullscreen(true);
       } else {
         document.exitFullscreen?.();
-        setIsFullscreen(false);
       }
     }
   }, [containerRef]);
@@ -104,6 +102,11 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const isTypingInInput = 
+        document.activeElement instanceof HTMLInputElement ||
+        document.activeElement instanceof HTMLTextAreaElement ||
+        (document.activeElement as HTMLElement)?.isContentEditable;
+
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 'f') {
           e.preventDefault();
@@ -118,14 +121,14 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
           e.preventDefault();
           handleFitToWidth();
         }
-      } else if (e.key === 'f' && !showSearch) {
+      } else if (e.key === 'f' && !isTypingInInput) {
         toggleFullscreen();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showSearch, handleZoomIn, handleZoomOut, handleFitToWidth, toggleFullscreen]);
+  }, [handleZoomIn, handleZoomOut, handleFitToWidth, toggleFullscreen]);
 
   return (
     <div className="pdfslick-viewer-container" ref={setContainerRef}>
