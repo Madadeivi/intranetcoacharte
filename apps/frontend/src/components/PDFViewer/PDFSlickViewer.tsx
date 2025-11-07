@@ -24,6 +24,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
 
   const {
     viewerRef,
@@ -31,7 +32,6 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
     PDFSlickViewer: Viewer,
   } = usePDFSlick(url, {
     scaleValue: 'page-width',
-    singlePageViewer: false,
   });
 
   const scale = usePDFSlickStore((state) => state.scale);
@@ -70,21 +70,26 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
   };
 
   const handleSearch = () => {
-    if (pdfSlick && pdfSlick.findController && searchQuery.trim()) {
-      pdfSlick.findController.executeCommand('find', {
+    if (searchQuery.trim() && pdfSlick?.eventBus) {
+      pdfSlick.eventBus.dispatch('find', {
+        type: 'find',
         query: searchQuery,
+        caseSensitive: false,
         highlightAll: true,
+        findPrevious: false,
       });
     }
   };
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      viewerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
+    if (containerRef) {
+      if (!document.fullscreenElement) {
+        containerRef.requestFullscreen?.();
+        setIsFullscreen(true);
+      } else {
+        document.exitFullscreen?.();
+        setIsFullscreen(false);
+      }
     }
   };
 
@@ -114,7 +119,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
           handleFitToWidth();
         }
       } else if (e.key === 'f' && !showSearch) {
-        setIsFullscreen((prev) => !prev);
+        toggleFullscreen();
       }
     };
 
@@ -123,7 +128,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
   }, [showSearch, handleZoomIn, handleZoomOut, handleFitToWidth]);
 
   return (
-    <div className="pdfslick-viewer-container">
+    <div className="pdfslick-viewer-container" ref={setContainerRef}>
       <div className="pdfslick-toolbar">
         <div className="toolbar-section">
           <button
@@ -267,8 +272,8 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
           </div>
         )}
 
-        <div className="pdfslick-viewer-wrapper" ref={viewerRef}>
-          <Viewer />
+        <div className="pdfslick-viewer-wrapper">
+          <Viewer viewerRef={viewerRef} usePDFSlickStore={usePDFSlickStore} />
         </div>
       </div>
 
@@ -281,4 +286,3 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
     </div>
   );
 };
-
