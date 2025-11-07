@@ -155,7 +155,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
         <div className="toolbar-section page-navigation">
           <button
             onClick={handlePrevPage}
-            disabled={pageNumber <= 1}
+            disabled={!pageNumber || pageNumber <= 1}
             className="toolbar-btn"
             title="Página anterior"
           >
@@ -180,7 +180,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
           </span>
           <button
             onClick={handleNextPage}
-            disabled={pageNumber >= numPages}
+            disabled={!numPages || !pageNumber || pageNumber >= numPages}
             className="toolbar-btn"
             title="Página siguiente"
           >

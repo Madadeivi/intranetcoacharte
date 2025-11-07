@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,6 +21,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 const VacationRequestPage: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
@@ -65,6 +66,16 @@ const VacationRequestPage: React.FC = () => {
         });
     }
   }, [user, router]);
+
+  // Cleanup navigation timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (formData.startDate && formData.endDate) {
@@ -139,12 +150,19 @@ const VacationRequestPage: React.FC = () => {
 
       await vacationService.createVacationRequest(request);
 
-      setTimeout(() => {
+      // Store timeout reference for cleanup
+      navigationTimeoutRef.current = setTimeout(() => {
         router.push('/vacations?success=request-created');
+        navigationTimeoutRef.current = null;
       }, 1000);
     } catch (err) {
       console.error('Error saving vacation request:', err);
       setError('El documento fue generado, pero hubo un error al guardar la solicitud.');
+      // Clear timeout if there's an error
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = null;
+      }
     } finally {
       setIsGeneratingPDF(false);
     }
