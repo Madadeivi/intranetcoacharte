@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { vacationService, VacationBalance, VacationRequest } from '@/services/vacationService';
 import { vacationPDFService } from '@/services/vacationPDFService';
+import { useEnrichedUser } from '@/hooks';
 import './vacations.css';
 
 // Icons
@@ -14,7 +14,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import AddIcon from '@mui/icons-material/Add';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DescriptionIcon from '@mui/icons-material/Description';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -23,8 +23,8 @@ import WorkOffIcon from '@mui/icons-material/WorkOff';
 import TableChartIcon from '@mui/icons-material/TableChart';
 
 const VacationsPage: React.FC = () => {
-  const router = useRouter();
   const { user } = useAuthStore();
+  const { enrichedUser, isLoading: isProfileLoading, error: profileError } = useEnrichedUser();
   const [vacationBalance, setVacationBalance] = useState<VacationBalance | null>(null);
   const [requests, setRequests] = useState<VacationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,13 +57,24 @@ const VacationsPage: React.FC = () => {
       setError(null);
 
       // Cargar saldo y solicitudes en paralelo
-      const [balanceData, requestsData] = await Promise.all([
+      const [balanceResult, requestsResult] = await Promise.allSettled([
         vacationService.getVacationBalance(user.id),
-        vacationService.getVacationRequests(user.id)
+        vacationService.getVacationRequests(user.id),
       ]);
 
-      setVacationBalance(balanceData);
-      setRequests(requestsData);
+      if (balanceResult.status === 'fulfilled') {
+        setVacationBalance(balanceResult.value);
+      } else {
+        console.error('Error loading vacation balance:', balanceResult.reason);
+        setError('Error al cargar el saldo de vacaciones');
+      }
+
+      if (requestsResult.status === 'fulfilled') {
+        setRequests(requestsResult.value);
+      } else {
+        console.error('Error loading vacation requests:', requestsResult.reason);
+        setError('Error al cargar las solicitudes de vacaciones');
+      }
     } catch (err) {
       console.error('Error loading vacation data:', err);
       setError('Error al cargar los datos de vacaciones');
@@ -73,13 +84,8 @@ const VacationsPage: React.FC = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    
     loadVacationData();
-  }, [user, router, loadVacationData]);
+  }, [loadVacationData]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -117,15 +123,25 @@ const VacationsPage: React.FC = () => {
 
   const handleGeneratePDF = async () => {
     if (!user || !vacationBalance) {
-      setError('No se pueden generar el PDF sin datos del usuario y saldo de vacaciones');
+      setError('No se puede generar el PDF sin datos del usuario y saldo de vacaciones');
+      return;
+    }
+
+    if (!enrichedUser) {
+      setError('No se pudo cargar la información del usuario. Intente nuevamente.');
+      return;
+    }
+
+    if (!enrichedUser.internal_registry && !isProfileLoading) {
+      setError('No se encontró el número de empleado. Verifique su perfil en Zoho.');
       return;
     }
 
     try {
-      await vacationPDFService.generatePDFWithUserData(user, vacationBalance);
+      await vacationPDFService.generatePDFWithUserData(enrichedUser, vacationBalance);
     } catch (err) {
-      console.error('Error generating PDF:', err);
-      setError('Error al generar el PDF');
+      console.error('Error generating document:', err);
+      setError('Error al generar el documento');
     }
   };
 
@@ -226,11 +242,20 @@ const VacationsPage: React.FC = () => {
             <AddIcon />
             <span>Nueva Solicitud</span>
           </Link>
-          <button className="action-button secondary" onClick={handleGeneratePDF}>
-            <PictureAsPdfIcon />
-            <span>Generar PDF</span>
+          <button
+            className="action-button secondary"
+            onClick={handleGeneratePDF}
+            disabled={isProfileLoading || !!profileError}
+          >
+            <DescriptionIcon />
+            <span>Generar Documento</span>
           </button>
         </div>
+        {profileError && (
+          <div className="vacation-error inline">
+            <p>{profileError}</p>
+          </div>
+        )}
       </section>
 
       {/* Información de Vacaciones */}

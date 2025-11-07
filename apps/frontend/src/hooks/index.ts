@@ -6,3 +6,5 @@
  */
 
 export { useClickOutside } from './useClickOutside';
+export { useEnrichedUser } from './useEnrichedUser';
+export type { EnrichedUser } from './useEnrichedUser';

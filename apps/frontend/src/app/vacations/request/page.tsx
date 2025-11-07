@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { vacationService, VacationRequest, VacationBalance } from '@/services/vacationService';
 import { vacationDocxService } from '@/services/vacationDocxService';
+import { useEnrichedUser } from '@/hooks';
 import '../vacations.css';
 
 // Icons
@@ -21,6 +22,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 const VacationRequestPage: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { enrichedUser, isLoading: isProfileLoading, error: profileError } = useEnrichedUser();
   const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState({
     startDate: '',
@@ -120,6 +122,16 @@ const VacationRequestPage: React.FC = () => {
       return;
     }
 
+    if (!enrichedUser) {
+      setError('No se pudo cargar la información del usuario. Intente nuevamente.');
+      return;
+    }
+
+    if (!enrichedUser.internal_registry && !isProfileLoading) {
+      setError('No se encontró el número de empleado. Verifique su perfil en Zoho.');
+      return;
+    }
+
     setIsGeneratingPDF(true);
     setError(null);
 
@@ -131,7 +143,7 @@ const VacationRequestPage: React.FC = () => {
     };
 
     try {
-      await vacationDocxService.generateDocxWithUserData(user, vacationBalance, requestData);
+      await vacationDocxService.generateDocxWithUserData(enrichedUser, vacationBalance, requestData);
     } catch (err) {
       console.error('Error generating document:', err);
       setError('Error al generar el documento. Intente nuevamente.');
@@ -280,6 +292,13 @@ const VacationRequestPage: React.FC = () => {
             </div>
           )}
 
+          {profileError && (
+            <div className="form-error">
+              <WarningIcon />
+              <span>{profileError}</span>
+            </div>
+          )}
+
           <div className="form-actions">
             <Link href="/vacations" className="action-button secondary">
               Cancelar
@@ -288,7 +307,14 @@ const VacationRequestPage: React.FC = () => {
               type="button"
               className="action-button primary"
               onClick={handleGeneratePreviewPDF}
-              disabled={isGeneratingPDF || !!validationError || workingDays === 0 || !formData.reason.trim()}
+              disabled={
+                isGeneratingPDF ||
+                !!validationError ||
+                workingDays === 0 ||
+                !formData.reason.trim() ||
+                isProfileLoading ||
+                !!profileError
+              }
             >
               {isGeneratingPDF ? (
                 <>
