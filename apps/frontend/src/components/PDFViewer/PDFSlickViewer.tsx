@@ -75,8 +75,9 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
 
   const handleSearch = useCallback(() => {
     const q = searchQuery.trim();
-    if (!q) return;
-    if (pdfSlick?.eventBus && !(pdfSlick as any)?.destroyed) {
+    if (!q || !pdfSlick?.eventBus) return;
+    
+    try {
       pdfSlick.eventBus.dispatch('find', {
         type: 'find',
         query: q,
@@ -84,6 +85,8 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
         highlightAll: true,
         findPrevious: false,
       });
+    } catch (error) {
+      console.error('Search error:', error);
     }
   }, [searchQuery, pdfSlick]);
 
