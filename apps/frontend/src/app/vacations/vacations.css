@@ -325,14 +325,55 @@
 .request-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid #e0e0e0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.request-dates-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .request-footer small {
   color: #888;
   font-size: 0.85rem;
+}
+
+.request-action-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.request-action-button:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
+.request-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.request-action-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 /* No requests */
@@ -675,6 +716,16 @@
   .request-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .request-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .request-action-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .action-buttons,
