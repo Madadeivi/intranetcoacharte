@@ -27,7 +27,6 @@ const VacationRequestPage: React.FC = () => {
     reason: ''
   });
   const [workingDays, setWorkingDays] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -142,41 +141,6 @@ const VacationRequestPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user?.id || validationError || workingDays === 0) {
-      return;
-    }
-
-    if (!formData.reason.trim()) {
-      setError('El motivo de la solicitud es obligatorio');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      const request: Omit<VacationRequest, 'id' | 'submittedAt' | 'status'> = {
-        userId: user.id,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        days: workingDays,
-        reason: formData.reason.trim()
-      };
-
-      await vacationService.createVacationRequest(request);
-      
-      // Redirigir de vuelta a la página principal con un mensaje de éxito
-      router.push('/vacations?success=request-created');
-    } catch (err) {
-      console.error('Error creating vacation request:', err);
-      setError(err instanceof Error ? err.message : 'Error al crear la solicitud de vacaciones');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const getMinDate = () => {
     const tomorrow = new Date();

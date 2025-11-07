@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { usePDFSlick } from '@pdfslick/react';
 import '@pdfslick/react/dist/pdf_viewer.css';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -39,23 +39,23 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
   const pageNumber = usePDFSlickStore((state) => state.pageNumber);
   const pdfSlick = usePDFSlickStore((state) => state.pdfSlick);
 
-  const handleZoomIn = () => {
+  const handleZoomIn = useCallback(() => {
     if (pdfSlick && scale < 3) {
       pdfSlick.viewer.increaseScale();
     }
-  };
+  }, [pdfSlick, scale]);
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     if (pdfSlick && scale > 0.5) {
       pdfSlick.viewer.decreaseScale();
     }
-  };
+  }, [pdfSlick, scale]);
 
-  const handleFitToWidth = () => {
+  const handleFitToWidth = useCallback(() => {
     if (pdfSlick) {
       pdfSlick.viewer.currentScaleValue = 'page-width';
     }
-  };
+  }, [pdfSlick]);
 
   const handlePrevPage = () => {
     if (pdfSlick && pageNumber > 1) {
@@ -120,7 +120,7 @@ export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename })
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showSearch]);
+  }, [showSearch, handleZoomIn, handleZoomOut, handleFitToWidth]);
 
   return (
     <div className="pdfslick-viewer-container">
