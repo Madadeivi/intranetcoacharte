@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
@@ -24,7 +23,6 @@ import WorkOffIcon from '@mui/icons-material/WorkOff';
 import TableChartIcon from '@mui/icons-material/TableChart';
 
 const VacationsPage: React.FC = () => {
-  const router = useRouter();
   const { user } = useAuthStore();
   const [vacationBalance, setVacationBalance] = useState<VacationBalance | null>(null);
   const [requests, setRequests] = useState<VacationRequest[]>([]);
