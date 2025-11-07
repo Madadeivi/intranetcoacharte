@@ -121,12 +121,7 @@ const VacationsPage: React.FC = () => {
     });
   };
 
-  const handleGeneratePDF = async () => {
-    if (!user || !vacationBalance) {
-      setError('No se puede generar el PDF sin datos del usuario y saldo de vacaciones');
-      return;
-    }
-
+  const handleGenerateRequestDocument = async (request: VacationRequest) => {
     if (!enrichedUser) {
       setError('No se pudo cargar la información del usuario. Intente nuevamente.');
       return;
@@ -137,8 +132,20 @@ const VacationsPage: React.FC = () => {
       return;
     }
 
+    if (!vacationBalance) {
+      setError('No se pudo cargar el saldo de vacaciones. Intente nuevamente.');
+      return;
+    }
+
     try {
-      await vacationPDFService.generatePDFWithUserData(enrichedUser, vacationBalance);
+      const requestData = {
+        startDate: request.startDate,
+        endDate: request.endDate,
+        reason: request.reason,
+        totalDays: request.days
+      };
+
+      await vacationPDFService.generatePDFWithUserData(enrichedUser, vacationBalance, requestData);
     } catch (err) {
       console.error('Error generating document:', err);
       setError('Error al generar el documento');
@@ -242,14 +249,6 @@ const VacationsPage: React.FC = () => {
             <AddIcon />
             <span>Nueva Solicitud</span>
           </Link>
-          <button
-            className="action-button secondary"
-            onClick={handleGeneratePDF}
-            disabled={isProfileLoading || !!profileError}
-          >
-            <DescriptionIcon />
-            <span>Generar Documento</span>
-          </button>
         </div>
         {profileError && (
           <div className="vacation-error inline">
@@ -330,10 +329,21 @@ const VacationsPage: React.FC = () => {
                   <p>{request.reason}</p>
                 </div>
                 <div className="request-footer">
-                  <small>Solicitado el {formatDate(request.submittedAt || '')}</small>
-                  {request.approvedAt && (
-                    <small>Aprobado el {formatDate(request.approvedAt)}</small>
-                  )}
+                  <div className="request-dates-info">
+                    <small>Solicitado el {formatDate(request.submittedAt || '')}</small>
+                    {request.approvedAt && (
+                      <small>Aprobado el {formatDate(request.approvedAt)}</small>
+                    )}
+                  </div>
+                  <button
+                    className="request-action-button"
+                    onClick={() => handleGenerateRequestDocument(request)}
+                    disabled={isProfileLoading || !!profileError}
+                    title="Generar documento de esta solicitud"
+                  >
+                    <DescriptionIcon />
+                    <span>Generar Documento</span>
+                  </button>
                 </div>
               </div>
             ))}
