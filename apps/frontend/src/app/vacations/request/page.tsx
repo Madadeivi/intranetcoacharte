@@ -5,16 +5,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
-import { vacationService, VacationRequest } from '@/services/vacationService';
-import { vacationPDFService } from '@/services/vacationPDFService';
+import { vacationService, VacationRequest, VacationBalance } from '@/services/vacationService';
+import { vacationDocxService } from '@/services/vacationDocxService';
 import '../vacations.css';
 
 // Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import SendIcon from '@mui/icons-material/Send';
 import WarningIcon from '@mui/icons-material/Warning';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DescriptionIcon from '@mui/icons-material/Description';
 import InfoIcon from '@mui/icons-material/Info';
 import WorkOffIcon from '@mui/icons-material/WorkOff';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -33,6 +32,7 @@ const VacationRequestPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [vacationBalance, setVacationBalance] = useState<VacationBalance | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -57,6 +57,14 @@ const VacationRequestPage: React.FC = () => {
       router.push('/login');
       return;
     }
+
+    if (user.id) {
+      vacationService.getVacationBalance(user.id)
+        .then(setVacationBalance)
+        .catch((err) => {
+          console.error('Error loading vacation balance:', err);
+        });
+    }
   }, [user, router]);
 
   useEffect(() => {
@@ -80,13 +88,23 @@ const VacationRequestPage: React.FC = () => {
   };
 
   const handleGeneratePreviewPDF = async () => {
-    if (!user || !formData.startDate || !formData.endDate) {
-      setError('Complete los datos del formulario para generar la vista previa');
+    if (!user?.id || !formData.startDate || !formData.endDate) {
+      setError('Complete los datos del formulario para generar el documento');
       return;
     }
 
     if (validationError || workingDays === 0) {
-      setError('Corrija los errores del formulario antes de generar el PDF');
+      setError('Corrija los errores del formulario antes de generar el documento');
+      return;
+    }
+
+    if (!formData.reason.trim()) {
+      setError('El motivo de la solicitud es obligatorio');
+      return;
+    }
+
+    if (!vacationBalance) {
+      setError('No se pudo cargar el saldo de vacaciones. Intente nuevamente.');
       return;
     }
 
@@ -94,24 +112,31 @@ const VacationRequestPage: React.FC = () => {
       setIsGeneratingPDF(true);
       setError(null);
 
-      // Datos ficticios de balance para la vista previa
-      const previewBalance = {
-        available: 15,
-        taken: 5,
-        remaining: 10
+      const request: Omit<VacationRequest, 'id' | 'submittedAt' | 'status'> = {
+        userId: user.id,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        days: workingDays,
+        reason: formData.reason.trim()
       };
+
+      await vacationService.createVacationRequest(request);
 
       const requestData = {
         startDate: formData.startDate,
         endDate: formData.endDate,
-        reason: formData.reason || 'Vista previa de solicitud',
+        reason: formData.reason,
         totalDays: workingDays
       };
 
-      await vacationPDFService.generatePDFWithUserData(user, previewBalance, requestData);
+      await vacationDocxService.generateDocxWithUserData(user, vacationBalance, requestData);
+
+      setTimeout(() => {
+        router.push('/vacations?success=request-created');
+      }, 1000);
     } catch (err) {
-      console.error('Error generating preview PDF:', err);
-      setError('Error al generar la vista previa del PDF');
+      console.error('Error generating document:', err);
+      setError('Error al generar el documento y guardar la solicitud');
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -190,7 +215,7 @@ const VacationRequestPage: React.FC = () => {
 
       {/* Formulario */}
       <section className="vacation-balance-section">
-        <form onSubmit={handleSubmit} className="vacation-request-form">
+        <div className="vacation-request-form">
           <div className="form-group">
             <label htmlFor="startDate">Fecha de Inicio</label>
             <input
@@ -199,6 +224,11 @@ const VacationRequestPage: React.FC = () => {
               name="startDate"
               value={formData.startDate}
               onChange={handleInputChange}
+              onClick={(e) => {
+                if (typeof e.currentTarget.showPicker === 'function') {
+                  e.currentTarget.showPicker();
+                }
+              }}
               min={getMinDate()}
               required
               className="form-input"
@@ -213,6 +243,11 @@ const VacationRequestPage: React.FC = () => {
               name="endDate"
               value={formData.endDate}
               onChange={handleInputChange}
+              onClick={(e) => {
+                if (typeof e.currentTarget.showPicker === 'function') {
+                  e.currentTarget.showPicker();
+                }
+              }}
               min={formData.startDate || getMinDate()}
               required
               className="form-input"
@@ -258,45 +293,26 @@ const VacationRequestPage: React.FC = () => {
             <Link href="/vacations" className="action-button secondary">
               Cancelar
             </Link>
-            {formData.startDate && formData.endDate && workingDays > 0 && !validationError && (
-              <button
-                type="button"
-                className="action-button secondary"
-                onClick={handleGeneratePreviewPDF}
-                disabled={isGeneratingPDF}
-              >
-                {isGeneratingPDF ? (
-                  <>
-                    <div className="button-spinner"></div>
-                    <span>Generando...</span>
-                  </>
-                ) : (
-                  <>
-                    <PictureAsPdfIcon />
-                    <span>Vista Previa PDF</span>
-                  </>
-                )}
-              </button>
-            )}
             <button
-              type="submit"
+              type="button"
               className="action-button primary"
-              disabled={isSubmitting || !!validationError || workingDays === 0}
+              onClick={handleGeneratePreviewPDF}
+              disabled={isGeneratingPDF || !!validationError || workingDays === 0 || !formData.reason.trim()}
             >
-              {isSubmitting ? (
+              {isGeneratingPDF ? (
                 <>
                   <div className="button-spinner"></div>
-                  <span>Enviando...</span>
+                  <span>Generando...</span>
                 </>
               ) : (
                 <>
-                  <SendIcon />
-                  <span>Enviar Solicitud</span>
+                  <DescriptionIcon />
+                  <span>Vista Previa / Descargar</span>
                 </>
               )}
             </button>
           </div>
-        </form>
+        </div>
       </section>
 
       {/* Información de Vacaciones */}

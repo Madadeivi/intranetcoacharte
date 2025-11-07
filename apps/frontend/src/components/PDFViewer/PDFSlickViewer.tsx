@@ -1,0 +1,284 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { usePDFSlick } from '@pdfslick/react';
+import '@pdfslick/react/dist/pdf_viewer.css';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import FitScreenIcon from '@mui/icons-material/FitScreen';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import SearchIcon from '@mui/icons-material/Search';
+import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import './PDFSlickViewer.css';
+
+interface PDFSlickViewerProps {
+  url: string;
+  filename?: string;
+}
+
+export const PDFSlickViewer: React.FC<PDFSlickViewerProps> = ({ url, filename }) => {
+  const [showThumbnails, setShowThumbnails] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const {
+    viewerRef,
+    usePDFSlickStore,
+    PDFSlickViewer: Viewer,
+  } = usePDFSlick(url, {
+    scaleValue: 'page-width',
+    singlePageViewer: false,
+  });
+
+  const scale = usePDFSlickStore((state) => state.scale);
+  const numPages = usePDFSlickStore((state) => state.numPages);
+  const pageNumber = usePDFSlickStore((state) => state.pageNumber);
+  const pdfSlick = usePDFSlickStore((state) => state.pdfSlick);
+
+  const handleZoomIn = () => {
+    if (pdfSlick && scale < 3) {
+      pdfSlick.viewer.increaseScale();
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (pdfSlick && scale > 0.5) {
+      pdfSlick.viewer.decreaseScale();
+    }
+  };
+
+  const handleFitToWidth = () => {
+    if (pdfSlick) {
+      pdfSlick.viewer.currentScaleValue = 'page-width';
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (pdfSlick && pageNumber > 1) {
+      pdfSlick.viewer.currentPageNumber = pageNumber - 1;
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pdfSlick && pageNumber < numPages) {
+      pdfSlick.viewer.currentPageNumber = pageNumber + 1;
+    }
+  };
+
+  const handleSearch = () => {
+    if (pdfSlick && searchQuery.trim()) {
+      pdfSlick.findController.executeCommand('find', {
+        query: searchQuery,
+        highlightAll: true,
+      });
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      viewerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'f') {
+          e.preventDefault();
+          setShowSearch(true);
+        } else if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === '-') {
+          e.preventDefault();
+          handleZoomOut();
+        } else if (e.key === '0') {
+          e.preventDefault();
+          handleFitToWidth();
+        }
+      } else if (e.key === 'f' && !showSearch) {
+        setIsFullscreen((prev) => !prev);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showSearch]);
+
+  return (
+    <div className="pdfslick-viewer-container">
+      <div className="pdfslick-toolbar">
+        <div className="toolbar-section">
+          <button
+            onClick={() => setShowThumbnails(!showThumbnails)}
+            className={`toolbar-btn ${showThumbnails ? 'active' : ''}`}
+            title="Mostrar miniaturas (T)"
+          >
+            <ViewSidebarIcon />
+          </button>
+        </div>
+
+        <div className="toolbar-section page-navigation">
+          <button
+            onClick={handlePrevPage}
+            disabled={pageNumber <= 1}
+            className="toolbar-btn"
+            title="Página anterior"
+          >
+            <ChevronLeftIcon />
+          </button>
+          <span className="page-info">
+            <input
+              type="number"
+              min={1}
+              max={numPages}
+              value={pageNumber}
+              onChange={(e) => {
+                const page = parseInt(e.target.value);
+                if (pdfSlick && page >= 1 && page <= numPages) {
+                  pdfSlick.viewer.currentPageNumber = page;
+                }
+              }}
+              className="page-input"
+            />
+            <span className="page-separator">/</span>
+            <span className="total-pages">{numPages || '?'}</span>
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={pageNumber >= numPages}
+            className="toolbar-btn"
+            title="Página siguiente"
+          >
+            <ChevronRightIcon />
+          </button>
+        </div>
+
+        <div className="toolbar-section search-section">
+          {showSearch && (
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Buscar en el documento..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                className="search-input"
+                autoFocus
+              />
+              <button onClick={handleSearch} className="search-btn" title="Buscar">
+                <SearchIcon />
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className={`toolbar-btn ${showSearch ? 'active' : ''}`}
+            title="Buscar texto (Ctrl+F)"
+          >
+            <SearchIcon />
+          </button>
+        </div>
+
+        <div className="toolbar-section zoom-controls">
+          <button
+            onClick={handleZoomOut}
+            disabled={scale <= 0.5}
+            className="toolbar-btn"
+            title="Reducir (Ctrl+-)"
+          >
+            <ZoomOutIcon />
+          </button>
+          <span className="zoom-level">{Math.round(scale * 100)}%</span>
+          <button
+            onClick={handleZoomIn}
+            disabled={scale >= 3}
+            className="toolbar-btn"
+            title="Ampliar (Ctrl++)"
+          >
+            <ZoomInIcon />
+          </button>
+          <button
+            onClick={handleFitToWidth}
+            className="toolbar-btn"
+            title="Ajustar al ancho"
+          >
+            <FitScreenIcon />
+          </button>
+        </div>
+
+        <div className="toolbar-section">
+          <button
+            onClick={toggleFullscreen}
+            className="toolbar-btn"
+            title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa (F)'}
+          >
+            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </button>
+        </div>
+      </div>
+
+      <div className={`pdfslick-content ${showThumbnails ? 'with-sidebar' : ''}`}>
+        {showThumbnails && (
+          <div className="thumbnails-sidebar">
+            <div className="thumbnails-header">
+              <h4>Páginas</h4>
+              <button
+                onClick={() => setShowThumbnails(false)}
+                className="close-sidebar-btn"
+              >
+                ×
+              </button>
+            </div>
+            <div className="thumbnails-list">
+              {Array.from({ length: numPages }, (_, i) => i + 1).map((page) => (
+                <div
+                  key={page}
+                  className={`thumbnail-item ${page === pageNumber ? 'active' : ''}`}
+                  onClick={() => {
+                    if (pdfSlick) {
+                      pdfSlick.viewer.currentPageNumber = page;
+                    }
+                  }}
+                >
+                  <div className="thumbnail-preview">
+                    <span className="thumbnail-number">{page}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="pdfslick-viewer-wrapper" ref={viewerRef}>
+          <Viewer />
+        </div>
+      </div>
+
+      <div className="pdfslick-footer">
+        <span className="filename">{filename || 'documento.pdf'}</span>
+        <span className="shortcuts-hint">
+          Atajos: Ctrl+F (Buscar) • Ctrl+/- (Zoom) • F (Pantalla completa)
+        </span>
+      </div>
+    </div>
+  );
+};
+

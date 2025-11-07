@@ -14,31 +14,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
 import BusinessIcon from '@mui/icons-material/Business';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
 import './conoce-coacharte.css';
 
-const Document = dynamic(() => import('react-pdf').then(mod => ({ default: mod.Document })), { ssr: false });
-const Page = dynamic(() => import('react-pdf').then(mod => ({ default: mod.Page })), { ssr: false });
-
-let isWorkerInitialized = false;
-
-const initializePdfWorker = async () => {
-  if (typeof window !== 'undefined' && !isWorkerInitialized) {
-    try {
-      const { pdfjs } = await import('react-pdf');
-      // Always use local worker to avoid CORS issues
-      pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
-      console.log(`PDF.js worker initialized locally with API version: ${pdfjs.version}`);
-      isWorkerInitialized = true;
-    } catch (error) {
-      console.error('Failed to initialize PDF worker:', error);
-      throw new Error('PDF worker initialization failed');
-    }
-  }
-};
+const PDFSlickViewer = dynamic(() => import('@/components/PDFViewer/PDFSlickViewer').then(mod => ({ default: mod.PDFSlickViewer })), { ssr: false });
 
 interface DocumentItem {
   id: string;
@@ -66,9 +44,6 @@ const DocumentModal: React.FC<{
   onClose: () => void;
 }> = ({ document: documentItem, isOpen, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [scale, setScale] = useState(1.0);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -98,84 +73,14 @@ const DocumentModal: React.FC<{
 
   if (!isOpen || !documentItem) return null;
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-    setPageNumber(1);
-    console.log(`PDF loaded successfully with ${numPages} pages`);
-  };
-
-  const onDocumentLoadError = (error: Error) => {
-    console.error('Error loading PDF:', error);
-    // You could set an error state here if needed
-  };
-
-  const goToPrevPage = () => {
-    setPageNumber(page => Math.max(1, page - 1));
-  };
-
-  const goToNextPage = () => {
-    setPageNumber(page => Math.min(numPages || 1, page + 1));
-  };
-
-  const zoomIn = () => {
-    setScale(prevScale => Math.min(3, prevScale + 0.2));
-  };
-
-  const zoomOut = () => {
-    setScale(prevScale => Math.max(0.5, prevScale - 0.2));
-  };
-
   const renderContent = () => {
     switch (documentItem.type) {
       case 'pdf':
         return (
-          <div className="pdf-viewer">
-            <div className="pdf-controls">
-              <div className="pdf-navigation">
-                <button 
-                  onClick={goToPrevPage} 
-                  disabled={pageNumber <= 1}
-                  className="pdf-nav-btn"
-                >
-                  ‹
-                </button>
-                <span className="pdf-page-info">
-                  {pageNumber} / {numPages || '?'}
-                </span>
-                <button 
-                  onClick={goToNextPage} 
-                  disabled={pageNumber >= (numPages || 1)}
-                  className="pdf-nav-btn"
-                >
-                  ›
-                </button>
-              </div>
-              <div className="pdf-zoom-controls">
-                <button onClick={zoomOut} className="zoom-btn" title="Reducir">
-                  <ZoomOutIcon />
-                </button>
-                <span className="zoom-level">{Math.round(scale * 100)}%</span>
-                <button onClick={zoomIn} className="zoom-btn" title="Ampliar">
-                  <ZoomInIcon />
-                </button>
-              </div>
-            </div>
-            <div className="pdf-container">
-              <Document
-                file={documentItem.url}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={<div className="pdf-loading">Cargando documento...</div>}
-                error={<div className="pdf-error">Error al cargar el documento</div>}
-              >
-                <Page 
-                  pageNumber={pageNumber}
-                  scale={scale}
-                  loading={<div className="page-loading">Cargando página...</div>}
-                />
-              </Document>
-            </div>
-          </div>
+          <PDFSlickViewer 
+            url={documentItem.url} 
+            filename={documentItem.title}
+          />
         );
       case 'image':
         return (
@@ -319,7 +224,6 @@ const ConoceCoachartePage: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
-    initializePdfWorker();
   }, []);
 
   const documentSections: DocumentSection[] = [
