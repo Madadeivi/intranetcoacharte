@@ -294,7 +294,12 @@ const HomePage: React.FC = () => {
               <HeadsetMicIcon className="main-card-icon" />
               <h3>Soporte y Comunicación</h3>
               <p>Tickets y material de capacitación</p>
-              <a href="#" onClick={(e) => e.preventDefault()}>Acceder</a>
+              <button 
+                onClick={() => setIsSupportModalOpen(true)} 
+                className="main-card-button"
+              >
+                Acceder
+              </button>
             </div>
             <div className={`main-card ${DISABLED_CARDS.includes('Calendario y Eventos') ? 'disabled' : ''}`}>
               <EventIcon className="main-card-icon" />

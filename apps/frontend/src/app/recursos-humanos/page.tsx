@@ -11,7 +11,8 @@ import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ComputerIcon from '@mui/icons-material/Computer';
 import WallpaperIcon from '@mui/icons-material/Wallpaper';
-import DownloadIcon from '@mui/icons-material/Download';
+import FolderIcon from '@mui/icons-material/Folder';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import authService from '../../services/authService';
 import { useAuthStore } from '../../store/authStore';
 import { NOMINA_BASE_URL } from '../../utils/constants';
@@ -43,15 +44,7 @@ const RECURSOS_SERVICIOS = [
   }
 ];
 
-const WALLPAPERS = [
-  'background_1.jpeg',
-  'background_2.jpeg',
-  'background_3.jpeg',
-  'background_4.jpeg',
-  'background_5.jpeg',
-  'background_6.jpeg',
-  'background_7.jpeg'
-];
+const GOOGLE_DRIVE_WALLPAPERS_URL = 'https://drive.google.com/drive/folders/1cYHIcLpfW70vdnmrrSPkl3NHAdrDMSiy';
 
 const RecursosHumanosPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -64,13 +57,6 @@ const RecursosHumanosPage: React.FC = () => {
         '_blank'
       );
     }
-  };
-
-  const handleDownload = (filename: string) => {
-    const link = document.createElement('a');
-    link.href = `/assets/${filename}`;
-    link.download = filename;
-    link.click();
   };
 
   return (
@@ -139,32 +125,35 @@ const RecursosHumanosPage: React.FC = () => {
             Fondos de Pantalla
           </h3>
           <p className="category-description">
-            Descarga fondos de pantalla oficiales de Coacharte para personalizar tu espacio de trabajo virtual.
+            Accede a todos los fondos de pantalla oficiales de Coacharte para personalizar tu espacio de trabajo virtual. 
+            Todos los recursos multimedia están disponibles en nuestra carpeta de Google Drive.
           </p>
           
-          <div className="wallpapers-list">
-            {WALLPAPERS.map((filename, index) => {
-              const displayName = `Fondo Coacharte ${index + 1}`;
-              return (
-                <div key={filename} className="wallpaper-list-item">
-                  <div className="wallpaper-list-icon">
-                    <WallpaperIcon />
-                  </div>
-                  <div className="wallpaper-list-info">
-                    <span className="wallpaper-list-name">{displayName}</span>
-                    <span className="wallpaper-list-format">JPEG</span>
-                  </div>
-                  <button
-                    className="wallpaper-list-download"
-                    onClick={() => handleDownload(filename)}
-                    aria-label={`Descargar ${displayName}`}
-                  >
-                    <DownloadIcon />
-                    <span>Descargar</span>
-                  </button>
-                </div>
-              );
-            })}
+          <div className="wallpapers-drive-container">
+            <div className="wallpapers-drive-card">
+              <div className="wallpapers-drive-icon">
+                <FolderIcon />
+              </div>
+              <div className="wallpapers-drive-info">
+                <h4>Fondos Virtuales Coacharte</h4>
+                <p>Accede a todos los fondos disponibles, banners y recursos multimedia para tus reuniones virtuales</p>
+                <ul className="wallpapers-features">
+                  <li>✓ Fondos para videollamadas</li>
+                  <li>✓ Banners oficiales</li>
+                  <li>✓ Material multimedia actualizado</li>
+                </ul>
+              </div>
+              <a
+                href={GOOGLE_DRIVE_WALLPAPERS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="wallpapers-drive-button"
+                aria-label="Abrir carpeta de Google Drive con fondos de pantalla"
+              >
+                <OpenInNewIcon />
+                <span>Abrir Carpeta de Drive</span>
+              </a>
+            </div>
           </div>
         </div>
       </section>
