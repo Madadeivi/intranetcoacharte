@@ -18,7 +18,7 @@ export const NoticesCarousel: React.FC<NoticesCarouselProps> = ({ notices, onNot
   const carousel = useCarousel(carouselRef);
 
   return (
-    <section className="home-notices">
+    <section className="home-notices container-centered container-padded">
       <div className="home-notices-span">
         <h2>Avisos Importantes</h2>
       </div>
@@ -26,7 +26,7 @@ export const NoticesCarousel: React.FC<NoticesCarouselProps> = ({ notices, onNot
         <button
           onClick={() => carousel.scrollBy(-CAROUSEL_SCROLL_OFFSET)}
           disabled={!carousel.canScrollLeft}
-          className="carousel-nav-button prev notice-carousel-nav"
+          className="carousel-nav-base carousel-nav-horizontal carousel-nav-button prev notice-carousel-nav"
           aria-label="Anterior aviso"
         >
           <ArrowBackIosNewIcon />
@@ -35,7 +35,7 @@ export const NoticesCarousel: React.FC<NoticesCarouselProps> = ({ notices, onNot
           {notices.map(notice => (
             <div
               key={notice.id}
-              className="notice-card"
+              className="notice-card hover-lift"
               onClick={() => onNoticeClick({ title: notice.title, detail: notice.detail })}
             >
               <Image
@@ -57,7 +57,7 @@ export const NoticesCarousel: React.FC<NoticesCarouselProps> = ({ notices, onNot
         <button
           onClick={() => carousel.scrollBy(CAROUSEL_SCROLL_OFFSET)}
           disabled={!carousel.canScrollRight}
-          className="carousel-nav-button next notice-carousel-nav"
+          className="carousel-nav-base carousel-nav-horizontal carousel-nav-button next notice-carousel-nav"
           aria-label="Siguiente aviso"
         >
           <ArrowForwardIosIcon />

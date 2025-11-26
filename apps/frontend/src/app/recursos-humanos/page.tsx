@@ -164,12 +164,10 @@ const RecursosHumanosPage: React.FC = () => {
           <div className="info-card">
             <h3>Horarios de Atención</h3>
             <p>Lunes a Viernes: 9:00 AM - 6:00 PM</p>
-            <p>Sábados: 9:00 AM - 2:00 PM</p>
           </div>
           <div className="info-card">
             <h3>Contacto T&T</h3>
-            <p>Email: talento@coacharte.mx</p>
-            <p>Teléfono: (55) 1234-5678</p>
+            <p>Email: somos@coacharte.mx</p>
           </div>
           <div className="info-card">
             <h3>Políticas</h3>
