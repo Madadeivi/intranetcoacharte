@@ -1649,19 +1649,13 @@ code {
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
 }
-
 
 .card-carousel-nav {
   display: none;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
   background: white;
   border: 1px solid var(--color-border-light);
@@ -1682,11 +1676,11 @@ code {
 }
 
 .card-grid {
-  
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-6);
   width: 100%;
+  overflow: visible;
 }
 
 .main-card {
@@ -1808,11 +1802,9 @@ code {
   }
   
   .card-carousel-nav {
-    display: flex !important;
-  }
-  
-  .carousel-nav-button.card-carousel-nav {
-    display: flex !important;
+    display: flex;
+    width: 40px;
+    height: 40px;
   }
   
   .card-grid {
@@ -1868,21 +1860,17 @@ code {
   }
   
   .card-carousel-nav {
-    display: flex !important;
+    display: flex;
     width: 36px;
     height: 36px;
   }
   
-  .carousel-nav-button.card-carousel-nav {
-    display: flex !important;
+  .card-carousel-nav svg {
+    font-size: 18px;
   }
   
   .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
-  
-  .card-carousel-nav svg {
-    font-size: 18px;
+    display: flex;
   }
   
   .card-grid {
@@ -2072,28 +2060,14 @@ code {
 
 @media (min-width: 768px) {
   .carousel-nav-button {
-    display: flex !important; 
-  }
-  
-  
-  .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
-  
-  
-  .carousel-nav-button.notice-carousel-nav {
-    display: flex !important;
+    display: flex;
   }
 }
 
 
 @media (min-width: 768px) and (max-width: 919px) {
   .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; 
-  }
-  
-  .carousel-nav-button.notice-carousel-nav {
-    display: flex !important; 
+    display: flex;
   }
 }
 
@@ -2208,7 +2182,6 @@ code {
 
 
 @media (min-width: 768px) and (max-width: 919px) {
-  
   .quicklinks-grid {
     display: flex;
     overflow-x: auto;
@@ -2222,15 +2195,9 @@ code {
   .quicklink-carousel-nav {
     display: flex;
   }
-  
-  
-  .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
 }
 
-@media (min-width: 920px) {
-  
+@media (min-width: 920px) and (max-width: 1199px) {
   .quicklinks-grid {
     display: flex;
     overflow-x: auto;
@@ -2247,7 +2214,6 @@ code {
 }
 
 @media (min-width: 1200px) {
-  
   .quicklinks-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -2256,7 +2222,7 @@ code {
   
   .quicklink {
     min-width: auto;
-    flex-shrink:  1;
+    flex-shrink: 1;
   }
   
   .quicklink-carousel-nav {
@@ -2314,9 +2280,8 @@ code {
 
 
 @media (min-width: 1200px) {
-  
   .card-grid {
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-8);
     overflow-x: visible;
@@ -2347,13 +2312,8 @@ code {
     font-size: var(--text-base);
   }
   
-  .card-carousel-nav {
-    display: none !important; 
-  }
-  
-  
   .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; 
+    display: flex;
   }
 
   
