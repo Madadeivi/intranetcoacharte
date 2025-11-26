@@ -262,13 +262,13 @@ const HomePage: React.FC = () => {
           <button 
             onClick={() => cardCarousel.scrollBy(-CARD_CAROUSEL_SCROLL_OFFSET)} 
             disabled={!cardCarousel.canScrollLeft} 
-            className="carousel-nav-button prev card-carousel-nav" 
+            className="carousel-nav-base carousel-nav-horizontal carousel-nav-button prev card-carousel-nav" 
             aria-label="Tarjetas anteriores"
           >
             <ArrowBackIosNewIcon />
           </button>
           <div className="card-grid" ref={cardCarouselRef}>
-            <div className={`main-card ${DISABLED_CARDS.includes('Mi Cuenta') ? 'disabled' : ''}`}>
+            <div className={`main-card hover-card hover-scale-icon ${DISABLED_CARDS.includes('Mi Cuenta') ? 'disabled' : ''}`}>
               <AccountCircleIcon className="main-card-icon" />
               <h3>Mi Cuenta</h3>
               <p>Gestiona tu perfil, documentos y accesos</p>
@@ -276,7 +276,7 @@ const HomePage: React.FC = () => {
                 Mi Cuenta
               </Link>
             </div>
-            <div className={`main-card ${DISABLED_CARDS.includes('Talento y Transformación') ? 'disabled' : ''}`}>
+            <div className={`main-card hover-card hover-scale-icon ${DISABLED_CARDS.includes('Talento y Transformación') ? 'disabled' : ''}`}>
               <GroupsIcon className="main-card-icon" />
               <h3>Talento y Transformación</h3>
               <p>Nómina, vacaciones y prestaciones</p>
@@ -284,13 +284,13 @@ const HomePage: React.FC = () => {
                 Acceder
               </Link>
             </div>
-            <div className={`main-card ${DISABLED_CARDS.includes('Procesos y Documentación') ? 'disabled' : ''}`}>
+            <div className={`main-card hover-card hover-scale-icon ${DISABLED_CARDS.includes('Procesos y Documentación') ? 'disabled' : ''}`}>
               <DescriptionIcon className="main-card-icon" />
               <h3>Procesos y Documentación</h3>
               <p>Formatos y políticas corporativas</p>
               <a href="#" onClick={(e) => e.preventDefault()}>Acceder</a>
             </div>
-            <div className={`main-card ${DISABLED_CARDS.includes('Soporte y Comunicación') ? 'disabled' : ''}`}>
+            <div className={`main-card hover-card hover-scale-icon ${DISABLED_CARDS.includes('Soporte y Comunicación') ? 'disabled' : ''}`}>
               <HeadsetMicIcon className="main-card-icon" />
               <h3>Soporte y Comunicación</h3>
               <p>Tickets y material de capacitación</p>
@@ -301,13 +301,13 @@ const HomePage: React.FC = () => {
                 Acceder
               </button>
             </div>
-            <div className={`main-card ${DISABLED_CARDS.includes('Calendario y Eventos') ? 'disabled' : ''}`}>
+            <div className={`main-card hover-card hover-scale-icon ${DISABLED_CARDS.includes('Calendario y Eventos') ? 'disabled' : ''}`}>
               <EventIcon className="main-card-icon" />
               <h3>Calendario y Eventos</h3>
               <p>Agenda corporativa y actividades</p>
               <a href="#" onClick={(e) => e.preventDefault()}>Acceder</a>
             </div>
-            <div className={`main-card ${DISABLED_CARDS.includes('Conoce Coacharte') ? 'disabled' : ''}`}>
+            <div className={`main-card hover-card hover-scale-icon ${DISABLED_CARDS.includes('Conoce Coacharte') ? 'disabled' : ''}`}>
               <InfoIcon className="main-card-icon" />
               <h3>Conoce Coacharte</h3>
               <p>Nuestra cultura y valores</p>
@@ -319,7 +319,7 @@ const HomePage: React.FC = () => {
           <button 
             onClick={() => cardCarousel.scrollBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
             disabled={!cardCarousel.canScrollRight} 
-            className="carousel-nav-button next card-carousel-nav" 
+            className="carousel-nav-base carousel-nav-horizontal carousel-nav-button next card-carousel-nav" 
             aria-label="Siguientes tarjetas"
           >
             <ArrowForwardIosIcon />
@@ -342,7 +342,7 @@ const HomePage: React.FC = () => {
         detail={noticeModal.detail} 
       />
 
-      <section className="home-quicklinks">
+      <section className="home-quicklinks container-centered container-padded">
         <div className="home-quicklinks-span">
           <h2>Enlaces Rápidos</h2>
         </div>
@@ -350,41 +350,41 @@ const HomePage: React.FC = () => {
           <button 
             onClick={() => quicklinkCarousel.scrollBy(-CARD_CAROUSEL_SCROLL_OFFSET)} 
             disabled={!quicklinkCarousel.canScrollLeft} 
-            className="carousel-nav-button prev quicklink-carousel-nav" 
+            className="carousel-nav-base carousel-nav-horizontal carousel-nav-button prev quicklink-carousel-nav" 
             aria-label="Enlaces anteriores"
           >
             <ArrowBackIosNewIcon />
           </button>
           <div className="quicklinks-grid" ref={quicklinkCarouselRef}>
-            <Link href="/profile" className="quicklink">
+            <Link href="/profile" className="quicklink hover-card-sm flex-center-y">
               <AccountCircleIcon className="quicklink-icon" />
               <h3>Mi Perfil</h3>
             </Link>
-            <Link href="/vacations" className="quicklink">
+            <Link href="/vacations" className="quicklink hover-card-sm flex-center-y">
               <DescriptionIcon className="quicklink-icon" />
               <h3>Solicitud de Vacaciones</h3>
             </Link>
-            <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}} className="quicklink">
+            <a href="#" onClick={(e) => {e.preventDefault(); setIsSupportModalOpen(true);}} className="quicklink hover-card-sm flex-center-y">
               <HeadsetMicIcon className="quicklink-icon" />
               <h3>Soporte Técnico</h3>
             </a>
-            <a href="#" onClick={(e) => {e.preventDefault(); handleNominaAccess();}} className="quicklink">
+            <a href="#" onClick={(e) => {e.preventDefault(); handleNominaAccess();}} className="quicklink hover-card-sm flex-center-y">
               <SettingsIcon className="quicklink-icon" />
               <h3>Consulta Nómina</h3>
             </a>
-            <Link href="/change-password" className="quicklink">
+            <Link href="/change-password" className="quicklink hover-card-sm flex-center-y">
               <LockIcon className="quicklink-icon" />
               <h3>Cambiar Contraseña</h3>
             </Link>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled flex-center-y">
               <EventIcon className="quicklink-icon" />
               <h3>Calendario de Eventos</h3>
             </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled flex-center-y">
               <SchoolIcon fontSize="inherit" />
               <h3>Portal de Capacitación</h3>
             </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled">
+            <a href="#" onClick={(e) => e.preventDefault()} className="quicklink disabled flex-center-y">
               <GroupsIcon fontSize="inherit" />
               <h3>Directorio Empresarial</h3>
             </a>
@@ -392,7 +392,7 @@ const HomePage: React.FC = () => {
           <button 
             onClick={() => quicklinkCarousel.scrollBy(CARD_CAROUSEL_SCROLL_OFFSET)} 
             disabled={!quicklinkCarousel.canScrollRight} 
-            className="carousel-nav-button next quicklink-carousel-nav" 
+            className="carousel-nav-base carousel-nav-horizontal carousel-nav-button next quicklink-carousel-nav" 
             aria-label="Siguientes enlaces"
           >
             <ArrowForwardIosIcon />
@@ -400,7 +400,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <section className="home-calendar-events">
+      <section className="home-calendar-events container-centered">
           <div className="calendar-column">
             <h2>Calendario</h2>
             <div className="calendar-container">
@@ -422,7 +422,7 @@ const HomePage: React.FC = () => {
               <button 
                 onClick={() => eventCarousel.scrollBy(-CAROUSEL_SCROLL_OFFSET)} 
                 disabled={!eventCarousel.canScrollUp} 
-                className="carousel-nav-button prev event-carousel-nav" 
+                className="carousel-nav-base carousel-nav-vertical carousel-nav-button prev event-carousel-nav" 
                 aria-label="Eventos anteriores"
               >
                 <KeyboardArrowUpIcon />
@@ -480,7 +480,7 @@ const HomePage: React.FC = () => {
               <button 
                 onClick={() => eventCarousel.scrollBy(CAROUSEL_SCROLL_OFFSET)} 
                 disabled={!eventCarousel.canScrollDown} 
-                className="carousel-nav-button next event-carousel-nav" 
+                className="carousel-nav-base carousel-nav-vertical carousel-nav-button next event-carousel-nav" 
                 aria-label="Siguientes eventos"
               >
                 <KeyboardArrowDownIcon />
