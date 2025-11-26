@@ -1652,7 +1652,27 @@ code {
 }
 
 .card-carousel-nav {
-  display: none !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.card-carousel-nav:hover:not(:disabled) {
+  background: var(--color-primary-5);
+  border-color: var(--color-primary-100);
+}
+
+.card-carousel-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .card-grid {
@@ -1782,33 +1802,9 @@ code {
   }
   
   .card-carousel-nav {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    display: flex;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    background: white;
-    border: 1px solid var(--color-border-light);
-    box-shadow: var(--shadow-md);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    z-index: 10;
-  }
-  
-  .card-carousel-nav:hover:not(:disabled) {
-    background: var(--color-primary-5);
-    border-color: var(--color-primary-100);
-  }
-  
-  .card-carousel-nav:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-  
-  .carousel-nav-button.card-carousel-nav {
-    display: flex !important;
   }
   
   .card-grid {
@@ -1864,41 +1860,17 @@ code {
   }
   
   .card-carousel-nav {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    display: flex;
     width: 36px;
     height: 36px;
-    border-radius: 50%;
-    background: white;
-    border: 1px solid var(--color-border-light);
-    box-shadow: var(--shadow-md);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    z-index: 10;
-  }
-  
-  .card-carousel-nav:hover:not(:disabled) {
-    background: var(--color-primary-5);
-    border-color: var(--color-primary-100);
-  }
-  
-  .card-carousel-nav:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
   }
   
   .card-carousel-nav svg {
     font-size: 18px;
   }
   
-  .carousel-nav-button.card-carousel-nav {
-    display: flex !important;
-  }
-  
   .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
+    display: flex;
   }
   
   .card-grid {
@@ -2088,28 +2060,14 @@ code {
 
 @media (min-width: 768px) {
   .carousel-nav-button {
-    display: flex !important; 
-  }
-  
-  
-  .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
-  
-  
-  .carousel-nav-button.notice-carousel-nav {
-    display: flex !important;
+    display: flex;
   }
 }
 
 
 @media (min-width: 768px) and (max-width: 919px) {
   .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; 
-  }
-  
-  .carousel-nav-button.notice-carousel-nav {
-    display: flex !important; 
+    display: flex;
   }
 }
 
@@ -2224,7 +2182,6 @@ code {
 
 
 @media (min-width: 768px) and (max-width: 919px) {
-  
   .quicklinks-grid {
     display: flex;
     overflow-x: auto;
@@ -2238,15 +2195,9 @@ code {
   .quicklink-carousel-nav {
     display: flex;
   }
-  
-  
-  .carousel-nav-button.quicklink-carousel-nav {
-    display: flex !important;
-  }
 }
 
-@media (min-width: 920px) {
-  
+@media (min-width: 920px) and (max-width: 1199px) {
   .quicklinks-grid {
     display: flex;
     overflow-x: auto;
@@ -2263,7 +2214,6 @@ code {
 }
 
 @media (min-width: 1200px) {
-  
   .quicklinks-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -2272,7 +2222,7 @@ code {
   
   .quicklink {
     min-width: auto;
-    flex-shrink:  1;
+    flex-shrink: 1;
   }
   
   .quicklink-carousel-nav {
@@ -2326,17 +2276,12 @@ code {
   .notice-carousel-arrow {
     display: flex;
   }
-  
-  .card-carousel-nav {
-    display: none !important;
-  }
 }
 
 
 @media (min-width: 1200px) {
-  
   .card-grid {
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-8);
     overflow-x: visible;
@@ -2367,13 +2312,8 @@ code {
     font-size: var(--text-base);
   }
   
-  .card-carousel-nav {
-    display: none !important; 
-  }
-  
-  
   .notice-carousel-wrapper .carousel-nav-button {
-    display: flex !important; 
+    display: flex;
   }
 
   
