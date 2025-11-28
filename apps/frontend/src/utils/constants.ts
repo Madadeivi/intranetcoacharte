@@ -41,14 +41,6 @@ export interface Notice {
       summary: "Tabla de vacaciones colaboradores Coacharte."
     },
   {
-    id: 5,
-    title: "Dias no laborables",
-    detail: 'Los días de asueto en la empresa corresponden a las fechas oficiales establecidas por la ley Federal del Trabajo y a aquellos que la organización determine de manera interna. Durante estos días no se labora y se busca promover el equilibrio entre la vida personal y profesional, fomentando el descanso y la convivencia.',
-    imageUrl: "/assets/dias_no_laborables.png",
-    date: "01 Sep 2025",
-    summary: "Tabla de vacaciones colaboradores Coacharte."
-  },
-  {
     id: 6,
     title: "Personaliza tu Espacio Digital",
     detail: 'Cada reunión virtual es una oportunidad para proyectar nuestra identidad y fortalecer la cultura que nos une. Recuerda que, de acuerdo con nuestros comportamientos, es importante: encender tu cámara, usar tu banner de Coacharte y personalizar tu espacio de trabajo virtual con nuestros nuevos fondos.\n\nTodos los recursos están disponibles en nuestra carpeta de Google Drive. Descarga los fondos virtuales que están disponibles y listos para usar en tus videollamadas.\n\n¡Pequeños detalles que reflejan nuestro orgullo Coachartean@!',
