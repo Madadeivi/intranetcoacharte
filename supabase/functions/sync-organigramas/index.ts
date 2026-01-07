@@ -1,3 +1,4 @@
+/// <reference lib="deno.ns" />
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
@@ -12,6 +13,13 @@ interface OrganigramaFile {
   mimeType: string
   size: number
   modifiedTime: string
+}
+
+interface ParsedOrganigramaName {
+  orden: number
+  title: string
+  ext: 'png' | 'jpg' | 'jpeg'
+  storagePath: string
 }
 
 interface SyncResult {
@@ -43,7 +51,9 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const DRIVE_FOLDER_ID = Deno.env.get('GOOGLE_DRIVE_FOLDER_ID')
+    const DRIVE_FOLDER_ID =
+      Deno.env.get('GOOGLE_DRIVE_FOLDER_ID') ??
+      Deno.env.get('ORGANIGRAMAS_GOOGLE_DRIVE_FOLDER_ID')
     const GOOGLE_CREDENTIALS = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_CREDENTIALS')
 
     if (!DRIVE_FOLDER_ID || !GOOGLE_CREDENTIALS) {
@@ -70,49 +80,78 @@ serve(async (req) => {
     const driveFiles = await listDriveFiles(accessToken, DRIVE_FOLDER_ID)
     console.log(`📁 Archivos encontrados en Drive: ${driveFiles.length}`)
 
-    const sortedFiles = driveFiles.sort((a, b) => a.name.localeCompare(b.name))
+    const byOrden = new Map<number, OrganigramaFile>()
+    const duplicateOrdenFiles: OrganigramaFile[] = []
 
-    const processedFileNames = new Set<string>()
+    const sortedFiles = driveFiles
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }))
 
-    for (const driveFile of sortedFiles) {
+    for (const file of sortedFiles) {
+      const parsed = parseOrganigramaName(file.name, file.mimeType)
+      if (!parsed) {
+        continue
+      }
+
+      const existing = byOrden.get(parsed.orden)
+      if (!existing) {
+        byOrden.set(parsed.orden, file)
+        continue
+      }
+
+      const newer =
+        new Date(file.modifiedTime).getTime() > new Date(existing.modifiedTime).getTime()
+          ? file
+          : existing
+      const older = newer === file ? existing : file
+      byOrden.set(parsed.orden, newer)
+      duplicateOrdenFiles.push(older)
+    }
+
+    for (const dup of duplicateOrdenFiles) {
+      result.filesFailed++
+      const msg = `Orden duplicado en Drive (se ignoró): ${dup.name}`
+      result.errors.push(msg)
+      console.warn(`⚠️  ${msg}`)
+    }
+
+    const processedOrdenes = new Set<number>()
+    const expectedStoragePaths = new Set<string>()
+
+    for (const driveFile of byOrden.values()) {
       try {
         result.filesProcessed++
-        processedFileNames.add(driveFile.name)
 
-        const ordenMatch = driveFile.name.match(/^(\d+)_/)
-        if (!ordenMatch) {
-          console.warn(`⚠️  Archivo sin formato de orden: ${driveFile.name}`)
+        const parsed = parseOrganigramaName(driveFile.name, driveFile.mimeType)
+        if (!parsed) {
+          console.warn(`⚠️  Archivo sin formato válido (se omite): ${driveFile.name}`)
           result.errors.push(`Invalid format: ${driveFile.name}`)
           result.filesFailed++
           continue
         }
 
-        const orden = parseInt(ordenMatch[1], 10)
-        
-        const titleMatch = driveFile.name.match(/^\d+_(.+)\.(png|jpg|jpeg)$/i)
-        const title = titleMatch ? titleMatch[1].replace(/_/g, ' ') : driveFile.name
-        
-        const storagePath = driveFile.name
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/\s+/g, '_')
+        const { orden, title, storagePath } = parsed
+        processedOrdenes.add(orden)
+        expectedStoragePaths.add(storagePath)
 
         const { data: existing, error: findError } = await supabase
           .from('organigramas')
           .select('*')
-          .eq('file_name', driveFile.name)
+          .eq('orden', orden)
           .maybeSingle()
 
         if (findError) throw findError
 
-        const needsUpdate = !existing || 
+        const needsUpdate =
+          !existing ||
           !existing.last_synced_at ||
           existing.drive_file_id !== driveFile.id ||
+          existing.file_name !== driveFile.name ||
+          existing.storage_path !== storagePath ||
           new Date(driveFile.modifiedTime) > new Date(existing.last_synced_at)
 
         if (!needsUpdate && existing) {
-          console.log(`⏭️  Archivo actualizado: ${driveFile.name}`)
+          console.log(`⏭️  Sin cambios: ${driveFile.name}`)
           continue
         }
 
@@ -144,36 +183,51 @@ serve(async (req) => {
             last_synced_at: new Date().toISOString(),
             file_size: driveFile.size,
             is_active: true,
-          }, {
-            onConflict: 'file_name',
-          })
+          }, { onConflict: 'orden' })
 
         if (upsertError) throw upsertError
-        console.log(`  ✅ ${existing ? 'Actualizado' : 'Creado'} en BD: ${driveFile.name}`)
+        console.log(`  ✅ ${existing ? 'Actualizado' : 'Creado'} en BD (orden ${orden}): ${driveFile.name}`)
 
         result.filesUpdated++
       } catch (error) {
         console.error(`  ❌ Error procesando ${driveFile.name}:`, error)
         result.filesFailed++
-        result.errors.push(`${driveFile.name}: ${error.message}`)
+        result.errors.push(`${driveFile.name}: ${error instanceof Error ? error.message : String(error)}`)
       }
     }
 
-    const { data: allOrganigramas } = await supabase
+    const { data: allOrganigramas, error: listDbError } = await supabase
       .from('organigramas')
-      .select('file_name, id')
-      .eq('is_active', true)
+      .select('id, orden, file_name, storage_path, is_active')
+
+    if (listDbError) throw listDbError
 
     if (allOrganigramas) {
       for (const org of allOrganigramas) {
-        if (!processedFileNames.has(org.file_name)) {
-          await supabase
-            .from('organigramas')
-            .update({ is_active: false })
-            .eq('id', org.id)
-          console.log(`  🗑️  Marcado como inactivo: ${org.file_name}`)
+        if (org.is_active && !processedOrdenes.has(org.orden)) {
+          await supabase.from('organigramas').update({ is_active: false }).eq('id', org.id)
+          console.log(`  🗑️  Marcado como inactivo (orden ${org.orden}): ${org.file_name}`)
         }
       }
+    }
+
+    const { data: storageObjects, error: storageListError } = await supabase.storage
+      .from('organigramas')
+      .list('', { limit: 1000, sortBy: { column: 'name', order: 'asc' } })
+
+    if (storageListError) throw storageListError
+
+    const toDelete: string[] = []
+    for (const obj of storageObjects ?? []) {
+      if (!expectedStoragePaths.has(obj.name)) {
+        toDelete.push(obj.name)
+      }
+    }
+
+    if (toDelete.length > 0) {
+      const { error: deleteError } = await supabase.storage.from('organigramas').remove(toDelete)
+      if (deleteError) throw deleteError
+      console.log(`  🧹 Storage depurado, eliminados ${toDelete.length} archivo(s) legacy/no esperado(s).`)
     }
 
     result.success = result.filesFailed === 0
@@ -204,7 +258,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error en sincronización:', error)
     result.success = false
-    result.errors.push(error.message)
+    result.errors.push(error instanceof Error ? error.message : String(error))
     result.executionTimeMs = Date.now() - startTime
 
     return new Response(
@@ -216,6 +270,32 @@ serve(async (req) => {
     )
   }
 })
+
+function pad2(n: number): string {
+  const s = String(n)
+  return s.length >= 2 ? s : `0${s}`
+}
+
+function parseOrganigramaName(name: string, mimeType?: string): ParsedOrganigramaName | null {
+  const match = name.match(/^(\d{1,3})\s*[-._]?\s*(.+)\.(png|jpg|jpeg)$/i)
+  if (!match) return null
+
+  const orden = parseInt(match[1], 10)
+  if (!Number.isFinite(orden) || orden <= 0) return null
+
+  const extFromName = match[3].toLowerCase() as 'png' | 'jpg' | 'jpeg'
+  const ext =
+    mimeType?.includes('png') ? 'png'
+    : mimeType?.includes('jpeg') ? 'jpg'
+    : extFromName
+
+  const rawTitle = match[2]
+  const title = rawTitle.replace(/_/g, ' ').trim()
+
+  const storagePath = `${pad2(orden)}.${ext}`
+
+  return { orden, title, ext, storagePath }
+}
 
 async function getGoogleAccessToken(credentialsJson: string): Promise<string> {
   const credentials = JSON.parse(credentialsJson)
