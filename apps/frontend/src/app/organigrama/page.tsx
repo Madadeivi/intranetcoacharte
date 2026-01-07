@@ -83,6 +83,18 @@ const OrganigramaPage: React.FC = () => {
     }
   };
 
+  const renderSyncButton = () => (
+    <button
+      className="sync-button"
+      onClick={handleSync}
+      disabled={syncing}
+      title="Sincronizar desde Google Drive"
+    >
+      <SyncIcon className={syncing ? 'spinning' : ''} />
+      <span>{syncing ? 'Sincronizando...' : 'Sincronizar'}</span>
+    </button>
+  );
+
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % organigramas.length);
   };
@@ -177,14 +189,17 @@ const OrganigramaPage: React.FC = () => {
     return (
       <div className="organigrama-page">
         <div className="organigrama-header">
-          <Link href="/recursos-humanos" className="back-button">
-            <ArrowBackIcon />
-            <span>Volver a Talento y Transformación</span>
-          </Link>
-          <h1>
-            <AccountTreeIcon className="page-icon" />
-            Organigramas Coacharte
-          </h1>
+          <div className="organigrama-header-left">
+            <Link href="/recursos-humanos" className="back-button">
+              <ArrowBackIcon />
+              <span>Volver a Talento y Transformación</span>
+            </Link>
+            <h1>
+              <AccountTreeIcon className="page-icon" />
+              Organigramas Coacharte
+            </h1>
+          </div>
+          {renderSyncButton()}
         </div>
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <p>Cargando organigramas...</p>
@@ -197,14 +212,17 @@ const OrganigramaPage: React.FC = () => {
     return (
       <div className="organigrama-page">
         <div className="organigrama-header">
-          <Link href="/recursos-humanos" className="back-button">
-            <ArrowBackIcon />
-            <span>Volver a Talento y Transformación</span>
-          </Link>
-          <h1>
-            <AccountTreeIcon className="page-icon" />
-            Organigramas Coacharte
-          </h1>
+          <div className="organigrama-header-left">
+            <Link href="/recursos-humanos" className="back-button">
+              <ArrowBackIcon />
+              <span>Volver a Talento y Transformación</span>
+            </Link>
+            <h1>
+              <AccountTreeIcon className="page-icon" />
+              Organigramas Coacharte
+            </h1>
+          </div>
+          {renderSyncButton()}
         </div>
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <p>{error || 'No hay organigramas disponibles.'}</p>
@@ -221,14 +239,17 @@ const OrganigramaPage: React.FC = () => {
   return (
     <div className="organigrama-page">
       <div className="organigrama-header">
-        <Link href="/recursos-humanos" className="back-button">
-          <ArrowBackIcon />
-          <span>Volver a Talento y Transformación</span>
-        </Link>
-        <h1>
-          <AccountTreeIcon className="page-icon" />
-          Organigramas Coacharte
-        </h1>
+        <div className="organigrama-header-left">
+          <Link href="/recursos-humanos" className="back-button">
+            <ArrowBackIcon />
+            <span>Volver a Talento y Transformación</span>
+          </Link>
+          <h1>
+            <AccountTreeIcon className="page-icon" />
+            Organigramas Coacharte
+          </h1>
+        </div>
+        {renderSyncButton()}
       </div>
 
       <section className="organigrama-intro">
@@ -252,10 +273,6 @@ const OrganigramaPage: React.FC = () => {
             <button className="download-button" onClick={downloadCurrentOrganigrama} disabled={syncing}>
               <DownloadIcon />
               <span>Descargar</span>
-            </button>
-            <button className="sync-button" onClick={handleSync} disabled={syncing} title="Sincronizar desde Google Drive">
-              <SyncIcon className={syncing ? 'spinning' : ''} />
-              <span>{syncing ? 'Sincronizando...' : 'Sincronizar'}</span>
             </button>
           </div>
         </div>
