@@ -1,6 +1,6 @@
-/// <reference lib="deno.ns" />
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { downloadDriveFile, getGoogleAccessToken, listDriveFiles } from '../_shared/google-drive.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,13 +72,16 @@ serve(async (req) => {
     if (logError) throw logError
     const logId = logData.id
 
-    console.log('🚀 Iniciando sincronización de organigramas...')
+    console.log('Iniciando sincronización de organigramas')
 
     const accessToken = await getGoogleAccessToken(GOOGLE_CREDENTIALS)
-    console.log('✅ Token de Google obtenido')
+    console.log('Token de Google obtenido')
 
-    const driveFiles = await listDriveFiles(accessToken, DRIVE_FOLDER_ID)
-    console.log(`📁 Archivos encontrados en Drive: ${driveFiles.length}`)
+    const driveFiles = await listDriveFiles(accessToken, DRIVE_FOLDER_ID, {
+      mimeTypes: ['image/png', 'image/jpeg'],
+      orderBy: 'name',
+    })
+    console.log(`Archivos encontrados en Drive: ${driveFiles.length}`)
 
     const byOrden = new Map<number, OrganigramaFile>()
     const duplicateOrdenFiles: OrganigramaFile[] = []
@@ -112,7 +115,7 @@ serve(async (req) => {
       result.filesFailed++
       const msg = `Orden duplicado en Drive (se ignoró): ${dup.name}`
       result.errors.push(msg)
-      console.warn(`⚠️  ${msg}`)
+      console.warn(msg)
     }
 
     const processedOrdenes = new Set<number>()
@@ -124,7 +127,7 @@ serve(async (req) => {
 
         const parsed = parseOrganigramaName(driveFile.name, driveFile.mimeType)
         if (!parsed) {
-          console.warn(`⚠️  Archivo sin formato válido (se omite): ${driveFile.name}`)
+          console.warn(`Archivo sin formato válido (se omite): ${driveFile.name}`)
           result.errors.push(`Invalid format: ${driveFile.name}`)
           result.filesFailed++
           continue
@@ -151,14 +154,10 @@ serve(async (req) => {
           new Date(driveFile.modifiedTime) > new Date(existing.last_synced_at)
 
         if (!needsUpdate && existing) {
-          console.log(`⏭️  Sin cambios: ${driveFile.name}`)
           continue
         }
 
-        console.log(`🔄 Sincronizando: ${driveFile.name}`)
-
         const fileData = await downloadDriveFile(accessToken, driveFile.id)
-        console.log(`  ⬇️  Descargado (${(fileData.byteLength / 1024).toFixed(2)} KB)`)
 
         const { error: uploadError } = await supabase.storage
           .from('organigramas')
@@ -169,7 +168,6 @@ serve(async (req) => {
           })
 
         if (uploadError) throw uploadError
-        console.log(`  ⬆️  Subido a Supabase Storage`)
 
         const { error: upsertError } = await supabase
           .from('organigramas')
@@ -186,11 +184,10 @@ serve(async (req) => {
           }, { onConflict: 'orden' })
 
         if (upsertError) throw upsertError
-        console.log(`  ✅ ${existing ? 'Actualizado' : 'Creado'} en BD (orden ${orden}): ${driveFile.name}`)
 
         result.filesUpdated++
       } catch (error) {
-        console.error(`  ❌ Error procesando ${driveFile.name}:`, error)
+        console.error(`Error procesando ${driveFile.name}:`, error)
         result.filesFailed++
         result.errors.push(`${driveFile.name}: ${error instanceof Error ? error.message : String(error)}`)
       }
@@ -206,7 +203,6 @@ serve(async (req) => {
       for (const org of allOrganigramas) {
         if (org.is_active && !processedOrdenes.has(org.orden)) {
           await supabase.from('organigramas').update({ is_active: false }).eq('id', org.id)
-          console.log(`  🗑️  Marcado como inactivo (orden ${org.orden}): ${org.file_name}`)
         }
       }
     }
@@ -227,7 +223,6 @@ serve(async (req) => {
     if (toDelete.length > 0) {
       const { error: deleteError } = await supabase.storage.from('organigramas').remove(toDelete)
       if (deleteError) throw deleteError
-      console.log(`  🧹 Storage depurado, eliminados ${toDelete.length} archivo(s) legacy/no esperado(s).`)
     }
 
     result.success = result.filesFailed === 0
@@ -246,7 +241,7 @@ serve(async (req) => {
       })
       .eq('id', logId)
 
-    console.log('🎉 Sincronización completada:', result)
+    console.log('Sincronización completada', result)
 
     return new Response(
       JSON.stringify(result),
@@ -256,7 +251,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('❌ Error en sincronización:', error)
+    console.error('Error en sincronización:', error)
     result.success = false
     result.errors.push(error instanceof Error ? error.message : String(error))
     result.executionTimeMs = Date.now() - startTime
@@ -295,136 +290,5 @@ function parseOrganigramaName(name: string, mimeType?: string): ParsedOrganigram
   const storagePath = `${pad2(orden)}.${ext}`
 
   return { orden, title, ext, storagePath }
-}
-
-async function getGoogleAccessToken(credentialsJson: string): Promise<string> {
-  const credentials = JSON.parse(credentialsJson)
-  const { client_email, private_key } = credentials
-
-  const header = {
-    alg: 'RS256',
-    typ: 'JWT',
-  }
-
-  const now = Math.floor(Date.now() / 1000)
-  const payload = {
-    iss: client_email,
-    scope: 'https://www.googleapis.com/auth/drive.readonly',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now,
-  }
-
-  const encoder = new TextEncoder()
-  
-  const cryptoKey = await crypto.subtle.importKey(
-    'pkcs8',
-    pemToDer(private_key),
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256',
-    },
-    false,
-    ['sign']
-  )
-
-  const headerBase64 = base64UrlEncode(JSON.stringify(header))
-  const payloadBase64 = base64UrlEncode(JSON.stringify(payload))
-  const signatureInput = `${headerBase64}.${payloadBase64}`
-  
-  const signatureBuffer = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    cryptoKey,
-    encoder.encode(signatureInput)
-  )
-  
-  const signatureBase64 = base64UrlEncode(signatureBuffer)
-  const jwt = `${signatureInput}.${signatureBase64}`
-
-  const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: jwt,
-    }),
-  })
-
-  if (!tokenResponse.ok) {
-    throw new Error(`Failed to get access token: ${await tokenResponse.text()}`)
-  }
-
-  const tokenData = await tokenResponse.json()
-  return tokenData.access_token
-}
-
-async function listDriveFiles(
-  accessToken: string,
-  folderId: string
-): Promise<OrganigramaFile[]> {
-  const query = `'${folderId}' in parents and trashed=false and (mimeType='image/png' or mimeType='image/jpeg')`
-  const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,size,modifiedTime)&orderBy=name`
-
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to list Drive files: ${await response.text()}`)
-  }
-
-  const data = await response.json()
-  return data.files || []
-}
-
-async function downloadDriveFile(
-  accessToken: string,
-  fileId: string
-): Promise<ArrayBuffer> {
-  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`
-  
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to download file: ${await response.text()}`)
-  }
-
-  return await response.arrayBuffer()
-}
-
-function pemToDer(pem: string): ArrayBuffer {
-  const pemContents = pem
-    .replace(/-----BEGIN PRIVATE KEY-----/, '')
-    .replace(/-----END PRIVATE KEY-----/, '')
-    .replace(/\s/g, '')
-  
-  const binaryString = atob(pemContents)
-  const bytes = new Uint8Array(binaryString.length)
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i)
-  }
-  return bytes.buffer
-}
-
-function base64UrlEncode(data: string | ArrayBuffer): string {
-  let base64: string
-  
-  if (typeof data === 'string') {
-    base64 = btoa(data)
-  } else {
-    const bytes = new Uint8Array(data)
-    let binary = ''
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i])
-    }
-    base64 = btoa(binary)
-  }
-  
-  return base64
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
 }
 

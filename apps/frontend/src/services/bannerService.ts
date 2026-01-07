@@ -49,10 +49,15 @@ export const bannerService = {
   },
 
   getBannerUrl(storagePath: string): string {
-    const { data } = supabase.storage
+    const res = supabase.storage
       .from('banners')
       .getPublicUrl(storagePath)
 
+    const error = (res as unknown as { error?: { message: string } | null }).error
+    const data = (res as unknown as { data?: { publicUrl?: string } }).data
+
+    if (error) throw new Error(`Failed to get public URL: ${error.message}`)
+    if (!data?.publicUrl) throw new Error(`No public URL found for path "${storagePath}"`)
     return data.publicUrl
   },
 
