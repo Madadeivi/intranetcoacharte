@@ -9,12 +9,20 @@
 .organigrama-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
   margin-bottom: 30px;
   padding: 20px;
   background: white;
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.organigrama-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
 }
 
 .back-button {
@@ -507,6 +515,13 @@
     align-items: flex-start;
     gap: 15px;
     padding: 15px;
+  }
+
+  .organigrama-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    width: 100%;
   }
   
   .organigrama-header h1 {
