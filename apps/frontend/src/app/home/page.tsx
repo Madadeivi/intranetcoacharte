@@ -10,6 +10,7 @@ import 'react-calendar/dist/Calendar.css';
 
 import { useAuthStore } from '../../store/authStore';
 import authService from '../../services/authService';
+import { bannerService, Banner } from '../../services/bannerService';
 import { useClickOutside } from '../../hooks';
 import { useCarousel, useCarouselVertical } from '../../hooks/useCarousel';
 import { useCelebrationPopup } from '../../hooks/useCelebrationPopup';
@@ -39,6 +40,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LockIcon from '@mui/icons-material/Lock';
+import SyncIcon from '@mui/icons-material/Sync';
 
 import { getCurrentMonthYear } from '../../utils/functions';
 import { generateInitials } from '../../utils/helpers';
@@ -60,6 +62,9 @@ const HomePage: React.FC = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
+  const [banner, setBanner] = useState<(Banner & { imageUrl: string }) | null>(null);
+  const [bannerLoading, setBannerLoading] = useState(true);
+  const [syncingBanner, setSyncingBanner] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const celebrationPopupRef = useRef<HTMLDivElement>(null);
@@ -119,6 +124,36 @@ const HomePage: React.FC = () => {
       router.push('/');
     }
   }, [user, isLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    loadBanner();
+  }, []);
+
+  const loadBanner = async () => {
+    try {
+      setBannerLoading(true);
+      const bannerData = await bannerService.getActiveBannerWithUrl();
+      setBanner(bannerData);
+    } catch (err) {
+      console.error('Error loading banner:', err);
+    } finally {
+      setBannerLoading(false);
+    }
+  };
+
+  const handleSyncBanner = async () => {
+    try {
+      setSyncingBanner(true);
+      await bannerService.syncBanners();
+      await loadBanner();
+      alert('✅ Banner sincronizado correctamente');
+    } catch (err) {
+      console.error('Error syncing banner:', err);
+      alert('❌ Error al sincronizar banner.');
+    } finally {
+      setSyncingBanner(false);
+    }
+  };
 
   if (isLoading || !isAuthenticated) {
     return <div>Cargando...</div>;
@@ -226,10 +261,32 @@ const HomePage: React.FC = () => {
       </header>
 
       {/* Bienvenida y buscador */}
-      <section className="home-welcome">
+      <section 
+        className="home-welcome"
+        style={{
+          backgroundImage: banner?.imageUrl 
+            ? `url(${banner.imageUrl})` 
+            : `url('/assets/img_banner.webp')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <div className="home-welcome-content">
-          <div className="home-welcome-month">
-            <span>{currentMonthYearText}</span>
+          <div className="home-welcome-header-actions">
+            <div className="home-welcome-month">
+              <span>{currentMonthYearText}</span>
+            </div>
+            <button 
+              className="banner-sync-button" 
+              onClick={handleSyncBanner} 
+              disabled={syncingBanner}
+              title="Sincronizar banner desde Google Drive"
+              aria-label="Sincronizar banner"
+            >
+              <SyncIcon className={syncingBanner ? 'spinning' : ''} />
+              <span>{syncingBanner ? 'Sincronizando...' : 'Sincronizar'}</span>
+            </button>
           </div>
           <h1>Bienvenido a tu Intranet</h1>
           <p>Tu espacio central para acceder a todos los recursos y herramientas de Coacharte</p>
