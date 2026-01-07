@@ -63,7 +63,6 @@ const HomePage: React.FC = () => {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   const [banner, setBanner] = useState<(Banner & { imageUrl: string }) | null>(null);
-  const [bannerLoading, setBannerLoading] = useState(true);
   const [syncingBanner, setSyncingBanner] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -131,13 +130,10 @@ const HomePage: React.FC = () => {
 
   const loadBanner = async () => {
     try {
-      setBannerLoading(true);
       const bannerData = await bannerService.getActiveBannerWithUrl();
       setBanner(bannerData);
     } catch (err) {
       console.error('Error loading banner:', err);
-    } finally {
-      setBannerLoading(false);
     }
   };
 
