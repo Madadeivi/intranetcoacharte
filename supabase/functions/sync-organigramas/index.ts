@@ -46,14 +46,16 @@ serve(async (req) => {
     executionTimeMs: 0,
   }
 
+  let logId: number | null = null
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const DRIVE_FOLDER_ID =
-      Deno.env.get('GOOGLE_DRIVE_FOLDER_ID') ??
-      Deno.env.get('ORGANIGRAMAS_GOOGLE_DRIVE_FOLDER_ID')
+      Deno.env.get('ORGANIGRAMAS_GOOGLE_DRIVE_FOLDER_ID') ??
+      Deno.env.get('GOOGLE_DRIVE_FOLDER_ID')
     const GOOGLE_CREDENTIALS = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_CREDENTIALS')
 
     if (!DRIVE_FOLDER_ID || !GOOGLE_CREDENTIALS) {
@@ -70,7 +72,7 @@ serve(async (req) => {
       .single()
 
     if (logError) throw logError
-    const logId = logData.id
+    logId = logData.id
 
     console.log('Iniciando sincronización de organigramas')
 
@@ -82,6 +84,10 @@ serve(async (req) => {
       orderBy: 'name',
     })
     console.log(`Archivos encontrados en Drive: ${driveFiles.length}`)
+
+    if (driveFiles.length === 0) {
+      throw new Error('No se encontraron archivos en la carpeta de Drive')
+    }
 
     const byOrden = new Map<number, OrganigramaFile>()
     const duplicateOrdenFiles: OrganigramaFile[] = []
@@ -255,6 +261,27 @@ serve(async (req) => {
     result.success = false
     result.errors.push(error instanceof Error ? error.message : String(error))
     result.executionTimeMs = Date.now() - startTime
+
+    if (logId) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+        await supabase
+          .from('organigrama_sync_logs')
+          .update({
+            status: 'failed',
+            files_synced: result.filesProcessed,
+            files_updated: result.filesUpdated,
+            files_failed: result.filesFailed || 1,
+            error_message: result.errors.join('; ') || 'Unknown error',
+            execution_time_ms: result.executionTimeMs,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', logId)
+      } catch (_e) { void _e }
+    }
 
     return new Response(
       JSON.stringify(result),

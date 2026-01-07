@@ -47,8 +47,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const DRIVE_FOLDER_ID =
-      Deno.env.get('GOOGLE_DRIVE_FOLDER_ID') ??
-      Deno.env.get('BANNERS_GOOGLE_DRIVE_FOLDER_ID')
+      Deno.env.get('BANNERS_GOOGLE_DRIVE_FOLDER_ID') ??
+      Deno.env.get('GOOGLE_DRIVE_FOLDER_ID')
     const GOOGLE_CREDENTIALS = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_CREDENTIALS')
 
     if (!DRIVE_FOLDER_ID || !GOOGLE_CREDENTIALS) {

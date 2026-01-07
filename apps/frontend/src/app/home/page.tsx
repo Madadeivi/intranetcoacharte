@@ -40,7 +40,6 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LockIcon from '@mui/icons-material/Lock';
-import SyncIcon from '@mui/icons-material/Sync';
 
 import { getCurrentMonthYear } from '../../utils/functions';
 import { generateInitials } from '../../utils/helpers';
@@ -63,7 +62,6 @@ const HomePage: React.FC = () => {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [noticeModal, setNoticeModal] = useState({ open: false, title: '', detail: '' });
   const [banner, setBanner] = useState<(Banner & { imageUrl: string }) | null>(null);
-  const [syncingBanner, setSyncingBanner] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const celebrationPopupRef = useRef<HTMLDivElement>(null);
@@ -134,20 +132,6 @@ const HomePage: React.FC = () => {
       setBanner(bannerData);
     } catch (err) {
       console.error('Error loading banner:', err);
-    }
-  };
-
-  const handleSyncBanner = async () => {
-    try {
-      setSyncingBanner(true);
-      await bannerService.syncBanners();
-      await loadBanner();
-      alert('✅ Banner sincronizado correctamente');
-    } catch (err) {
-      console.error('Error syncing banner:', err);
-      alert('❌ Error al sincronizar banner.');
-    } finally {
-      setSyncingBanner(false);
     }
   };
 
@@ -269,20 +253,8 @@ const HomePage: React.FC = () => {
         }}
       >
         <div className="home-welcome-content">
-          <div className="home-welcome-header-actions">
-            <div className="home-welcome-month">
-              <span>{currentMonthYearText}</span>
-            </div>
-            <button 
-              className="banner-sync-button" 
-              onClick={handleSyncBanner} 
-              disabled={syncingBanner}
-              title="Sincronizar banner desde Google Drive"
-              aria-label="Sincronizar banner"
-            >
-              <SyncIcon className={syncingBanner ? 'spinning' : ''} />
-              <span>{syncingBanner ? 'Sincronizando...' : 'Sincronizar'}</span>
-            </button>
+          <div className="home-welcome-month">
+            <span>{currentMonthYearText}</span>
           </div>
           <h1>Bienvenido a tu Intranet</h1>
           <p>Tu espacio central para acceder a todos los recursos y herramientas de Coacharte</p>
