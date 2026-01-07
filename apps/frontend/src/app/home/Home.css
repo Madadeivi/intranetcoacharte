@@ -1732,65 +1732,9 @@ code {
   gap: 0; 
 }
 
-.home-welcome-header-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: var(--space-4);
-  gap: var(--space-3);
-}
-
 .home-welcome-month {
+  margin-bottom: var(--space-4);
   padding: var(--space-1) var(--space-4);
-}
-
-.banner-sync-button {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--color-white-25);
-  color: var(--color-white);
-  border: 1px solid var(--color-white-30);
-  border-radius: var(--radius-xl);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-md);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  font-family: 'Geometria-Medium', 'Geometria', Arial, sans-serif;
-}
-
-.banner-sync-button:hover:not(:disabled) {
-  background: var(--color-white-35);
-  border-color: var(--color-white-40);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
-}
-
-.banner-sync-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.banner-sync-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.banner-sync-button .spinning {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .home-welcome-month span {

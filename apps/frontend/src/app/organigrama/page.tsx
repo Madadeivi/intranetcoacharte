@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SyncIcon from '@mui/icons-material/Sync';
 
 import { organigramaService, Organigrama } from '@/services/organigramaService';
+import { bannerService } from '@/services/bannerService';
 
 const scrollLockManager = {
   lockCount: 0,
@@ -68,12 +69,15 @@ const OrganigramaPage: React.FC = () => {
   const handleSync = async () => {
     try {
       setSyncing(true);
-      await organigramaService.syncOrganigramas();
+      await Promise.all([
+        organigramaService.syncOrganigramas(),
+        bannerService.syncBanners(),
+      ]);
       await loadOrganigramas();
-      alert('✅ Organigramas sincronizados correctamente');
+      alert('Sincronización completada');
     } catch (err) {
       console.error('Error syncing organigramas:', err);
-      alert('❌ Error al sincronizar organigramas.');
+      alert('Error al sincronizar');
     } finally {
       setSyncing(false);
     }
