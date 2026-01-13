@@ -40,6 +40,14 @@ export interface Notice {
       date: "01 Sep 2025",
       summary: "Tabla de vacaciones colaboradores Coacharte."
     },
+    {
+      id: 5,
+      title: "Cumpleañeros de Enero",
+      detail: '**¡Felicidades a nuestros cumpleañeros del mes!**\n\n5 | Brenda López\n11 | Alan Alvarado\n18 | José Luis Clavijo\n20 | Alexis Velázquez\n26 | Luis Pascual\n26 | Eduardo Maya\n28 | Jesús Molina\n\nEn Coacharte te deseamos lo mejor hoy y siempre.',
+      imageUrl: "/assets/banner_cumpleanos.png",
+      date: "01 Ene 2026",
+      summary: "Celebramos a quienes cumplen años en enero."
+    },
   {
     id: 6,
     title: "Personaliza tu Espacio Digital",
