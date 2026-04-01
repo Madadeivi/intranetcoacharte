@@ -23,7 +23,7 @@
     "bcryptjs": "^2.4.3",
     "docxtemplater": "^3.67.3",
     "file-saver": "^2.0.5",
-    "next": "15.4.10",
+    "next": "15.5.14",
     "pizzip": "^3.2.0",
     "react": "^19.0.0",
     "react-calendar": "^5.1.0",
