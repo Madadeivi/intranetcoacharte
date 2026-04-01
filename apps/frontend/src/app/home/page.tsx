@@ -257,7 +257,6 @@ const HomePage: React.FC = () => {
             <span>{currentMonthYearText}</span>
           </div>
           <h1>Bienvenido a tu Intranet</h1>
-          <p>Tu espacio central para acceder a todos los recursos y herramientas de Coacharte</p>
           <div className="home-search-wrapper">
             <input
               className="home-search"
