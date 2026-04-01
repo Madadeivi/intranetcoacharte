@@ -256,6 +256,10 @@ const HomePage: React.FC = () => {
           <div className="home-welcome-month">
             <span>{currentMonthYearText}</span>
           </div>
+          <h1></h1>
+          <p></p>
+          <div className="home-search-wrapper">
+          </div>
         </div>
       </section>
 
