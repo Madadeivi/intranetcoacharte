@@ -256,6 +256,24 @@ const HomePage: React.FC = () => {
           <div className="home-welcome-month">
             <span>{currentMonthYearText}</span>
           </div>
+          <h1>Bienvenido a tu Intranet</h1>
+          <div className="home-search-wrapper">
+            <input
+              className="home-search"
+              type="text"
+              placeholder={searchActive ? '' : 'Buscar recursos, documentos, personas...'}
+              onFocus={() => setSearchActive(true)}
+              onBlur={e => { if (!e.target.value) setSearchActive(false); }}
+            />
+            {!searchActive && (
+              <span className="home-search-icon" aria-label="Buscar">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="2" />
+                  <line x1="14.4142" y1="14" x2="18" y2="17.5858" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </span>
+            )}
+          </div>
           <h1></h1>
           <p></p>
           <div className="home-search-wrapper">
@@ -302,7 +320,7 @@ const HomePage: React.FC = () => {
             </div>
             <div className={`main-card hover-card hover-scale-icon ${DISABLED_CARDS.includes('Soporte y Comunicación') ? 'disabled' : ''}`}>
               <HeadsetMicIcon className="main-card-icon" />
-              <h3>Soporte y Comunicación</h3>
+              <h3>Soporte</h3>
               <p>Tickets y material de capacitación</p>
               <button 
                 onClick={() => setIsSupportModalOpen(true)} 
