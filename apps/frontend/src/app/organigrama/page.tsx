@@ -262,8 +262,7 @@ const OrganigramaPage: React.FC = () => {
       <section className="organigrama-content">
         <div className="organigrama-actions">
           <div className="carousel-info">
-            <h2>{currentOrganigrama.title}</h2>
-            <p className="carousel-description">{currentOrganigrama.description}</p>
+
           </div>
           <div className="carousel-controls">
             <button className="zoom-button" onClick={openModal} disabled={syncing}>
