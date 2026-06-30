@@ -274,8 +274,7 @@ const HomePage: React.FC = () => {
               </span>
             )}
           </div>
-          <h1></h1>
-          <p></p>
+
           <div className="home-search-wrapper">
           </div>
         </div>
