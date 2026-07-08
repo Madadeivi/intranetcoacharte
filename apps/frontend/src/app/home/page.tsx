@@ -523,8 +523,8 @@ const HomePage: React.FC = () => {
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-brand-section">
-            <Image src="/assets/coacharte-bco@4x.png" alt="Coacharte Blanco" className="footer-logo" width={180} height={45} />
-            <p className="footer-slogan">Inspirados para transformar cualquier reto en logros con soluciones</p>
+            <Image src="/assets/logo_coacharte1.png" alt="Coacharte Blanco" className="footer-logo" width={180} height={45} />
+            <p className="footer-slogan">Inspirados para transformar cualquier reto en logros</p>
           </div>
           <div className="footer-links-section">
             <div className="footer-col">
